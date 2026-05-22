@@ -114,6 +114,8 @@ const INGREDIENTS = [
   { id: "ing_spezie",     nome: "Spezie varie",            cat: "🧂 Dispensa",      deperibile: 365, tags: ["spezie","cannella","curcuma","origano"] },
   { id: "ing_brodo",      nome: "Brodo / dado vegetale",   cat: "🧂 Dispensa",      deperibile: 365, tags: ["brodo","minestrone"] },
   { id: "ing_lievito",    nome: "Lievito di birra",        cat: "🧂 Dispensa",      deperibile: 14,  tags: ["pizza","lievito"] },
+  { id: "ing_olive",           nome: "Olive",                   cat: "🧂 Dispensa",      deperibile: 30,  tags: ["olive"] },
+  { id: "ing_pomodori_secchi", nome: "Pomodori secchi",         cat: "🧂 Dispensa",      deperibile: 180, tags: ["pomodori secchi"] },
 ];
 
 const ING_MAP = Object.fromEntries(INGREDIENTS.map(i => [i.id, i]));
@@ -141,7 +143,7 @@ const ING_QTY = {
   spu_10: { ing_spinaci:{uomo:30,donna:30,bimbo:15,unit:"g"}, ing_banana:{uomo:1,donna:0.5,bimbo:0.5,unit:"pz"}, ing_latte:{uomo:200,donna:150,bimbo:100,unit:"ml"} },
   spu_11: { ing_crackers:{uomo:40,donna:30,bimbo:20,unit:"g"}, ing_ceci:{uomo:60,donna:40,bimbo:20,unit:"g"}, ing_peperone:{uomo:80,donna:80,bimbo:0,unit:"g"}, ing_carote:{uomo:80,donna:80,bimbo:40,unit:"g"} },
   spu_12: { ing_pera:{uomo:1,donna:1,bimbo:0.5,unit:"pz"}, ing_noci:{uomo:20,donna:12,bimbo:5,unit:"g"} },
-  pra_01: { ing_farro:{uomo:100,donna:70,bimbo:40,unit:"g"}, ing_tonno:{uomo:160,donna:120,bimbo:60,unit:"g"}, ing_pomodori:{uomo:150,donna:150,bimbo:80,unit:"g"}, ing_insalata:{uomo:50,donna:50,bimbo:30,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
+  pra_01: { ing_farro:{uomo:100,donna:70,bimbo:40,unit:"g"}, ing_tonno:{uomo:160,donna:120,bimbo:60,unit:"g"}, ing_pomodori:{uomo:150,donna:150,bimbo:80,unit:"g"}, ing_insalata:{uomo:50,donna:50,bimbo:30,unit:"g"}, ing_olive:{uomo:30,donna:20,bimbo:10,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   pra_02: { ing_pollo:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_quinoa:{uomo:90,donna:65,bimbo:35,unit:"g"}, ing_zucchine:{uomo:100,donna:100,bimbo:50,unit:"g"}, ing_peperone:{uomo:100,donna:100,bimbo:50,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   pra_03: { ing_legumi:{uomo:120,donna:90,bimbo:60,unit:"g"}, ing_carote:{uomo:80,donna:80,bimbo:40,unit:"g"}, ing_brodo:{uomo:400,donna:300,bimbo:180,unit:"ml"}, ing_pane:{uomo:80,donna:50,bimbo:25,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   pra_04: { ing_uova:{uomo:3,donna:2,bimbo:1,unit:"pz"}, ing_insalata:{uomo:80,donna:80,bimbo:50,unit:"g"}, ing_crackers:{uomo:50,donna:35,bimbo:20,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
@@ -150,7 +152,7 @@ const ING_QTY = {
   pra_07: { ing_uova:{uomo:3,donna:2,bimbo:1,unit:"pz"}, ing_zucchine:{uomo:80,donna:80,bimbo:40,unit:"g"}, ing_spinaci:{uomo:70,donna:70,bimbo:40,unit:"g"}, ing_insalata:{uomo:60,donna:60,bimbo:30,unit:"g"}, ing_pane:{uomo:40,donna:30,bimbo:20,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   pra_08: { ing_pollo:{uomo:180,donna:130,bimbo:70,unit:"g"}, ing_avocado:{uomo:0.5,donna:0.25,bimbo:0,unit:"pz"}, ing_pomodori:{uomo:150,donna:150,bimbo:80,unit:"g"}, ing_insalata:{uomo:50,donna:50,bimbo:30,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   pra_09: { ing_merluzzo:{uomo:220,donna:160,bimbo:80,unit:"g"}, ing_riso:{uomo:90,donna:65,bimbo:40,unit:"g"}, ing_broccoli:{uomo:250,donna:250,bimbo:120,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
-  pra_10: { ing_ceci:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_spinaci:{uomo:80,donna:80,bimbo:40,unit:"g"}, ing_feta:{uomo:30,donna:20,bimbo:10,unit:"g"}, ing_passata:{uomo:50,donna:50,bimbo:30,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
+  pra_10: { ing_ceci:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_spinaci:{uomo:80,donna:80,bimbo:40,unit:"g"}, ing_feta:{uomo:30,donna:20,bimbo:10,unit:"g"}, ing_pomodori_secchi:{uomo:40,donna:30,bimbo:15,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   pra_11: { ing_pane:{uomo:80,donna:60,bimbo:40,unit:"g"}, ing_pollo:{uomo:160,donna:120,bimbo:60,unit:"g"}, ing_peperone:{uomo:80,donna:80,bimbo:40,unit:"g"}, ing_zucchine:{uomo:70,donna:70,bimbo:40,unit:"g"}, ing_ceci:{uomo:50,donna:30,bimbo:0,unit:"g"} },
   pra_12: { ing_tonno:{uomo:140,donna:100,bimbo:60,unit:"g"}, ing_lenticchie:{uomo:120,donna:90,bimbo:60,unit:"g"}, ing_carote:{uomo:150,donna:150,bimbo:80,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   cen_01: { ing_salmone:{uomo:220,donna:160,bimbo:80,unit:"g"}, ing_patatedolci:{uomo:250,donna:180,bimbo:100,unit:"g"}, ing_insalata:{uomo:60,donna:60,bimbo:30,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
@@ -239,8 +241,8 @@ const DB = {
       uomo:{kcal:195,p:4,c:24,g:10},donna:{kcal:140,p:3,c:20,g:7},bimbo:{kcal:75,p:1,c:11,g:3}},
   ],
   pranzo: [
-    { id:"pra_01", nome:"Insalata di farro, tonno, pomodorini, olive, rucola", ingredients:["ing_farro","ing_tonno","ing_pomodori","ing_insalata","ing_evo"],
-      porzioni:{uomo:"100g farro · 160g tonno · 150g pomodorini · rucola · 1 cucchiaio EVO",donna:"70g farro · 120g tonno · 150g pomodorini · 1 cucchiaino EVO",bimbo:"40g farro · 60g tonno · 80g pomodorini"},
+    { id:"pra_01", nome:"Insalata di farro, tonno, pomodorini, olive, rucola", ingredients:["ing_farro","ing_tonno","ing_pomodori","ing_insalata","ing_olive","ing_evo"],
+      porzioni:{uomo:"100g farro · 160g tonno · 150g pomodorini · 30g olive · rucola · 1 cucchiaio EVO",donna:"70g farro · 120g tonno · 150g pomodorini · 20g olive · 1 cucchiaino EVO",bimbo:"40g farro · 60g tonno · 80g pomodorini · 10g olive"},
       uomo:{kcal:580,p:45,c:60,g:15},donna:{kcal:400,p:35,c:38,g:12},bimbo:{kcal:220,p:10,c:30,g:7}},
     { id:"pra_02", nome:"Pollo grigliato + quinoa + verdure arrosto", ingredients:["ing_pollo","ing_quinoa","ing_zucchine","ing_peperone","ing_evo"],
       porzioni:{uomo:"200g pollo · 90g quinoa · 200g verdure · 1 cucchiaio EVO",donna:"150g pollo · 65g quinoa · 200g verdure · 1 cucchiaino EVO",bimbo:"80g pollo · 35g quinoa · 100g verdure"},
@@ -266,8 +268,8 @@ const DB = {
     { id:"pra_09", nome:"Merluzzo al vapore + riso basmati + broccoli", ingredients:["ing_merluzzo","ing_riso","ing_broccoli","ing_evo"],
       porzioni:{uomo:"220g merluzzo · 90g riso · 250g broccoli · 1 cucchiaio EVO",donna:"160g merluzzo · 65g riso · 250g broccoli · 1 cucchiaino EVO",bimbo:"80g merluzzo · 40g riso · 120g broccoli"},
       uomo:{kcal:570,p:50,c:60,g:10},donna:{kcal:400,p:38,c:40,g:8},bimbo:{kcal:260,p:14,c:35,g:6}},
-    { id:"pra_10", nome:"Bowl di ceci + spinaci + pomodori secchi + feta", ingredients:["ing_ceci","ing_spinaci","ing_feta","ing_passata","ing_evo"],
-      porzioni:{uomo:"200g ceci · 80g spinaci · 30g feta · 1 cucchiaio EVO",donna:"150g ceci · 80g spinaci · 20g feta · 1 cucchiaino EVO",bimbo:"80g ceci · spinaci · feta"},
+    { id:"pra_10", nome:"Bowl di ceci + spinaci + pomodori secchi + feta", ingredients:["ing_ceci","ing_spinaci","ing_feta","ing_pomodori_secchi","ing_evo"],
+      porzioni:{uomo:"200g ceci · 80g spinaci · 30g feta · 40g pomodori secchi · 1 cucchiaio EVO",donna:"150g ceci · 80g spinaci · 20g feta · 30g pomodori secchi · 1 cucchiaino EVO",bimbo:"80g ceci · spinaci · feta · 15g pomodori secchi"},
       uomo:{kcal:555,p:30,c:58,g:20},donna:{kcal:390,p:22,c:42,g:15},bimbo:{kcal:210,p:10,c:28,g:7}},
     { id:"pra_11", nome:"Wrap integrale + pollo + verdure grigliate + hummus", ingredients:["ing_pane","ing_pollo","ing_peperone","ing_zucchine","ing_ceci"],
       porzioni:{uomo:"2 wrap · 160g pollo · 150g verdure · 50g hummus",donna:"1 wrap · 120g pollo · 150g verdure · 30g hummus",bimbo:"½ wrap · 60g pollo · verdure"},
@@ -349,98 +351,232 @@ function todayDayIndex() {
   return d === 0 ? 6 : d - 1;   // converti in 0=Lun … 6=Dom
 }
 
-// ─── Costanti misure ───────────────────────────────────────────────
-const MISURE_FIELDS = [
-  { key:"petto",   label:"Petto / Seno", emoji:"🫁", color:"#db2777" },
-  { key:"vita",    label:"Vita",         emoji:"⌛", color:"#d97706" },
-  { key:"fianchi", label:"Fianchi",      emoji:"🍑", color:"#7c3aed" },
-  { key:"coscia",  label:"Coscia",       emoji:"🦵", color:"#0891b2" },
-  { key:"polpaccio",label:"Polpaccio",   emoji:"🦶", color:"#16a34a" },
-];
+// ─── SVG Line Chart ────────────────────────────────────────────────
+function LineChart({ records, field, color, unit, label }) {
+  // records ordinati dal più vecchio al più recente
+  const pts = records.map(r => parseFloat(r[field])).filter(v => !isNaN(v));
+  if (pts.length < 2) return null;
+
+  const W = 320, H = 90, PAD = { t:10, r:12, b:24, l:36 };
+  const innerW = W - PAD.l - PAD.r;
+  const innerH = H - PAD.t - PAD.b;
+
+  const mn = Math.min(...pts), mx = Math.max(...pts);
+  const range = mx - mn || 1;
+
+  // coordinate punti
+  const coords = pts.map((v, i) => ({
+    x: PAD.l + (i / (pts.length - 1)) * innerW,
+    y: PAD.t + (1 - (v - mn) / range) * innerH,
+    v
+  }));
+
+  // polyline path
+  const polyline = coords.map((c, i) => `${i === 0 ? "M" : "L"}${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(" ");
+  // area fill path
+  const area = polyline + ` L${coords[coords.length-1].x.toFixed(1)},${(PAD.t+innerH).toFixed(1)} L${coords[0].x.toFixed(1)},${(PAD.t+innerH).toFixed(1)} Z`;
+
+  // delta totale
+  const deltaTotal = (pts[pts.length-1] - pts[0]).toFixed(1);
+  const deltaPos = parseFloat(deltaTotal) > 0;
+  const deltaNeu = parseFloat(deltaTotal) === 0;
+
+  // label date primo e ultimo
+  const dateFirst = records.filter(r => !isNaN(parseFloat(r[field])))[0]?.date || "";
+  const dateLast  = records.filter(r => !isNaN(parseFloat(r[field]))).at(-1)?.date || "";
+
+  // tick Y (min e max)
+  const yLabelMn = PAD.t + innerH;
+  const yLabelMx = PAD.t;
+
+  return (
+    <div style={{marginBottom:18}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+        <span style={{fontSize:12,fontWeight:700,color}}>{label}</span>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <span style={{fontSize:13,fontFamily:"monospace",fontWeight:800,color:"#1e293b"}}>{pts[pts.length-1]} {unit}</span>
+          <span style={{fontSize:11,fontWeight:700,color:deltaNeu?"#94a3b8":deltaPos?"#ef4444":"#16a34a",background:deltaNeu?"#f1f5f9":deltaPos?"#fef2f2":"#f0fdf4",borderRadius:6,padding:"2px 7px"}}>
+            {deltaNeu?"—":deltaPos?`▲ +${deltaTotal}`:`▼ ${deltaTotal}`}
+          </span>
+        </div>
+      </div>
+      <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{overflow:"visible",display:"block"}}>
+        <defs>
+          <linearGradient id={`grad-${field}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.18"/>
+            <stop offset="100%" stopColor={color} stopOpacity="0.01"/>
+          </linearGradient>
+        </defs>
+        {/* Griglia orizzontale */}
+        {[0, 0.5, 1].map(t => (
+          <line key={t} x1={PAD.l} y1={PAD.t + t*innerH} x2={PAD.l+innerW} y2={PAD.t + t*innerH}
+            stroke="#f1f5f9" strokeWidth="1"/>
+        ))}
+        {/* Y labels */}
+        <text x={PAD.l-4} y={yLabelMx+4} textAnchor="end" fontSize="8" fill="#94a3b8">{mx}</text>
+        <text x={PAD.l-4} y={yLabelMn}   textAnchor="end" fontSize="8" fill="#94a3b8">{mn}</text>
+        {/* Area fill */}
+        <path d={area} fill={`url(#grad-${field})`}/>
+        {/* Linea */}
+        <path d={polyline} fill="none" stroke={color} strokeWidth="2.2" strokeLinejoin="round" strokeLinecap="round"/>
+        {/* Punti */}
+        {coords.map((c, i) => (
+          <circle key={i} cx={c.x} cy={c.y} r={i===coords.length-1?4:2.5}
+            fill={i===coords.length-1?color:"#fff"} stroke={color} strokeWidth="1.8"/>
+        ))}
+        {/* X labels: prima e ultima data */}
+        <text x={coords[0].x} y={H-2} textAnchor="middle" fontSize="8" fill="#94a3b8">{dateFirst}</text>
+        <text x={coords[coords.length-1].x} y={H-2} textAnchor="middle" fontSize="8" fill="#94a3b8">{dateLast}</text>
+      </svg>
+    </div>
+  );
+}
 
 // ─── MisurePage ────────────────────────────────────────────────────
-function MisurePage({ personas, myPersonaId }) {
-  // misure: { [personaId]: [ { date, petto, vita, fianchi, coscia, polpaccio } ] }
-  const [misure, setMisure]     = useState({});
-  const [selPid, setSelPid]     = useState(myPersonaId || (personas[0]?.id));
-  const [form, setForm]         = useState({petto:"",vita:"",fianchi:"",coscia:"",polpaccio:""});
-  const [editIdx, setEditIdx]   = useState(null); // indice misurazione in modifica
-  const [adding, setAdding]     = useState(false);
-  const [loaded, setLoaded]     = useState(false);
+const TUTTI_FIELDS = [
+  { key:"peso",     label:"Peso",         emoji:"⚖️",  color:"#1e293b", unit:"kg" },
+  { key:"collo",    label:"Collo",        emoji:"🔵",  color:"#0ea5e9", unit:"cm" },
+  { key:"petto",    label:"Petto / Seno", emoji:"🫁",  color:"#db2777", unit:"cm" },
+  { key:"vita",     label:"Vita",         emoji:"⌛",  color:"#d97706", unit:"cm" },
+  { key:"fianchi",  label:"Fianchi",      emoji:"🍑",  color:"#7c3aed", unit:"cm" },
+  { key:"coscia",   label:"Coscia",       emoji:"🦵",  color:"#0891b2", unit:"cm" },
+  { key:"polpaccio",label:"Polpaccio",    emoji:"🦶",  color:"#16a34a", unit:"cm" },
+];
 
-  // data odierna in formato italiano
-  const todayStr = () => {
-    const d = new Date();
-    return d.toLocaleDateString("it-IT"); // gg/mm/aaaa
-  };
-  const [formDate, setFormDate] = useState(todayStr());
+function dateToSort(d) {
+  // "gg/mm/aaaa" → "aaaammgg" per ordinamento
+  try { const [g,m,a]=d.split("/"); return `${a}${m.padStart(2,"0")}${g.padStart(2,"0")}`; }
+  catch { return "00000000"; }
+}
+function dateToLabel(d) {
+  try {
+    const [g,m,a]=d.split("/");
+    const dt=new Date(+a,+m-1,+g);
+    const giorni=["Dom","Lun","Mar","Mer","Gio","Ven","Sab"];
+    return `${giorni[dt.getDay()]} ${g}/${m}`;
+  } catch { return d; }
+}
 
-  // Load da localStorage
+function MisurePage({ personas, myPersonaId, onMisureChange }) {
+  const [misure, setMisure]   = useState({});
+  const [selPid, setSelPid]   = useState(myPersonaId || personas[0]?.id);
+  const [loaded, setLoaded]   = useState(false);
+  const [view, setView]       = useState("stats");   // "stats" | "history" | "form"
+  const [editRec, setEditRec] = useState(null);      // record in modifica (null = nuovo)
+  const [selChart, setSelChart] = useState("peso");  // quale metrica mostra il grafico principale
+
+  const emptyForm = () => Object.fromEntries(TUTTI_FIELDS.map(f=>[f.key,""]));
+  const [form, setForm]       = useState(emptyForm());
+  const [formDate, setFormDate] = useState(() => new Date().toLocaleDateString("it-IT"));
+
   useEffect(()=>{
-    window.storage.get(SK_MISURE).then(r=>{ setMisure(JSON.parse(r.value)); }).catch(()=>{}).finally(()=>setLoaded(true));
+    window.storage.get(SK_MISURE).then(r=>setMisure(JSON.parse(r.value))).catch(()=>{}).finally(()=>setLoaded(true));
   },[]);
 
-  const save = async (next) => {
+  const persist = async next => {
     setMisure(next);
-    await window.storage.set(SK_MISURE, JSON.stringify(next)).catch(()=>{});
+    await window.storage.set(SK_MISURE,JSON.stringify(next)).catch(()=>{});
+    if (onMisureChange) onMisureChange(next);
   };
 
-  const personaRecords = (misure[selPid]||[]).slice().sort((a,b)=>{ 
-    // ordina per data decrescente
-    const pa=a.date.split("/").reverse().join(""), pb=b.date.split("/").reverse().join("");
-    return pb.localeCompare(pa);
-  });
+  // record persona corrente, ordinati dal più vecchio al più recente
+  const allRecs = (misure[selPid]||[]).slice().sort((a,b)=>dateToSort(a.date).localeCompare(dateToSort(b.date)));
+  // dal più recente per la history
+  const recsDesc = [...allRecs].reverse();
 
-  const openAdd = () => {
-    setForm({petto:"",vita:"",fianchi:"",coscia:"",polpaccio:""});
-    setFormDate(todayStr());
-    setEditIdx(null);
-    setAdding(true);
+  const persona = personas.find(p=>p.id===selPid)||personas[0];
+
+  // ── apertura form ──
+  const openNew = () => {
+    setForm(emptyForm());
+    setFormDate(new Date().toLocaleDateString("it-IT"));
+    setEditRec(null);
+    setView("form");
   };
-
-  const openEdit = (idx) => {
-    const rec = personaRecords[idx];
-    setForm({petto:rec.petto||"",vita:rec.vita||"",fianchi:rec.fianchi||"",coscia:rec.coscia||"",polpaccio:rec.polpaccio||""});
+  const openEdit = rec => {
+    setForm(Object.fromEntries(TUTTI_FIELDS.map(f=>[f.key, rec[f.key]!==undefined&&rec[f.key]!==""?String(rec[f.key]):""])));
     setFormDate(rec.date);
-    setEditIdx(idx);
-    setAdding(true);
+    setEditRec(rec);
+    setView("form");
   };
 
+  // ── salvataggio ──
   const handleSave = async () => {
-    const entry = { date:formDate, ...Object.fromEntries(MISURE_FIELDS.map(f=>[f.key, form[f.key]===""?"":parseFloat(form[f.key])||""])) };
+    const entry = { date:formDate, ...Object.fromEntries(TUTTI_FIELDS.map(f=>[f.key, form[f.key]===""?"":parseFloat(form[f.key])||""])) };
     const cur = (misure[selPid]||[]).slice();
-    if (editIdx !== null) {
-      // trova e aggiorna il record originale (prima di sort)
-      const origDate = personaRecords[editIdx].date;
-      const origIdx = cur.findIndex(r=>r.date===origDate && JSON.stringify(r)===JSON.stringify(personaRecords[editIdx]));
-      if (origIdx>=0) cur[origIdx] = entry; else cur.push(entry);
+    if (editRec) {
+      const idx = cur.findIndex(r=>JSON.stringify(r)===JSON.stringify(editRec));
+      if (idx>=0) cur[idx]=entry; else cur.push(entry);
     } else {
       cur.push(entry);
     }
-    const next = {...misure, [selPid]: cur};
-    await save(next);
-    setAdding(false);
+    await persist({...misure,[selPid]:cur});
+    setView("stats");
   };
 
-  const handleDelete = async (idx) => {
-    const orig = personaRecords[idx];
-    const cur = (misure[selPid]||[]).filter(r => !(r.date===orig.date && JSON.stringify(r)===JSON.stringify(orig)));
-    const next = {...misure, [selPid]: cur};
-    await save(next);
+  const handleDelete = async rec => {
+    const cur = (misure[selPid]||[]).filter(r=>JSON.stringify(r)!==JSON.stringify(rec));
+    await persist({...misure,[selPid]:cur});
   };
 
-  // Variazione rispetto alla misurazione precedente
-  const delta = (records, idx, key) => {
-    if (idx >= records.length-1) return null;
-    const cur = parseFloat(records[idx][key]);
-    const prev = parseFloat(records[idx+1][key]);
-    if (isNaN(cur)||isNaN(prev)) return null;
-    return (cur-prev).toFixed(1);
+  // ── statistiche riassuntive ──
+  const statFor = key => {
+    const vals = allRecs.map(r=>parseFloat(r[key])).filter(v=>!isNaN(v));
+    if (!vals.length) return null;
+    const first=vals[0], last=vals[vals.length-1];
+    return { first, last, delta:(last-first).toFixed(1), min:Math.min(...vals), max:Math.max(...vals), n:vals.length };
   };
 
-  const persona = personas.find(p=>p.id===selPid)||personas[0];
-  if (!loaded) return <div style={{textAlign:"center",padding:"40px 0",color:"#64748b"}}>⏳</div>;
+  if (!loaded) return <div style={{textAlign:"center",padding:"60px 0",color:"#64748b",fontSize:24}}>⏳</div>;
 
+  // ════════════════════ FORM ════════════════════
+  if (view==="form") return (
+    <div>
+      <button onClick={()=>setView("stats")} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",color:"#64748b",fontWeight:700,fontSize:13,cursor:"pointer",padding:"0 0 14px 0"}}>
+        ← Indietro
+      </button>
+      <div style={{background:"#fff",borderRadius:14,border:"1.5px solid #e2e8f0",padding:"16px",boxShadow:"0 4px 20px #0000000f"}}>
+        <div style={{fontSize:14,fontWeight:800,color:"#1e293b",marginBottom:16}}>
+          {editRec ? "✏️ Modifica misurazione" : "➕ Nuova misurazione"}
+        </div>
+        {/* Data */}
+        <div style={{marginBottom:14}}>
+          <label style={{fontSize:10,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:0.8,display:"block",marginBottom:5}}>📅 Data</label>
+          <input value={formDate} onChange={e=>setFormDate(e.target.value)} placeholder="gg/mm/aaaa"
+            style={{width:"100%",padding:"10px 12px",border:"1.5px solid #e2e8f0",borderRadius:9,fontSize:14,outline:"none",boxSizing:"border-box"}}/>
+        </div>
+        {/* Peso separato — campo grande */}
+        <div style={{marginBottom:14}}>
+          <label style={{fontSize:10,fontWeight:700,color:"#1e293b",textTransform:"uppercase",letterSpacing:0.8,display:"block",marginBottom:5}}>⚖️ Peso <span style={{color:"#94a3b8",fontWeight:400}}>(kg)</span></label>
+          <input type="number" inputMode="decimal" min="1" max="500" step="0.1"
+            value={form.peso} onChange={e=>setForm(v=>({...v,peso:e.target.value}))} placeholder="—"
+            style={{width:"100%",padding:"12px",border:"2px solid #1e293b30",borderRadius:9,fontSize:20,fontFamily:"monospace",fontWeight:800,outline:"none",boxSizing:"border-box",color:"#1e293b",textAlign:"center"}}/>
+        </div>
+        {/* Circonferenze 2 colonne */}
+        <div style={{fontSize:10,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:0.8,marginBottom:8}}>Circonferenze (cm)</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:18}}>
+          {TUTTI_FIELDS.filter(f=>f.key!=="peso").map(f=>(
+            <div key={f.key}>
+              <label style={{fontSize:10,fontWeight:700,color:f.color,textTransform:"uppercase",letterSpacing:0.8,display:"block",marginBottom:4}}>
+                {f.emoji} {f.label}
+              </label>
+              <input type="number" inputMode="decimal" min="0" max="300" step="0.1"
+                value={form[f.key]} onChange={e=>setForm(v=>({...v,[f.key]:e.target.value}))} placeholder="—"
+                style={{width:"100%",padding:"9px 12px",border:`1.5px solid ${f.color}40`,borderRadius:8,fontSize:15,fontFamily:"monospace",fontWeight:700,outline:"none",boxSizing:"border-box",color:"#1e293b"}}/>
+            </div>
+          ))}
+        </div>
+        <div style={{display:"flex",gap:8}}>
+          <button onClick={handleSave} style={{flex:1,padding:"12px",borderRadius:10,border:"none",background:persona.color,color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer"}}>
+            {editRec?"✓ Aggiorna":"✓ Salva"}
+          </button>
+          <button onClick={()=>setView("stats")} style={{padding:"12px 18px",borderRadius:10,border:"1.5px solid #e2e8f0",background:"#fff",color:"#64748b",fontWeight:700,fontSize:14,cursor:"pointer"}}>Annulla</button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ════════════════════ STATS + HISTORY ════════════════════
   return (
     <div>
       {/* Selettore persona */}
@@ -453,135 +589,149 @@ function MisurePage({ personas, myPersonaId }) {
         ))}
       </div>
 
-      {/* Form aggiunta/modifica */}
-      {adding ? (
-        <div style={{background:"#fff",borderRadius:14,border:"1.5px solid #e2e8f0",padding:"16px",marginBottom:14,boxShadow:"0 4px 20px #0000000f"}}>
-          <div style={{fontSize:13,fontWeight:800,color:"#1e293b",marginBottom:14}}>
-            {editIdx!==null ? "✏️ Modifica misurazione" : "➕ Nuova misurazione"}
-          </div>
-          {/* Data */}
-          <div style={{marginBottom:12}}>
-            <label style={{fontSize:10,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:0.8,display:"block",marginBottom:4}}>📅 Data</label>
-            <input value={formDate} onChange={e=>setFormDate(e.target.value)} placeholder="gg/mm/aaaa"
-              style={{width:"100%",padding:"9px 12px",border:"1.5px solid #e2e8f0",borderRadius:8,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
-          </div>
-          {/* Campi misure */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
-            {MISURE_FIELDS.map(f=>(
-              <div key={f.key}>
-                <label style={{fontSize:10,fontWeight:700,color:f.color,textTransform:"uppercase",letterSpacing:0.8,display:"block",marginBottom:4}}>
-                  {f.emoji} {f.label} <span style={{color:"#94a3b8",fontWeight:400}}>(cm)</span>
-                </label>
-                <input type="number" inputMode="decimal" min="0" max="300" step="0.1"
-                  value={form[f.key]} onChange={e=>setForm(v=>({...v,[f.key]:e.target.value}))}
-                  placeholder="—"
-                  style={{width:"100%",padding:"9px 12px",border:`1.5px solid ${f.color}40`,borderRadius:8,fontSize:15,fontFamily:"monospace",fontWeight:700,outline:"none",boxSizing:"border-box",color:"#1e293b"}}/>
-              </div>
-            ))}
-          </div>
-          <div style={{display:"flex",gap:8}}>
-            <button onClick={handleSave} style={{flex:1,padding:"10px",borderRadius:9,border:"none",background:persona.color,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer"}}>
-              {editIdx!==null ? "✓ Aggiorna" : "✓ Salva"}
-            </button>
-            <button onClick={()=>setAdding(false)} style={{padding:"10px 16px",borderRadius:9,border:"1.5px solid #e2e8f0",background:"#fff",color:"#64748b",fontWeight:700,fontSize:13,cursor:"pointer"}}>Annulla</button>
-          </div>
-        </div>
-      ) : (
-        <button onClick={openAdd} style={{width:"100%",padding:"12px",borderRadius:12,border:"2px dashed #cbd5e1",background:"#f8fafc",color:"#64748b",fontWeight:700,fontSize:13,cursor:"pointer",marginBottom:14}}>
-          ➕ Aggiungi misurazione
-        </button>
-      )}
+      {/* Sub-nav: Statistiche / Storico */}
+      <div style={{display:"flex",gap:0,marginBottom:16,background:"#f1f5f9",borderRadius:10,padding:3}}>
+        {[{k:"stats",l:"📊 Statistiche"},{k:"history",l:"📋 Storico"}].map(({k,l})=>(
+          <button key={k} onClick={()=>setView(k)}
+            style={{flex:1,padding:"8px",borderRadius:8,border:"none",background:view===k?"#fff":"transparent",color:view===k?"#1e293b":"#94a3b8",fontWeight:700,fontSize:12,cursor:"pointer",boxShadow:view===k?"0 1px 4px #0000001a":"none",transition:"all 0.15s"}}>
+            {l}
+          </button>
+        ))}
+      </div>
 
-      {/* Grafico trend semplice (ultima 6 misurazioni) */}
-      {personaRecords.length >= 2 && !adding && (
-        <div style={{background:"#fff",borderRadius:12,border:"1.5px solid #e2e8f0",padding:"14px 16px",marginBottom:14}}>
-          <div style={{fontSize:11,fontWeight:800,color:"#1e293b",marginBottom:12,textTransform:"uppercase",letterSpacing:0.8}}>📈 Andamento (ultime {Math.min(6,personaRecords.length)} misurazioni)</div>
-          {MISURE_FIELDS.map(f=>{
-            const vals = personaRecords.slice(0,6).map(r=>parseFloat(r[f.key])).filter(v=>!isNaN(v));
-            if (vals.length < 2) return null;
-            const mn = Math.min(...vals), mx = Math.max(...vals);
-            const range = mx-mn || 1;
+      {/* Bottone aggiungi */}
+      <button onClick={openNew}
+        style={{width:"100%",padding:"11px",borderRadius:12,border:"none",background:`linear-gradient(135deg,${persona.color},${persona.color}cc)`,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",marginBottom:16,boxShadow:`0 4px 14px ${persona.color}44`}}>
+        ➕ Aggiungi misurazione
+      </button>
+
+      {allRecs.length === 0 ? (
+        <div style={{textAlign:"center",padding:"50px 0",color:"#94a3b8"}}>
+          <div style={{fontSize:48,marginBottom:12}}>📏</div>
+          <div style={{fontSize:14,fontWeight:700,color:"#64748b"}}>Nessuna misurazione</div>
+          <div style={{fontSize:12,marginTop:6}}>Aggiungi la prima per iniziare a tracciare i progressi</div>
+        </div>
+      ) : view==="stats" ? (
+        <>
+          {/* ── Card riassuntive per ogni metrica ── */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:16}}>
+            {TUTTI_FIELDS.map(f=>{
+              const s = statFor(f.key);
+              if (!s) return (
+                <div key={f.key} style={{background:"#f8fafc",borderRadius:10,padding:"10px 8px",border:"1.5px solid #f1f5f9",textAlign:"center",opacity:0.5}}>
+                  <div style={{fontSize:16}}>{f.emoji}</div>
+                  <div style={{fontSize:9,color:"#94a3b8",fontWeight:700,marginTop:2}}>{f.label}</div>
+                  <div style={{fontSize:12,color:"#cbd5e1",marginTop:4}}>—</div>
+                </div>
+              );
+              const d=parseFloat(s.delta), pos=d>0, neu=d===0;
+              return (
+                <div key={f.key} onClick={()=>setSelChart(f.key)}
+                  style={{background:selChart===f.key?f.color+"12":"#fff",borderRadius:10,padding:"10px 8px",border:`1.5px solid ${selChart===f.key?f.color+"60":"#e2e8f0"}`,textAlign:"center",cursor:"pointer",transition:"all 0.15s"}}>
+                  <div style={{fontSize:16}}>{f.emoji}</div>
+                  <div style={{fontSize:9,color:f.color,fontWeight:700,marginTop:2,textTransform:"uppercase",letterSpacing:0.4}}>{f.label}</div>
+                  <div style={{fontSize:17,fontWeight:800,color:"#1e293b",fontFamily:"monospace",marginTop:4,lineHeight:1}}>
+                    {s.last}<span style={{fontSize:9,color:"#94a3b8",marginLeft:1}}>{f.unit}</span>
+                  </div>
+                  <div style={{fontSize:10,fontWeight:700,marginTop:3,color:neu?"#94a3b8":pos?"#ef4444":"#16a34a"}}>
+                    {neu?"—":pos?`▲ +${s.delta}`:`▼ ${s.delta}`}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* ── Grafico principale (metrica selezionata) ── */}
+          {(()=>{
+            const f = TUTTI_FIELDS.find(x=>x.key===selChart);
+            const s = statFor(selChart);
+            if (!s || s.n < 2) return (
+              <div style={{background:"#fff",borderRadius:12,border:"1.5px solid #e2e8f0",padding:"20px",textAlign:"center",color:"#94a3b8",fontSize:12,marginBottom:16}}>
+                Servono almeno 2 misurazioni per il grafico
+              </div>
+            );
             return (
-              <div key={f.key} style={{marginBottom:10}}>
-                <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                  <span style={{fontSize:11,fontWeight:700,color:f.color}}>{f.emoji} {f.label}</span>
-                  <span style={{fontSize:11,fontFamily:"monospace",color:"#1e293b",fontWeight:700}}>{vals[0]} cm</span>
+              <div style={{background:"#fff",borderRadius:12,border:"1.5px solid #e2e8f0",padding:"16px",marginBottom:16}}>
+                <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
+                  <span style={{fontSize:11,fontWeight:800,color:"#1e293b",textTransform:"uppercase",letterSpacing:0.8}}>📈 Andamento — {f.label}</span>
+                  <span style={{marginLeft:"auto",fontSize:10,color:"#94a3b8"}}>{s.n} rilevazioni</span>
                 </div>
-                <div style={{display:"flex",gap:2,alignItems:"flex-end",height:32}}>
-                  {[...vals].reverse().map((v,i)=>{
-                    const h = Math.max(4, Math.round(((v-mn)/range)*28)+4);
-                    const isLast = i===vals.length-1;
-                    return <div key={i} style={{flex:1,height:h,background:isLast?f.color:f.color+"55",borderRadius:"3px 3px 0 0",transition:"height 0.3s"}}/>;
+                <div style={{display:"flex",gap:12,marginBottom:12,flexWrap:"wrap"}}>
+                  {[{l:"Inizio",v:`${s.first} ${f.unit}`},{l:"Attuale",v:`${s.last} ${f.unit}`},{l:"Min",v:`${s.min} ${f.unit}`},{l:"Max",v:`${s.max} ${f.unit}`}].map(({l,v})=>(
+                    <div key={l}>
+                      <div style={{fontSize:9,color:"#94a3b8",textTransform:"uppercase",letterSpacing:0.8}}>{l}</div>
+                      <div style={{fontSize:13,fontWeight:700,color:"#1e293b",fontFamily:"monospace"}}>{v}</div>
+                    </div>
+                  ))}
+                </div>
+                <LineChart records={allRecs} field={selChart} color={f.color} unit={f.unit} label={f.label}/>
+              </div>
+            );
+          })()}
+
+          {/* ── Grafici secondari (tutte le altre metriche con dati) ── */}
+          <div style={{background:"#fff",borderRadius:12,border:"1.5px solid #e2e8f0",padding:"16px",marginBottom:16}}>
+            <div style={{fontSize:11,fontWeight:800,color:"#1e293b",marginBottom:14,textTransform:"uppercase",letterSpacing:0.8}}>📉 Tutte le metriche</div>
+            {TUTTI_FIELDS.filter(f=>f.key!==selChart).map(f=>{
+              const s=statFor(f.key);
+              if (!s||s.n<2) return null;
+              return <LineChart key={f.key} records={allRecs} field={f.key} color={f.color} unit={f.unit} label={`${f.emoji} ${f.label}`}/>;
+            })}
+            {TUTTI_FIELDS.filter(f=>f.key!==selChart&&statFor(f.key)&&statFor(f.key).n>=2).length===0&&(
+              <div style={{textAlign:"center",color:"#94a3b8",fontSize:12}}>Aggiungi più misurazioni per vedere i grafici</div>
+            )}
+          </div>
+        </>
+      ) : (
+        /* ══ STORICO ══ */
+        <>
+          {recsDesc.map((rec,idx)=>{
+            const prevRec = recsDesc[idx+1] || null;
+            return (
+              <div key={idx} style={{background:"#fff",borderRadius:12,border:"1.5px solid #e2e8f0",padding:"14px 16px",marginBottom:10,boxShadow:"0 2px 8px #0000000a"}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+                  <div>
+                    <div style={{fontSize:14,fontWeight:800,color:"#1e293b"}}>{dateToLabel(rec.date)}</div>
+                    <div style={{fontSize:10,color:"#94a3b8",fontFamily:"monospace"}}>{rec.date}</div>
+                  </div>
+                  <div style={{display:"flex",gap:6}}>
+                    <button onClick={()=>openEdit(rec)} style={{padding:"6px 10px",borderRadius:7,border:"1.5px solid #e2e8f0",background:"#f8fafc",color:"#475569",fontSize:11,fontWeight:700,cursor:"pointer"}}>✏️</button>
+                    <button onClick={()=>handleDelete(rec)} style={{padding:"6px 10px",borderRadius:7,border:"1.5px solid #fecaca",background:"#fef2f2",color:"#dc2626",fontSize:11,fontWeight:700,cursor:"pointer"}}>🗑</button>
+                  </div>
+                </div>
+                {/* Griglia valori */}
+                <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6}}>
+                  {TUTTI_FIELDS.map(f=>{
+                    const val = rec[f.key];
+                    const hasVal = val!==""&&val!==undefined&&!isNaN(parseFloat(val));
+                    const prevVal = prevRec ? parseFloat(prevRec[f.key]) : NaN;
+                    const curVal  = parseFloat(val);
+                    const d = (!isNaN(curVal)&&!isNaN(prevVal)) ? (curVal-prevVal).toFixed(1) : null;
+                    const dNum = parseFloat(d);
+                    return (
+                      <div key={f.key} style={{background:f.color+"08",borderRadius:8,padding:"8px 6px",border:`1px solid ${f.color}20`,textAlign:"center"}}>
+                        <div style={{fontSize:9,color:f.color,fontWeight:700,textTransform:"uppercase",letterSpacing:0.4,marginBottom:2}}>{f.emoji} {f.label}</div>
+                        <div style={{fontSize:15,fontWeight:800,color:hasVal?"#1e293b":"#cbd5e1",fontFamily:"monospace"}}>
+                          {hasVal?val:"—"}
+                          {hasVal&&<span style={{fontSize:8,color:"#94a3b8",marginLeft:1}}>{f.unit}</span>}
+                        </div>
+                        {d!==null&&(
+                          <div style={{fontSize:9,fontWeight:700,color:dNum===0?"#94a3b8":dNum<0?"#16a34a":"#ef4444",marginTop:1}}>
+                            {dNum===0?"=":dNum<0?`▼${Math.abs(dNum)}`:`▲${Math.abs(dNum)}`}
+                          </div>
+                        )}
+                      </div>
+                    );
                   })}
-                </div>
-                <div style={{display:"flex",justifyContent:"space-between",marginTop:2,fontSize:9,color:"#94a3b8"}}>
-                  <span>{personaRecords.slice(0,6).length>1 ? personaRecords[Math.min(5,personaRecords.length-1)].date : ""}</span>
-                  <span>{personaRecords[0].date}</span>
                 </div>
               </div>
             );
           })}
-        </div>
-      )}
-
-      {/* Lista misurazioni */}
-      {personaRecords.length === 0 && !adding ? (
-        <div style={{textAlign:"center",padding:"40px 0",color:"#94a3b8"}}>
-          <div style={{fontSize:40,marginBottom:10}}>📏</div>
-          <div style={{fontSize:13,fontWeight:600}}>Nessuna misurazione</div>
-          <div style={{fontSize:11,marginTop:4}}>Aggiungi la prima per iniziare a tracciare i progressi</div>
-        </div>
-      ) : (
-        personaRecords.map((rec, idx)=>(
-          <div key={idx} style={{background:"#fff",borderRadius:12,border:"1.5px solid #e2e8f0",padding:"14px 16px",marginBottom:10,boxShadow:"0 2px 8px #0000000a"}}>
-            {/* Header card */}
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-              <div>
-                <div style={{fontSize:14,fontWeight:800,color:"#1e293b"}}>{rec.date}</div>
-                <div style={{fontSize:10,color:"#94a3b8",marginTop:1}}>
-                  {(()=>{
-                    try {
-                      const [d,m,y]=rec.date.split("/");
-                      const dt=new Date(+y,+m-1,+d);
-                      const giorni=["Domenica","Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato"];
-                      return giorni[dt.getDay()];
-                    } catch { return ""; }
-                  })()}
-                </div>
-              </div>
-              <div style={{display:"flex",gap:6}}>
-                <button onClick={()=>openEdit(idx)} style={{padding:"6px 10px",borderRadius:7,border:"1.5px solid #e2e8f0",background:"#f8fafc",color:"#475569",fontSize:11,fontWeight:700,cursor:"pointer"}}>✏️</button>
-                <button onClick={()=>handleDelete(idx)} style={{padding:"6px 10px",borderRadius:7,border:"1.5px solid #fecaca",background:"#fef2f2",color:"#dc2626",fontSize:11,fontWeight:700,cursor:"pointer"}}>🗑</button>
-              </div>
-            </div>
-            {/* Griglia misure */}
-            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6}}>
-              {MISURE_FIELDS.map(f=>{
-                const val = rec[f.key];
-                const d = delta(personaRecords, idx, f.key);
-                const dNum = parseFloat(d);
-                return (
-                  <div key={f.key} style={{background:f.color+"08",borderRadius:8,padding:"8px 10px",border:`1px solid ${f.color}20`,textAlign:"center"}}>
-                    <div style={{fontSize:9,color:f.color,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,marginBottom:2}}>{f.emoji} {f.label}</div>
-                    <div style={{fontSize:16,fontWeight:800,color:"#1e293b",fontFamily:"monospace"}}>
-                      {val!==""&&val!==undefined ? `${val}` : <span style={{color:"#cbd5e1"}}>—</span>}
-                      {val!==""&&val!==undefined&&<span style={{fontSize:9,color:"#94a3b8",marginLeft:1}}>cm</span>}
-                    </div>
-                    {d!==null && (
-                      <div style={{fontSize:10,fontWeight:700,color:dNum<0?"#16a34a":dNum>0?"#ef4444":"#94a3b8",marginTop:2}}>
-                        {dNum<0?"▼":dNum>0?"▲":"="}{Math.abs(dNum)}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+          <div style={{marginTop:4,fontSize:10,color:"#94a3b8",textAlign:"center",paddingBottom:8}}>
+            ▼ verde = riduzione · ▲ rosso = aumento rispetto alla rilevazione precedente
           </div>
-        ))
+        </>
       )}
-      <div style={{marginTop:8,fontSize:10,color:"#94a3b8",textAlign:"center",lineHeight:1.8,paddingBottom:8}}>
-        Valori in centimetri · ▼ verde = riduzione · ▲ rosso = aumento
-      </div>
     </div>
   );
 }
@@ -624,22 +774,208 @@ function generateWeekPlan(seed, excludedIds = []) {
   return DAYS.map((day, i) => ({ day, colazione:cols[i], spuntino_m:spuntini[i*2], pranzo:pranzi[i], spuntino_p:spuntini[i*2+1], cena:cene[i] }));
 }
 
-function calcTarget(p) {
-  const { peso, altezza, eta, sesso, stile, obiettivo } = p;
-  const bmr = sesso==="M" ? 10*peso+6.25*altezza-5*eta+5 : 10*peso+6.25*altezza-5*eta-161;
-  const mult = (STILI.find(s=>s.key===stile)||STILI[2]).mult;
-  const tdee = Math.round(bmr * mult);
-  const isChild = eta < 12;
-  let deficit = 0;
-  if (obiettivo==="perdita" && !isChild) deficit = Math.min(500, Math.round(tdee*0.18));
-  if (obiettivo==="aumento" && !isChild) deficit = -300;
-  const kcal = Math.max(1200, tdee - deficit);
-  const protMultiplier = stile==="sportivo" ? 2.2 : stile==="molto_attivo" ? 2.0 : 1.8;
-  const prot = isChild ? Math.round(peso*1.2) : Math.round(peso*protMultiplier);
-  const grassi = Math.round((kcal*0.28)/9);
-  const carbo = Math.round((kcal - prot*4 - grassi*9)/4);
-  return { kcal, p:prot, c:Math.max(50,carbo), g:grassi };
+// ═══════════════════════════════════════════════════════════════════
+// ALGORITMO ADATTIVO — usa tutti i dati disponibili
+// ═══════════════════════════════════════════════════════════════════
+
+// Livelli di confidenza
+const CONFIDENZA = {
+  BASSA:  { key:"bassa",  label:"Formula base",    color:"#f59e0b", bg:"#fffbeb", border:"#fde68a", dot:"🟡" },
+  MEDIA:  { key:"media",  label:"Composizione",    color:"#f97316", bg:"#fff7ed", border:"#fed7aa", dot:"🟠" },
+  ALTA:   { key:"alta",   label:"TDEE adattivo",   color:"#16a34a", bg:"#f0fdf4", border:"#bbf7d0", dot:"🟢" },
+  OTTIMA: { key:"ottima", label:"Piena precisione", color:"#0891b2", bg:"#f0f9ff", border:"#bae6fd", dot:"🔵" },
+};
+
+// Converte "gg/mm/aaaa" in Date
+function parseDataIT(s) {
+  try { const [g,m,a]=s.split("/"); return new Date(+a,+m-1,+g); } catch { return null; }
 }
+
+// Stima %grasso formula US Navy
+function stimaGrasso(p, misureRec) {
+  if (!misureRec) return null;
+  const { altezza, sesso } = p;
+  const vita   = parseFloat(misureRec.vita);
+  const collo  = parseFloat(misureRec.collo);
+  const fianchi= parseFloat(misureRec.fianchi);
+  if (!altezza || isNaN(collo) || isNaN(vita)) return null;
+  let pct;
+  try {
+    if (sesso === "M") {
+      const log1 = Math.log10(vita - collo);
+      const log2 = Math.log10(altezza);
+      pct = 495 / (1.0324 - 0.19077 * log1 + 0.15456 * log2) - 450;
+    } else {
+      if (isNaN(fianchi)) return null;
+      const log1 = Math.log10(vita + fianchi - collo);
+      const log2 = Math.log10(altezza);
+      pct = 495 / (1.29579 - 0.35004 * log1 + 0.22100 * log2) - 450;
+    }
+    if (pct < 3 || pct > 60) return null;
+    return Math.round(pct * 10) / 10;
+  } catch { return null; }
+}
+
+// Analisi trend peso: regressione lineare semplice
+// Restituisce { tdeeAdattivo, settimane, rateKgSettimana, kcalMedie }
+function calcolaTDEEAdattivo(misureOrdinateAsc, kcalPianoAttuale) {
+  const pesoPunti = misureOrdinateAsc
+    .map(r => ({ d: parseDataIT(r.date), v: parseFloat(r.peso) }))
+    .filter(x => x.d && !isNaN(x.v));
+  if (pesoPunti.length < 2) return null;
+
+  const first = pesoPunti[0], last = pesoPunti[pesoPunti.length - 1];
+  const giorniTotali = (last.d - first.d) / 86400000;
+  if (giorniTotali < 7) return null; // meno di una settimana, troppo poco
+
+  const settimane = giorniTotali / 7;
+  const deltaKg   = last.v - first.v;         // negativo se in calo
+  const rateKgSett= deltaKg / settimane;
+
+  // 1 kg grasso ≈ 7700 kcal
+  // TDEE_adattivo = kcal_piano + (perdita_settimanale_in_kcal / 7)
+  // Se non abbiamo le kcal del piano usiamo 0 (andrà solo il delta)
+  const kcal = kcalPianoAttuale || 0;
+  const tdeeAdattivo = Math.round(kcal - (rateKgSett * 7700 / 7));
+
+  return { tdeeAdattivo, settimane, rateKgSett, kcalMedie: kcal };
+}
+
+// Analisi ricomposizione: peso stabile ma vita scende
+function isRicomposizione(misureOrdinateAsc) {
+  if (misureOrdinateAsc.length < 3) return false;
+  const pesoVals = misureOrdinateAsc.map(r=>parseFloat(r.peso)).filter(v=>!isNaN(v));
+  const vitaVals = misureOrdinateAsc.map(r=>parseFloat(r.vita)).filter(v=>!isNaN(v));
+  if (pesoVals.length < 3 || vitaVals.length < 3) return false;
+  const deltaPeso = pesoVals[pesoVals.length-1] - pesoVals[0];
+  const deltaVita = vitaVals[vitaVals.length-1] - vitaVals[0];
+  return Math.abs(deltaPeso) < 1.5 && deltaVita < -2; // peso quasi fermo, vita scende
+}
+
+// ─── FUNZIONE PRINCIPALE ────────────────────────────────────────────
+function calcTargetAdattivo(p, misurePersona) {
+  const { peso, altezza, eta, sesso, stile, obiettivo } = p;
+  const isChild = eta < 12;
+  const mult = (STILI.find(s=>s.key===stile)||STILI[2]).mult;
+
+  // misure ordinate dal più vecchio al più recente
+  const recs = (misurePersona||[]).slice().sort((a,b)=>dateToSort(a.date).localeCompare(dateToSort(b.date)));
+  const latestRec = recs.length ? recs[recs.length-1] : null;
+
+  // ── STEP 1: BMR base (Mifflin-St Jeor) ──────────────────────────
+  const bmrMifflin = sesso==="M"
+    ? 10*peso + 6.25*altezza - 5*eta + 5
+    : 10*peso + 6.25*altezza - 5*eta - 161;
+
+  // ── STEP 2: %grasso e Katch-McArdle se possibile ─────────────────
+  const pctGrasso = !isChild ? stimaGrasso(p, latestRec) : null;
+  let bmr = bmrMifflin;
+  let usaKatchMcArdle = false;
+  if (pctGrasso !== null) {
+    const pesoDaRec = latestRec && !isNaN(parseFloat(latestRec.peso)) ? parseFloat(latestRec.peso) : peso;
+    const lbm = pesoDaRec * (1 - pctGrasso / 100);
+    const bmrKM = 370 + 21.6 * lbm;
+    bmr = bmrKM;
+    usaKatchMcArdle = true;
+  }
+
+  // TDEE formula
+  const tdeeMifflin = Math.round(bmr * mult);
+
+  // ── STEP 3: TDEE adattivo da storico peso ────────────────────────
+  let tdeeFinale = tdeeMifflin;
+  let usaTDEEAdattivo = false;
+  let adattivoInfo = null;
+
+  if (!isChild && recs.length >= 2) {
+    const pesoPunti = recs.filter(r=>!isNaN(parseFloat(r.peso)));
+    if (pesoPunti.length >= 2) {
+      const giorniSpan = (() => {
+        const d1 = parseDataIT(pesoPunti[0].date);
+        const d2 = parseDataIT(pesoPunti[pesoPunti.length-1].date);
+        return d1 && d2 ? (d2-d1)/86400000 : 0;
+      })();
+      if (giorniSpan >= 14) {
+        const adattivo = calcolaTDEEAdattivo(pesoPunti, tdeeMifflin);
+        if (adattivo && adattivo.tdeeAdattivo > 1000 && adattivo.tdeeAdattivo < 6000) {
+          // media pesata: più dati → più peso all'adattivo
+          const pesoAdattivo = Math.min(0.85, 0.4 + (adattivo.settimane / 20) * 0.45);
+          tdeeFinale = Math.round(tdeeFinale * (1-pesoAdattivo) + adattivo.tdeeAdattivo * pesoAdattivo);
+          usaTDEEAdattivo = true;
+          adattivoInfo = adattivo;
+        }
+      }
+    }
+  }
+
+  // ── STEP 4: Aggiustamento obiettivo ──────────────────────────────
+  let deficit = 0;
+  let noteObiettivo = "";
+
+  if (!isChild) {
+    const ricomposizione = isRicomposizione(recs);
+    if (ricomposizione && obiettivo === "perdita") {
+      // Ricomposizione in corso: mantieni le calorie, non tagliare
+      deficit = Math.round(tdeeFinale * 0.05); // deficit minimo 5%
+      noteObiettivo = "ricomposizione";
+    } else if (obiettivo === "perdita") {
+      // Deficit tra 15% e 22% del TDEE, max 600 kcal
+      deficit = Math.min(600, Math.round(tdeeFinale * 0.18));
+    } else if (obiettivo === "aumento") {
+      deficit = -300;
+    }
+  }
+
+  const kcal = Math.max(1200, tdeeFinale - deficit);
+
+  // ── STEP 5: Macros ────────────────────────────────────────────────
+  // Proteine: dipendono da massa magra se disponibile, altrimenti da peso
+  const protMultiplier = stile==="sportivo" ? 2.2 : stile==="molto_attivo" ? 2.0 : 1.8;
+  let prot;
+  if (!isChild && pctGrasso !== null && latestRec) {
+    const pesoDaRec = !isNaN(parseFloat(latestRec.peso)) ? parseFloat(latestRec.peso) : peso;
+    const lbm = pesoDaRec * (1 - pctGrasso / 100);
+    // Proteine su massa magra: più preciso
+    prot = Math.round(lbm * (stile==="sportivo" ? 2.6 : stile==="molto_attivo" ? 2.4 : 2.2));
+  } else {
+    prot = isChild ? Math.round(peso*1.2) : Math.round(peso * protMultiplier);
+  }
+  const grassi = Math.round((kcal * 0.28) / 9);
+  const carbo  = Math.round((kcal - prot*4 - grassi*9) / 4);
+
+  // ── STEP 6: Confidenza ────────────────────────────────────────────
+  let confidenza;
+  const nPesoPunti = recs.filter(r=>!isNaN(parseFloat(r.peso))).length;
+  if (usaTDEEAdattivo && usaKatchMcArdle) {
+    confidenza = CONFIDENZA.OTTIMA;
+  } else if (usaTDEEAdattivo) {
+    confidenza = CONFIDENZA.ALTA;
+  } else if (usaKatchMcArdle) {
+    confidenza = CONFIDENZA.MEDIA;
+  } else {
+    confidenza = CONFIDENZA.BASSA;
+  }
+
+  return {
+    kcal,
+    p: prot,
+    c: Math.max(50, carbo),
+    g: grassi,
+    confidenza,
+    // dati di debug/display
+    tdeeMifflin,
+    tdeeFinale,
+    pctGrasso,
+    usaTDEEAdattivo,
+    usaKatchMcArdle,
+    adattivoInfo,
+    noteObiettivo,
+    nMisure: recs.length,
+  };
+}
+
+// Wrapper retrocompatibile (senza misure → comportamento identico a prima)
+function calcTarget(p) { return calcTargetAdattivo(p, []); }
 
 function emojiBySesso(p) {
   if (p.eta < 12) return p.sesso==="M" ? "👦" : "👧";
@@ -1037,7 +1373,7 @@ function SeedSyncSection({ currentSeed, onApplySeed }) {
 }
 
 // ─── FamigliaPage ────────────────────────────────────────────────────
-function FamigliaPage({ personas, onUpdate, onAdd, onDelete, currentSeed, onApplySeed, myPersonaId, onSetMyPersona }) {
+function FamigliaPage({ personas, onUpdate, onAdd, onDelete, currentSeed, onApplySeed, myPersonaId, onSetMyPersona, misureApp }) {
   const [editing, setEditing] = useState(null);
   const [adding, setAdding]   = useState(false);
   const newPersona = () => ({ id:"p"+Date.now(), nome:"Nuovo", sesso:"M", eta:30, peso:70, altezza:170, stile:"attivo", obiettivo:"mantenimento", color:COLORS[personas.length%COLORS.length] });
@@ -1067,7 +1403,8 @@ function FamigliaPage({ personas, onUpdate, onAdd, onDelete, currentSeed, onAppl
         ℹ️ I target calorici vengono calcolati automaticamente da BMR + TDEE. I valori delle ricette sono approssimazioni medie.
       </div>
       {personas.map(p=>{
-        const t=calcTarget(p), isEdit=editing===p.id;
+        const t=calcTargetAdattivo(p, misureApp?.[p.id]);
+        const isEdit=editing===p.id;
         return (
           <div key={p.id}>
             {isEdit ? (
@@ -1093,7 +1430,14 @@ function FamigliaPage({ personas, onUpdate, onAdd, onDelete, currentSeed, onAppl
                     </div>
                   ))}
                 </div>
-                <div style={{marginTop:8,fontSize:10,color:"#94a3b8"}}>Obiettivo: <strong style={{color:"#475569"}}>{(OBIETTIVI.find(o=>o.key===p.obiettivo)||{label:p.obiettivo||"—"}).label}</strong></div>
+                <div style={{marginTop:8,fontSize:10,color:"#94a3b8",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:4}}>
+                  <span>Obiettivo: <strong style={{color:"#475569"}}>{(OBIETTIVI.find(o=>o.key===p.obiettivo)||{label:p.obiettivo||"—"}).label}</strong></span>
+                  <div style={{display:"flex",alignItems:"center",gap:4,background:t.confidenza.bg,border:`1px solid ${t.confidenza.border}`,borderRadius:5,padding:"2px 7px"}}>
+                    <span style={{fontSize:10}}>{t.confidenza.dot}</span>
+                    <span style={{fontSize:9,fontWeight:700,color:t.confidenza.color}}>{t.confidenza.label}</span>
+                    {t.pctGrasso!==null&&<span style={{fontSize:9,color:"#94a3b8"}}>· {t.pctGrasso}% grasso</span>}
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -1124,22 +1468,25 @@ function App() {
   const [spinning, setSpinning]       = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [regenNeeded, setRegenNeeded] = useState(false);
+  const [misureApp, setMisureApp]     = useState({});
 
   useEffect(()=>{
     async function load(){
       try {
-        const [sS,hS,eS,pS,mS] = await Promise.allSettled([
+        const [sS,hS,eS,pS,mS,miS] = await Promise.allSettled([
           window.storage.get(SK_SEED), window.storage.get(SK_HISTORY), window.storage.get(SK_EXCL),
-          window.storage.get(SK_PERSONAS), window.storage.get(SK_MY_PERSONA),
+          window.storage.get(SK_PERSONAS), window.storage.get(SK_MY_PERSONA), window.storage.get(SK_MISURE),
         ]);
         const loadedSeed = sS.status==="fulfilled"&&sS.value ? parseInt(sS.value.value) : Date.now();
         const loadedHist = hS.status==="fulfilled"&&hS.value ? JSON.parse(hS.value.value) : [];
         const loadedExcl = eS.status==="fulfilled"&&eS.value ? JSON.parse(eS.value.value) : [];
         const loadedPers = pS.status==="fulfilled"&&pS.value ? JSON.parse(pS.value.value) : DEFAULT_PERSONAS;
         const loadedMyP  = mS.status==="fulfilled"&&mS.value ? mS.value.value : loadedPers[0].id;
+        const loadedMisu = miS.status==="fulfilled"&&miS.value ? JSON.parse(miS.value.value) : {};
         const validMyP   = loadedPers.find(p=>p.id===loadedMyP) ? loadedMyP : loadedPers[0].id;
         setSeed(loadedSeed); setHistory(loadedHist); setExcluded(loadedExcl);
         setPersonas(loadedPers); setSelPersonaId(loadedPers[0].id); setMyPersonaId(validMyP);
+        setMisureApp(loadedMisu);
         setPlan(generateWeekPlan(loadedSeed, loadedExcl));
       } catch {
         const ns=Date.now(); setSeed(ns); setPersonas(DEFAULT_PERSONAS);
@@ -1202,7 +1549,7 @@ function App() {
   );
 
   const persona = personas.find(p=>p.id===selPersonaId)||personas.find(p=>p.id===myPersonaId)||personas[0];
-  const personaTarget = calcTarget(persona);
+  const personaTarget = calcTargetAdattivo(persona, misureApp[persona?.id]);
   const dayData = plan[selDay];
   const SLOT_KEYS = ["uomo","donna","bimbo"];
   const personaSlot = SLOT_KEYS[Math.min(personas.indexOf(persona),2)];
@@ -1236,12 +1583,13 @@ function App() {
           {page==="piano"&&!showHistory&&(
             <div style={{display:"flex",gap:7,marginTop:12,flexWrap:"wrap"}}>
               {personas.map(p=>{
-                const t=calcTarget(p);
+                const t=calcTargetAdattivo(p, misureApp[p.id]);
                 return (
                   <div key={p.id} style={{display:"flex",alignItems:"center",gap:5,background:"#ffffff12",borderRadius:7,padding:"3px 10px",border:`1px solid ${p.color}50`}}>
                     <div style={{width:6,height:6,borderRadius:"50%",background:p.color}}/>
                     <span style={{color:"#e2e8f0",fontSize:11}}>{emojiBySesso(p)} {p.nome}</span>
                     <span style={{color:p.color,fontSize:11,fontFamily:"monospace",fontWeight:700}}>{t.kcal}</span>
+                    <span style={{fontSize:10}}>{t.confidenza.dot}</span>
                   </div>
                 );
               })}
@@ -1293,16 +1641,46 @@ function App() {
                 {MEAL_KEYS.map(mk=><MealCard key={mk} mealKey={mk} meal={dayData[mk]} personaKey={personaSlot} color={persona.color}/>)}
                 <TotaleBar dayData={dayData} personaKey={personaSlot} color={persona.color} target={personaTarget}/>
                 <div style={{marginTop:14,background:"#fff",borderRadius:12,border:"1.5px solid #e2e8f0",padding:"12px 16px"}}>
-                  <div style={{fontSize:10,fontWeight:700,color:"#64748b",letterSpacing:1,textTransform:"uppercase",marginBottom:10}}>
-                    Target calcolato — {emojiBySesso(persona)} {persona.nome}
+                  {/* Intestazione con badge confidenza */}
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+                    <div style={{fontSize:10,fontWeight:700,color:"#64748b",letterSpacing:1,textTransform:"uppercase"}}>
+                      Target — {emojiBySesso(persona)} {persona.nome}
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:5,background:personaTarget.confidenza.bg,border:`1px solid ${personaTarget.confidenza.border}`,borderRadius:6,padding:"3px 8px"}}>
+                      <span style={{fontSize:11}}>{personaTarget.confidenza.dot}</span>
+                      <span style={{fontSize:10,fontWeight:700,color:personaTarget.confidenza.color}}>{personaTarget.confidenza.label}</span>
+                    </div>
                   </div>
-                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                  {/* Macro grid */}
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
                     {[{label:"Calorie",val:personaTarget.kcal,unit:"kcal"},{label:"Proteine",val:personaTarget.p,unit:"g/die"},{label:"Carboidrati",val:personaTarget.c,unit:"g/die"},{label:"Grassi",val:personaTarget.g,unit:"g/die"}].map(({label,val,unit})=>(
                       <div key={label} style={{background:persona.color+"08",borderRadius:8,padding:"8px 12px",border:`1px solid ${persona.color}20`}}>
                         <div style={{fontSize:9,color:"#94a3b8",marginBottom:2,textTransform:"uppercase",letterSpacing:0.8}}>{label}</div>
                         <div style={{fontSize:16,fontWeight:800,color:persona.color,fontFamily:"monospace"}}>{val}<span style={{fontSize:10,fontWeight:400,marginLeft:2}}>{unit}</span></div>
                       </div>
                     ))}
+                  </div>
+                  {/* Dettagli algoritmo */}
+                  <div style={{background:"#f8fafc",borderRadius:8,padding:"8px 12px",fontSize:10,color:"#64748b",lineHeight:1.8}}>
+                    <div style={{display:"flex",justifyContent:"space-between"}}>
+                      <span>TDEE stimato</span>
+                      <span style={{fontFamily:"monospace",fontWeight:700,color:"#1e293b"}}>{personaTarget.tdeeFinale} kcal</span>
+                    </div>
+                    {personaTarget.pctGrasso!==null&&(
+                      <div style={{display:"flex",justifyContent:"space-between"}}>
+                        <span>Massa grassa stimata</span>
+                        <span style={{fontFamily:"monospace",fontWeight:700,color:"#1e293b"}}>{personaTarget.pctGrasso}%</span>
+                      </div>
+                    )}
+                    {personaTarget.usaTDEEAdattivo&&personaTarget.adattivoInfo&&(
+                      <div style={{display:"flex",justifyContent:"space-between"}}>
+                        <span>Dati usati</span>
+                        <span style={{fontFamily:"monospace",fontWeight:700,color:"#1e293b"}}>{personaTarget.nMisure} misurazioni · {personaTarget.adattivoInfo.settimane.toFixed(1)} sett.</span>
+                      </div>
+                    )}
+                    {personaTarget.noteObiettivo==="ricomposizione"&&(
+                      <div style={{marginTop:4,color:"#0891b2",fontWeight:700}}>💪 Ricomposizione rilevata — deficit ridotto al minimo</div>
+                    )}
                   </div>
                 </div>
                 <div style={{marginTop:14,fontSize:10,color:"#94a3b8",textAlign:"center",lineHeight:1.8}}>
@@ -1316,10 +1694,10 @@ function App() {
 
         {!showHistory&&page==="spesa"&&<ShoppingPage plan={plan}/>}
         {!showHistory&&page==="ingredienti"&&<IngredientiPage excluded={excluded} onToggle={toggleExcluded}/>}
-        {!showHistory&&page==="misure"&&<MisurePage personas={personas} myPersonaId={myPersonaId}/>}
+        {!showHistory&&page==="misure"&&<MisurePage personas={personas} myPersonaId={myPersonaId} onMisureChange={setMisureApp}/>}
         {!showHistory&&page==="famiglia"&&(
           <FamigliaPage personas={personas} onUpdate={handleUpdatePersona} onAdd={handleAddPersona} onDelete={handleDeletePersona}
-            currentSeed={seed} onApplySeed={handleApplySeed} myPersonaId={myPersonaId} onSetMyPersona={handleSetMyPersona}/>
+            currentSeed={seed} onApplySeed={handleApplySeed} myPersonaId={myPersonaId} onSetMyPersona={handleSetMyPersona} misureApp={misureApp}/>
         )}
       </div>
 
