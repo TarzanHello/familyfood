@@ -341,7 +341,250 @@ const MEAL_META = {
   cena:       { label:"🍽️ Cena",               isSnack:false },
 };
 
-const SK_SEED="pf-seed", SK_HISTORY="pf-history", SK_EXCL="pf-excluded", SK_PERSONAS="pf-personas", SK_MY_PERSONA="pf-my-persona";
+const SK_SEED="pf-seed", SK_HISTORY="pf-history", SK_EXCL="pf-excluded", SK_PERSONAS="pf-personas", SK_MY_PERSONA="pf-my-persona", SK_MISURE="pf-misure";
+
+// ─── Giorno corrente automatico (0=Lun … 6=Dom) ───────────────────
+function todayDayIndex() {
+  const d = new Date().getDay(); // 0=Dom,1=Lun,...,6=Sab
+  return d === 0 ? 6 : d - 1;   // converti in 0=Lun … 6=Dom
+}
+
+// ─── Costanti misure ───────────────────────────────────────────────
+const MISURE_FIELDS = [
+  { key:"petto",   label:"Petto / Seno", emoji:"🫁", color:"#db2777" },
+  { key:"vita",    label:"Vita",         emoji:"⌛", color:"#d97706" },
+  { key:"fianchi", label:"Fianchi",      emoji:"🍑", color:"#7c3aed" },
+  { key:"coscia",  label:"Coscia",       emoji:"🦵", color:"#0891b2" },
+  { key:"polpaccio",label:"Polpaccio",   emoji:"🦶", color:"#16a34a" },
+];
+
+// ─── MisurePage ────────────────────────────────────────────────────
+function MisurePage({ personas, myPersonaId }) {
+  // misure: { [personaId]: [ { date, petto, vita, fianchi, coscia, polpaccio } ] }
+  const [misure, setMisure]     = useState({});
+  const [selPid, setSelPid]     = useState(myPersonaId || (personas[0]?.id));
+  const [form, setForm]         = useState({petto:"",vita:"",fianchi:"",coscia:"",polpaccio:""});
+  const [editIdx, setEditIdx]   = useState(null); // indice misurazione in modifica
+  const [adding, setAdding]     = useState(false);
+  const [loaded, setLoaded]     = useState(false);
+
+  // data odierna in formato italiano
+  const todayStr = () => {
+    const d = new Date();
+    return d.toLocaleDateString("it-IT"); // gg/mm/aaaa
+  };
+  const [formDate, setFormDate] = useState(todayStr());
+
+  // Load da localStorage
+  useEffect(()=>{
+    window.storage.get(SK_MISURE).then(r=>{ setMisure(JSON.parse(r.value)); }).catch(()=>{}).finally(()=>setLoaded(true));
+  },[]);
+
+  const save = async (next) => {
+    setMisure(next);
+    await window.storage.set(SK_MISURE, JSON.stringify(next)).catch(()=>{});
+  };
+
+  const personaRecords = (misure[selPid]||[]).slice().sort((a,b)=>{ 
+    // ordina per data decrescente
+    const pa=a.date.split("/").reverse().join(""), pb=b.date.split("/").reverse().join("");
+    return pb.localeCompare(pa);
+  });
+
+  const openAdd = () => {
+    setForm({petto:"",vita:"",fianchi:"",coscia:"",polpaccio:""});
+    setFormDate(todayStr());
+    setEditIdx(null);
+    setAdding(true);
+  };
+
+  const openEdit = (idx) => {
+    const rec = personaRecords[idx];
+    setForm({petto:rec.petto||"",vita:rec.vita||"",fianchi:rec.fianchi||"",coscia:rec.coscia||"",polpaccio:rec.polpaccio||""});
+    setFormDate(rec.date);
+    setEditIdx(idx);
+    setAdding(true);
+  };
+
+  const handleSave = async () => {
+    const entry = { date:formDate, ...Object.fromEntries(MISURE_FIELDS.map(f=>[f.key, form[f.key]===""?"":parseFloat(form[f.key])||""])) };
+    const cur = (misure[selPid]||[]).slice();
+    if (editIdx !== null) {
+      // trova e aggiorna il record originale (prima di sort)
+      const origDate = personaRecords[editIdx].date;
+      const origIdx = cur.findIndex(r=>r.date===origDate && JSON.stringify(r)===JSON.stringify(personaRecords[editIdx]));
+      if (origIdx>=0) cur[origIdx] = entry; else cur.push(entry);
+    } else {
+      cur.push(entry);
+    }
+    const next = {...misure, [selPid]: cur};
+    await save(next);
+    setAdding(false);
+  };
+
+  const handleDelete = async (idx) => {
+    const orig = personaRecords[idx];
+    const cur = (misure[selPid]||[]).filter(r => !(r.date===orig.date && JSON.stringify(r)===JSON.stringify(orig)));
+    const next = {...misure, [selPid]: cur};
+    await save(next);
+  };
+
+  // Variazione rispetto alla misurazione precedente
+  const delta = (records, idx, key) => {
+    if (idx >= records.length-1) return null;
+    const cur = parseFloat(records[idx][key]);
+    const prev = parseFloat(records[idx+1][key]);
+    if (isNaN(cur)||isNaN(prev)) return null;
+    return (cur-prev).toFixed(1);
+  };
+
+  const persona = personas.find(p=>p.id===selPid)||personas[0];
+  if (!loaded) return <div style={{textAlign:"center",padding:"40px 0",color:"#64748b"}}>⏳</div>;
+
+  return (
+    <div>
+      {/* Selettore persona */}
+      <div style={{display:"flex",gap:6,marginBottom:14,overflowX:"auto",paddingBottom:2}}>
+        {personas.map(p=>(
+          <button key={p.id} onClick={()=>setSelPid(p.id)}
+            style={{flexShrink:0,padding:"8px 14px",borderRadius:10,border:"2px solid",borderColor:selPid===p.id?p.color:"#e2e8f0",background:selPid===p.id?p.color+"12":"#fff",color:selPid===p.id?p.color:"#64748b",fontWeight:700,fontSize:12,cursor:"pointer",whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:5}}>
+            {emojiBySesso(p)} {p.nome}
+          </button>
+        ))}
+      </div>
+
+      {/* Form aggiunta/modifica */}
+      {adding ? (
+        <div style={{background:"#fff",borderRadius:14,border:"1.5px solid #e2e8f0",padding:"16px",marginBottom:14,boxShadow:"0 4px 20px #0000000f"}}>
+          <div style={{fontSize:13,fontWeight:800,color:"#1e293b",marginBottom:14}}>
+            {editIdx!==null ? "✏️ Modifica misurazione" : "➕ Nuova misurazione"}
+          </div>
+          {/* Data */}
+          <div style={{marginBottom:12}}>
+            <label style={{fontSize:10,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:0.8,display:"block",marginBottom:4}}>📅 Data</label>
+            <input value={formDate} onChange={e=>setFormDate(e.target.value)} placeholder="gg/mm/aaaa"
+              style={{width:"100%",padding:"9px 12px",border:"1.5px solid #e2e8f0",borderRadius:8,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
+          </div>
+          {/* Campi misure */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
+            {MISURE_FIELDS.map(f=>(
+              <div key={f.key}>
+                <label style={{fontSize:10,fontWeight:700,color:f.color,textTransform:"uppercase",letterSpacing:0.8,display:"block",marginBottom:4}}>
+                  {f.emoji} {f.label} <span style={{color:"#94a3b8",fontWeight:400}}>(cm)</span>
+                </label>
+                <input type="number" inputMode="decimal" min="0" max="300" step="0.1"
+                  value={form[f.key]} onChange={e=>setForm(v=>({...v,[f.key]:e.target.value}))}
+                  placeholder="—"
+                  style={{width:"100%",padding:"9px 12px",border:`1.5px solid ${f.color}40`,borderRadius:8,fontSize:15,fontFamily:"monospace",fontWeight:700,outline:"none",boxSizing:"border-box",color:"#1e293b"}}/>
+              </div>
+            ))}
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            <button onClick={handleSave} style={{flex:1,padding:"10px",borderRadius:9,border:"none",background:persona.color,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer"}}>
+              {editIdx!==null ? "✓ Aggiorna" : "✓ Salva"}
+            </button>
+            <button onClick={()=>setAdding(false)} style={{padding:"10px 16px",borderRadius:9,border:"1.5px solid #e2e8f0",background:"#fff",color:"#64748b",fontWeight:700,fontSize:13,cursor:"pointer"}}>Annulla</button>
+          </div>
+        </div>
+      ) : (
+        <button onClick={openAdd} style={{width:"100%",padding:"12px",borderRadius:12,border:"2px dashed #cbd5e1",background:"#f8fafc",color:"#64748b",fontWeight:700,fontSize:13,cursor:"pointer",marginBottom:14}}>
+          ➕ Aggiungi misurazione
+        </button>
+      )}
+
+      {/* Grafico trend semplice (ultima 6 misurazioni) */}
+      {personaRecords.length >= 2 && !adding && (
+        <div style={{background:"#fff",borderRadius:12,border:"1.5px solid #e2e8f0",padding:"14px 16px",marginBottom:14}}>
+          <div style={{fontSize:11,fontWeight:800,color:"#1e293b",marginBottom:12,textTransform:"uppercase",letterSpacing:0.8}}>📈 Andamento (ultime {Math.min(6,personaRecords.length)} misurazioni)</div>
+          {MISURE_FIELDS.map(f=>{
+            const vals = personaRecords.slice(0,6).map(r=>parseFloat(r[f.key])).filter(v=>!isNaN(v));
+            if (vals.length < 2) return null;
+            const mn = Math.min(...vals), mx = Math.max(...vals);
+            const range = mx-mn || 1;
+            return (
+              <div key={f.key} style={{marginBottom:10}}>
+                <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                  <span style={{fontSize:11,fontWeight:700,color:f.color}}>{f.emoji} {f.label}</span>
+                  <span style={{fontSize:11,fontFamily:"monospace",color:"#1e293b",fontWeight:700}}>{vals[0]} cm</span>
+                </div>
+                <div style={{display:"flex",gap:2,alignItems:"flex-end",height:32}}>
+                  {[...vals].reverse().map((v,i)=>{
+                    const h = Math.max(4, Math.round(((v-mn)/range)*28)+4);
+                    const isLast = i===vals.length-1;
+                    return <div key={i} style={{flex:1,height:h,background:isLast?f.color:f.color+"55",borderRadius:"3px 3px 0 0",transition:"height 0.3s"}}/>;
+                  })}
+                </div>
+                <div style={{display:"flex",justifyContent:"space-between",marginTop:2,fontSize:9,color:"#94a3b8"}}>
+                  <span>{personaRecords.slice(0,6).length>1 ? personaRecords[Math.min(5,personaRecords.length-1)].date : ""}</span>
+                  <span>{personaRecords[0].date}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Lista misurazioni */}
+      {personaRecords.length === 0 && !adding ? (
+        <div style={{textAlign:"center",padding:"40px 0",color:"#94a3b8"}}>
+          <div style={{fontSize:40,marginBottom:10}}>📏</div>
+          <div style={{fontSize:13,fontWeight:600}}>Nessuna misurazione</div>
+          <div style={{fontSize:11,marginTop:4}}>Aggiungi la prima per iniziare a tracciare i progressi</div>
+        </div>
+      ) : (
+        personaRecords.map((rec, idx)=>(
+          <div key={idx} style={{background:"#fff",borderRadius:12,border:"1.5px solid #e2e8f0",padding:"14px 16px",marginBottom:10,boxShadow:"0 2px 8px #0000000a"}}>
+            {/* Header card */}
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+              <div>
+                <div style={{fontSize:14,fontWeight:800,color:"#1e293b"}}>{rec.date}</div>
+                <div style={{fontSize:10,color:"#94a3b8",marginTop:1}}>
+                  {(()=>{
+                    try {
+                      const [d,m,y]=rec.date.split("/");
+                      const dt=new Date(+y,+m-1,+d);
+                      const giorni=["Domenica","Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato"];
+                      return giorni[dt.getDay()];
+                    } catch { return ""; }
+                  })()}
+                </div>
+              </div>
+              <div style={{display:"flex",gap:6}}>
+                <button onClick={()=>openEdit(idx)} style={{padding:"6px 10px",borderRadius:7,border:"1.5px solid #e2e8f0",background:"#f8fafc",color:"#475569",fontSize:11,fontWeight:700,cursor:"pointer"}}>✏️</button>
+                <button onClick={()=>handleDelete(idx)} style={{padding:"6px 10px",borderRadius:7,border:"1.5px solid #fecaca",background:"#fef2f2",color:"#dc2626",fontSize:11,fontWeight:700,cursor:"pointer"}}>🗑</button>
+              </div>
+            </div>
+            {/* Griglia misure */}
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6}}>
+              {MISURE_FIELDS.map(f=>{
+                const val = rec[f.key];
+                const d = delta(personaRecords, idx, f.key);
+                const dNum = parseFloat(d);
+                return (
+                  <div key={f.key} style={{background:f.color+"08",borderRadius:8,padding:"8px 10px",border:`1px solid ${f.color}20`,textAlign:"center"}}>
+                    <div style={{fontSize:9,color:f.color,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,marginBottom:2}}>{f.emoji} {f.label}</div>
+                    <div style={{fontSize:16,fontWeight:800,color:"#1e293b",fontFamily:"monospace"}}>
+                      {val!==""&&val!==undefined ? `${val}` : <span style={{color:"#cbd5e1"}}>—</span>}
+                      {val!==""&&val!==undefined&&<span style={{fontSize:9,color:"#94a3b8",marginLeft:1}}>cm</span>}
+                    </div>
+                    {d!==null && (
+                      <div style={{fontSize:10,fontWeight:700,color:dNum<0?"#16a34a":dNum>0?"#ef4444":"#94a3b8",marginTop:2}}>
+                        {dNum<0?"▼":dNum>0?"▲":"="}{Math.abs(dNum)}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))
+      )}
+      <div style={{marginTop:8,fontSize:10,color:"#94a3b8",textAlign:"center",lineHeight:1.8,paddingBottom:8}}>
+        Valori in centimetri · ▼ verde = riduzione · ▲ rosso = aumento
+      </div>
+    </div>
+  );
+}
 
 const DEFAULT_PERSONAS = [
   { id:"p1", nome:"Uomo",  sesso:"M", eta:38, peso:100, altezza:185, stile:"attivo",  obiettivo:"perdita",     color:"#2563eb" },
@@ -870,7 +1113,7 @@ function FamigliaPage({ personas, onUpdate, onAdd, onDelete, currentSeed, onAppl
 // ─── Main App ─────────────────────────────────────────────────────────
 function App() {
   const [page, setPage]               = useState("piano");
-  const [selDay, setSelDay]           = useState(0);
+  const [selDay, setSelDay]           = useState(todayDayIndex());
   const [selPersonaId, setSelPersonaId] = useState(null);
   const [myPersonaId, setMyPersonaId] = useState(null);
   const [seed, setSeed]               = useState(null);
@@ -964,9 +1207,9 @@ function App() {
   const SLOT_KEYS = ["uomo","donna","bimbo"];
   const personaSlot = SLOT_KEYS[Math.min(personas.indexOf(persona),2)];
 
-  const TABS = [{key:"piano",label:"📋 Piano"},{key:"spesa",label:"🛒 Spesa"},{key:"ingredienti",label:"🥦 Ingredienti"},{key:"famiglia",label:"👥 Famiglia"}];
-  const TAB_ICONS = { piano:"📋", spesa:"🛒", ingredienti:"🥦", famiglia:"👥" };
-  const TAB_SHORT = { piano:"Piano", spesa:"Spesa", ingredienti:"Ingredienti", famiglia:"Famiglia" };
+  const TABS = [{key:"piano",label:"📋 Piano"},{key:"spesa",label:"🛒 Spesa"},{key:"ingredienti",label:"🥦 Ingredienti"},{key:"misure",label:"📏 Misure"},{key:"famiglia",label:"👥 Famiglia"}];
+  const TAB_ICONS = { piano:"📋", spesa:"🛒", ingredienti:"🥦", misure:"📏", famiglia:"👥" };
+  const TAB_SHORT = { piano:"Piano", spesa:"Spesa", ingredienti:"Ingredienti", misure:"Misure", famiglia:"Famiglia" };
 
   return (
     <div style={{minHeight:"100vh",background:"linear-gradient(135deg,#f8fafc 0%,#f1f5f9 100%)",fontFamily:"'Segoe UI',system-ui,sans-serif",paddingBottom:80}}>
@@ -1073,6 +1316,7 @@ function App() {
 
         {!showHistory&&page==="spesa"&&<ShoppingPage plan={plan}/>}
         {!showHistory&&page==="ingredienti"&&<IngredientiPage excluded={excluded} onToggle={toggleExcluded}/>}
+        {!showHistory&&page==="misure"&&<MisurePage personas={personas} myPersonaId={myPersonaId}/>}
         {!showHistory&&page==="famiglia"&&(
           <FamigliaPage personas={personas} onUpdate={handleUpdatePersona} onAdd={handleAddPersona} onDelete={handleDeletePersona}
             currentSeed={seed} onApplySeed={handleApplySeed} myPersonaId={myPersonaId} onSetMyPersona={handleSetMyPersona}/>
@@ -1088,7 +1332,7 @@ function App() {
               style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"8px 4px 6px",border:"none",background:"transparent",color:active?"#2563eb":"#94a3b8",cursor:"pointer",position:"relative",transition:"color 0.15s",gap:2}}>
               {active&&<div style={{position:"absolute",top:0,left:"25%",right:"25%",height:2,background:"#2563eb",borderRadius:"0 0 3px 3px"}}/>}
               <span style={{fontSize:18,lineHeight:1}}>{TAB_ICONS[tab.key]}</span>
-              <span style={{fontSize:10,fontWeight:active?800:600,letterSpacing:0.2}}>{TAB_SHORT[tab.key]}</span>
+              <span style={{fontSize:tab.key==="ingredienti"||tab.key==="famiglia"?8:10,fontWeight:active?800:600,letterSpacing:0.2}}>{TAB_SHORT[tab.key]}</span>
               {tab.key==="ingredienti"&&excluded.length>0&&(
                 <div style={{position:"absolute",top:6,left:"50%",marginLeft:4,width:14,height:14,background:"#ef4444",borderRadius:"50%",fontSize:8,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900}}>{excluded.length}</div>
               )}
