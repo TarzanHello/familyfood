@@ -58,64 +58,171 @@ const { useState, useEffect, useCallback } = React;
 // ═══════════════════════════════════════════════════════════════════
 // INGREDIENTI MASTER
 // ═══════════════════════════════════════════════════════════════════
+// stagioni: array mesi 1-12 in cui è di stagione; null = sempre disponibile
+// ═══════════════════════════════════════════════════════════════════
 const INGREDIENTS = [
-  { id: "ing_salmone",    nome: "Salmone fresco",          cat: "🥩 Proteine",      deperibile: 2,   tags: ["salmone"] },
-  { id: "ing_orata",      nome: "Orata fresca",            cat: "🥩 Proteine",      deperibile: 2,   tags: ["orata"] },
-  { id: "ing_merluzzo",   nome: "Merluzzo",                cat: "🥩 Proteine",      deperibile: 2,   tags: ["merluzzo"] },
-  { id: "ing_pollo",      nome: "Petto di pollo",          cat: "🥩 Proteine",      deperibile: 3,   tags: ["pollo"] },
-  { id: "ing_tacchino",   nome: "Tacchino macinato",       cat: "🥩 Proteine",      deperibile: 2,   tags: ["tacchino"] },
-  { id: "ing_manzo",      nome: "Manzo per spezzatino",    cat: "🥩 Proteine",      deperibile: 3,   tags: ["manzo","spezzatino"] },
-  { id: "ing_uova",       nome: "Uova",                    cat: "🥩 Proteine",      deperibile: 21,  tags: ["uova","uovo","frittata","strapazzat","tegamino","sode","camicia","coque","pancakes"] },
-  { id: "ing_tonno",      nome: "Tonno al naturale",       cat: "🥩 Proteine",      deperibile: 365, tags: ["tonno"] },
-  { id: "ing_yogurt",     nome: "Yogurt greco",            cat: "🥛 Latticini",     deperibile: 7,   tags: ["yogurt"] },
-  { id: "ing_ricotta",    nome: "Ricotta fresca",          cat: "🥛 Latticini",     deperibile: 4,   tags: ["ricotta"] },
-  { id: "ing_mozzarella", nome: "Mozzarella",              cat: "🥛 Latticini",     deperibile: 3,   tags: ["mozzarella"] },
-  { id: "ing_feta",       nome: "Feta",                    cat: "🥛 Latticini",     deperibile: 14,  tags: ["feta"] },
-  { id: "ing_parmigiano", nome: "Parmigiano",              cat: "🥛 Latticini",     deperibile: 30,  tags: ["parmigiano"] },
-  { id: "ing_latte",      nome: "Latte p.s.",              cat: "🥛 Latticini",     deperibile: 5,   tags: ["latte"] },
-  { id: "ing_avena",      nome: "Fiocchi d'avena",         cat: "🌾 Cereali",       deperibile: 180, tags: ["avena","porridge","pancakes","smoothie"] },
-  { id: "ing_pasta",      nome: "Pasta integrale",         cat: "🌾 Cereali",       deperibile: 365, tags: ["pasta"] },
-  { id: "ing_riso",       nome: "Riso basmati/integrale",  cat: "🌾 Cereali",       deperibile: 365, tags: ["riso"] },
-  { id: "ing_farro",      nome: "Farro perlato",           cat: "🌾 Cereali",       deperibile: 365, tags: ["farro"] },
-  { id: "ing_quinoa",     nome: "Quinoa",                  cat: "🌾 Cereali",       deperibile: 365, tags: ["quinoa"] },
-  { id: "ing_pane",       nome: "Pane integrale",          cat: "🌾 Cereali",       deperibile: 4,   tags: ["pane","crostini","wrap"] },
-  { id: "ing_farina",     nome: "Farina integrale",        cat: "🌾 Cereali",       deperibile: 180, tags: ["pizza"] },
-  { id: "ing_crackers",   nome: "Crackers integrali",      cat: "🌾 Cereali",       deperibile: 90,  tags: ["crackers"] },
-  { id: "ing_lenticchie", nome: "Lenticchie",              cat: "🫘 Legumi",        deperibile: 365, tags: ["lenticchie"] },
-  { id: "ing_ceci",       nome: "Ceci",                    cat: "🫘 Legumi",        deperibile: 365, tags: ["ceci","hummus"] },
-  { id: "ing_legumi",     nome: "Mix legumi",              cat: "🫘 Legumi",        deperibile: 365, tags: ["legumi","zuppa","fagioli"] },
-  { id: "ing_edamame",    nome: "Edamame",                 cat: "🫘 Legumi",        deperibile: 180, tags: ["edamame"] },
-  { id: "ing_zucchine",   nome: "Zucchine",                cat: "🥦 Verdure",       deperibile: 5,   tags: ["zucchine"] },
-  { id: "ing_broccoli",   nome: "Broccoli",                cat: "🥦 Verdure",       deperibile: 4,   tags: ["broccoli"] },
-  { id: "ing_spinaci",    nome: "Spinaci freschi",         cat: "🥦 Verdure",       deperibile: 3,   tags: ["spinaci"] },
-  { id: "ing_pomodori",   nome: "Pomodori / pomodorini",   cat: "🥦 Verdure",       deperibile: 5,   tags: ["pomodori","pomodorini","pomodoro"] },
-  { id: "ing_carote",     nome: "Carote",                  cat: "🥦 Verdure",       deperibile: 14,  tags: ["carote","carota"] },
-  { id: "ing_fagiolini",  nome: "Fagiolini",               cat: "🥦 Verdure",       deperibile: 4,   tags: ["fagiolini"] },
-  { id: "ing_insalata",   nome: "Insalata mista / rucola", cat: "🥦 Verdure",       deperibile: 3,   tags: ["rucola","insalata","verdure miste"] },
-  { id: "ing_avocado",    nome: "Avocado",                 cat: "🥦 Verdure",       deperibile: 3,   tags: ["avocado"] },
-  { id: "ing_patatedolci",nome: "Patate dolci",            cat: "🥦 Verdure",       deperibile: 14,  tags: ["patate dolci","purè di patate dolci"] },
-  { id: "ing_patate",     nome: "Patate",                  cat: "🥦 Verdure",       deperibile: 14,  tags: ["patate al forno"] },
-  { id: "ing_peperone",   nome: "Peperoni",                cat: "🥦 Verdure",       deperibile: 7,   tags: ["peperone","verdure crude"] },
-  { id: "ing_banana",     nome: "Banane",                  cat: "🍎 Frutta",        deperibile: 5,   tags: ["banana"] },
-  { id: "ing_mela",       nome: "Mele",                    cat: "🍎 Frutta",        deperibile: 14,  tags: ["mela"] },
-  { id: "ing_pera",       nome: "Pere",                    cat: "🍎 Frutta",        deperibile: 7,   tags: ["pera"] },
-  { id: "ing_arancia",    nome: "Arance",                  cat: "🍎 Frutta",        deperibile: 14,  tags: ["arancia","frutto"] },
-  { id: "ing_mandarino",  nome: "Mandarini",               cat: "🍎 Frutta",        deperibile: 10,  tags: ["mandarini","mandarino"] },
-  { id: "ing_mirtilli",   nome: "Mirtilli",                cat: "🍎 Frutta",        deperibile: 5,   tags: ["mirtilli"] },
-  { id: "ing_bosco",      nome: "Frutti di bosco",         cat: "🍎 Frutta",        deperibile: 3,   tags: ["frutti di bosco"] },
-  { id: "ing_mandorle",   nome: "Mandorle",                cat: "🥜 Frutta secca",  deperibile: 180, tags: ["mandorle"] },
-  { id: "ing_noci",       nome: "Noci",                    cat: "🥜 Frutta secca",  deperibile: 90,  tags: ["noci"] },
-  { id: "ing_pistacchi",  nome: "Pistacchi sgusciati",     cat: "🥜 Frutta secca",  deperibile: 90,  tags: ["pistacchi","pistacchio"] },
-  { id: "ing_bm",         nome: "Burro di mandorle",       cat: "🥜 Frutta secca",  deperibile: 180, tags: ["burro di mandorle"] },
-  { id: "ing_mista",      nome: "Mix frutta secca",        cat: "🥜 Frutta secca",  deperibile: 90,  tags: ["frutta secca mista"] },
-  { id: "ing_evo",        nome: "Olio EVO",                cat: "🧂 Dispensa",      deperibile: 365, tags: ["evo","olio"] },
+  // ── Proteine (sempre disponibili) ────────────────────────────────
+  { id: "ing_salmone",    nome: "Salmone fresco",          cat: "🥩 Proteine",      deperibile: 2,   stagioni: null, tags: ["salmone"] },
+  { id: "ing_orata",      nome: "Orata fresca",            cat: "🥩 Proteine",      deperibile: 2,   stagioni: null, tags: ["orata"] },
+  { id: "ing_merluzzo",   nome: "Merluzzo",                cat: "🥩 Proteine",      deperibile: 2,   stagioni: null, tags: ["merluzzo"] },
+  { id: "ing_sgombro",    nome: "Sgombro al naturale",     cat: "🥩 Proteine",      deperibile: 365, stagioni: null, tags: ["sgombro"] },
+  { id: "ing_pollo",      nome: "Petto di pollo",          cat: "🥩 Proteine",      deperibile: 3,   stagioni: null, tags: ["pollo"] },
+  { id: "ing_tacchino",   nome: "Tacchino macinato",       cat: "🥩 Proteine",      deperibile: 2,   stagioni: null, tags: ["tacchino"] },
+  { id: "ing_manzo",      nome: "Manzo per spezzatino",    cat: "🥩 Proteine",      deperibile: 3,   stagioni: null, tags: ["manzo","spezzatino"] },
+  { id: "ing_maiale",     nome: "Lonza di maiale",         cat: "🥩 Proteine",      deperibile: 3,   stagioni: null, tags: ["maiale","lonza"] },
+  { id: "ing_uova",       nome: "Uova",                    cat: "🥩 Proteine",      deperibile: 21,  stagioni: null, tags: ["uova","uovo","frittata","strapazzat","tegamino","sode","camicia","coque","pancakes"] },
+  { id: "ing_tonno",      nome: "Tonno al naturale",       cat: "🥩 Proteine",      deperibile: 365, stagioni: null, tags: ["tonno"] },
+  // ── Latticini (sempre disponibili) ───────────────────────────────
+  { id: "ing_yogurt",     nome: "Yogurt greco",            cat: "🥛 Latticini",     deperibile: 7,   stagioni: null, tags: ["yogurt"] },
+  { id: "ing_ricotta",    nome: "Ricotta fresca",          cat: "🥛 Latticini",     deperibile: 4,   stagioni: null, tags: ["ricotta"] },
+  { id: "ing_mozzarella", nome: "Mozzarella",              cat: "🥛 Latticini",     deperibile: 3,   stagioni: null, tags: ["mozzarella"] },
+  { id: "ing_feta",       nome: "Feta",                    cat: "🥛 Latticini",     deperibile: 14,  stagioni: null, tags: ["feta"] },
+  { id: "ing_parmigiano", nome: "Parmigiano",              cat: "🥛 Latticini",     deperibile: 30,  stagioni: null, tags: ["parmigiano"] },
+  { id: "ing_latte",      nome: "Latte p.s.",              cat: "🥛 Latticini",     deperibile: 5,   stagioni: null, tags: ["latte"] },
+  { id: "ing_fiocchi_latte", nome: "Fiocchi di latte",     cat: "🥛 Latticini",     deperibile: 7,   stagioni: null, tags: ["fiocchi di latte"] },
+  // ── Cereali (sempre disponibili) ─────────────────────────────────
+  { id: "ing_avena",      nome: "Fiocchi d'avena",         cat: "🌾 Cereali",       deperibile: 180, stagioni: null, tags: ["avena","porridge","pancakes","smoothie"] },
+  { id: "ing_pasta",      nome: "Pasta integrale",         cat: "🌾 Cereali",       deperibile: 365, stagioni: null, tags: ["pasta"] },
+  { id: "ing_riso",       nome: "Riso basmati/integrale",  cat: "🌾 Cereali",       deperibile: 365, stagioni: null, tags: ["riso"] },
+  { id: "ing_farro",      nome: "Farro perlato",           cat: "🌾 Cereali",       deperibile: 365, stagioni: null, tags: ["farro"] },
+  { id: "ing_quinoa",     nome: "Quinoa",                  cat: "🌾 Cereali",       deperibile: 365, stagioni: null, tags: ["quinoa"] },
+  { id: "ing_orzo",       nome: "Orzo perlato",            cat: "🌾 Cereali",       deperibile: 365, stagioni: null, tags: ["orzo"] },
+  { id: "ing_pane",       nome: "Pane integrale",          cat: "🌾 Cereali",       deperibile: 4,   stagioni: null, tags: ["pane","crostini","wrap"] },
+  { id: "ing_farina",     nome: "Farina integrale",        cat: "🌾 Cereali",       deperibile: 180, stagioni: null, tags: ["pizza"] },
+  { id: "ing_crackers",   nome: "Crackers integrali",      cat: "🌾 Cereali",       deperibile: 90,  stagioni: null, tags: ["crackers"] },
+  // ── Legumi (sempre disponibili secchi/in scatola) ─────────────────
+  { id: "ing_lenticchie", nome: "Lenticchie",              cat: "🫘 Legumi",        deperibile: 365, stagioni: null, tags: ["lenticchie"] },
+  { id: "ing_ceci",       nome: "Ceci",                    cat: "🫘 Legumi",        deperibile: 365, stagioni: null, tags: ["ceci","hummus"] },
+  { id: "ing_legumi",     nome: "Mix legumi",              cat: "🫘 Legumi",        deperibile: 365, stagioni: null, tags: ["legumi","zuppa","fagioli"] },
+  { id: "ing_fagioli",    nome: "Fagioli cannellini",      cat: "🫘 Legumi",        deperibile: 365, stagioni: null, tags: ["fagioli cannellini"] },
+  { id: "ing_edamame",    nome: "Edamame",                 cat: "🫘 Legumi",        deperibile: 180, stagioni: null, tags: ["edamame"] },
+  { id: "ing_piselli",    nome: "Piselli (surgelati)",     cat: "🫘 Legumi",        deperibile: 180, stagioni: null, tags: ["piselli"] },
+  // ── Verdure stagionali ────────────────────────────────────────────
+  // Tutto l'anno
+  { id: "ing_carote",     nome: "Carote",                  cat: "🥦 Verdure",       deperibile: 14,  stagioni: null, tags: ["carote","carota"] },
+  { id: "ing_patate",     nome: "Patate",                  cat: "🥦 Verdure",       deperibile: 14,  stagioni: null, tags: ["patate al forno"] },
+  { id: "ing_patatedolci",nome: "Patate dolci",            cat: "🥦 Verdure",       deperibile: 14,  stagioni: null, tags: ["patate dolci","purè di patate dolci"] },
+  { id: "ing_insalata",   nome: "Insalata mista / rucola", cat: "🥦 Verdure",       deperibile: 3,   stagioni: null, tags: ["rucola","insalata","verdure miste"] },
+  { id: "ing_avocado",    nome: "Avocado",                 cat: "🥦 Verdure",       deperibile: 3,   stagioni: null, tags: ["avocado"] },
+  // Primavera–estate (apr–set)
+  { id: "ing_zucchine",   nome: "Zucchine",                cat: "🥦 Verdure",       deperibile: 5,   stagioni: [4,5,6,7,8,9],     tags: ["zucchine"] },
+  { id: "ing_pomodori",   nome: "Pomodori / pomodorini",   cat: "🥦 Verdure",       deperibile: 5,   stagioni: [5,6,7,8,9,10],    tags: ["pomodori","pomodorini","pomodoro"] },
+  { id: "ing_peperone",   nome: "Peperoni",                cat: "🥦 Verdure",       deperibile: 7,   stagioni: [6,7,8,9,10],      tags: ["peperone","verdure crude"] },
+  { id: "ing_melanzane",  nome: "Melanzane",               cat: "🥦 Verdure",       deperibile: 5,   stagioni: [6,7,8,9],         tags: ["melanzane","melanzana","parmigiana"] },
+  { id: "ing_fagiolini",  nome: "Fagiolini",               cat: "🥦 Verdure",       deperibile: 4,   stagioni: [5,6,7,8,9],       tags: ["fagiolini"] },
+  { id: "ing_cetrioli",   nome: "Cetrioli",                cat: "🥦 Verdure",       deperibile: 5,   stagioni: [5,6,7,8,9],       tags: ["cetrioli","cetriolo"] },
+  { id: "ing_mais",       nome: "Mais (fresco/surgelato)", cat: "🥦 Verdure",       deperibile: 180, stagioni: [6,7,8,9],         tags: ["mais"] },
+  { id: "ing_asparagi",   nome: "Asparagi",                cat: "🥦 Verdure",       deperibile: 3,   stagioni: [3,4,5],           tags: ["asparagi"] },
+  // Autunno–inverno (ott–mar)
+  { id: "ing_spinaci",    nome: "Spinaci freschi",         cat: "🥦 Verdure",       deperibile: 3,   stagioni: [1,2,3,10,11,12],  tags: ["spinaci"] },
+  { id: "ing_broccoli",   nome: "Broccoli",                cat: "🥦 Verdure",       deperibile: 4,   stagioni: [10,11,12,1,2,3],  tags: ["broccoli"] },
+  { id: "ing_zucca",      nome: "Zucca",                   cat: "🥦 Verdure",       deperibile: 30,  stagioni: [9,10,11,12],      tags: ["zucca"] },
+  { id: "ing_cavolo",     nome: "Cavolo / Verza",          cat: "🥦 Verdure",       deperibile: 7,   stagioni: [10,11,12,1,2,3],  tags: ["cavolo","verza","cavolo nero"] },
+  { id: "ing_finocchio",  nome: "Finocchi",                cat: "🥦 Verdure",       deperibile: 7,   stagioni: [10,11,12,1,2,3],  tags: ["finocchi","finocchio"] },
+  { id: "ing_porri",      nome: "Porri",                   cat: "🥦 Verdure",       deperibile: 7,   stagioni: [10,11,12,1,2,3],  tags: ["porri","porro"] },
+  { id: "ing_radicchio",  nome: "Radicchio",               cat: "🥦 Verdure",       deperibile: 5,   stagioni: [10,11,12,1,2,3],  tags: ["radicchio"] },
+  { id: "ing_carciofi",   nome: "Carciofi",                cat: "🥦 Verdure",       deperibile: 4,   stagioni: [3,4,5,10,11,12],  tags: ["carciofi","carciofo"] },
+  { id: "ing_funghi",     nome: "Funghi champignon",       cat: "🥦 Verdure",       deperibile: 4,   stagioni: [9,10,11,12,1,2],  tags: ["funghi","champignon"] },
+  // ── Frutta stagionale ─────────────────────────────────────────────
+  // Tutto l'anno
+  { id: "ing_banana",     nome: "Banane",                  cat: "🍎 Frutta",        deperibile: 5,   stagioni: null,              tags: ["banana"] },
+  // Autunno–inverno
+  { id: "ing_mela",       nome: "Mele",                    cat: "🍎 Frutta",        deperibile: 14,  stagioni: [9,10,11,12,1,2],  tags: ["mela"] },
+  { id: "ing_pera",       nome: "Pere",                    cat: "🍎 Frutta",        deperibile: 7,   stagioni: [8,9,10,11,12],    tags: ["pera"] },
+  { id: "ing_arancia",    nome: "Arance",                  cat: "🍎 Frutta",        deperibile: 14,  stagioni: [11,12,1,2,3,4],   tags: ["arancia","frutto"] },
+  { id: "ing_mandarino",  nome: "Mandarini",               cat: "🍎 Frutta",        deperibile: 10,  stagioni: [10,11,12,1,2],    tags: ["mandarini","mandarino"] },
+  { id: "ing_kiwi",       nome: "Kiwi",                    cat: "🍎 Frutta",        deperibile: 7,   stagioni: [10,11,12,1,2,3],  tags: ["kiwi"] },
+  { id: "ing_melograno",  nome: "Melograno",               cat: "🍎 Frutta",        deperibile: 14,  stagioni: [10,11,12],        tags: ["melograno"] },
+  { id: "ing_castagne",   nome: "Castagne",                cat: "🍎 Frutta",        deperibile: 7,   stagioni: [9,10,11],         tags: ["castagne"] },
+  // Primavera–estate
+  { id: "ing_fragole",    nome: "Fragole",                 cat: "🍎 Frutta",        deperibile: 3,   stagioni: [4,5,6],           tags: ["fragole"] },
+  { id: "ing_pesche",     nome: "Pesche / Nettarine",      cat: "🍎 Frutta",        deperibile: 4,   stagioni: [6,7,8,9],         tags: ["pesche","pesca","nettarine"] },
+  { id: "ing_albicocche", nome: "Albicocche",              cat: "🍎 Frutta",        deperibile: 3,   stagioni: [6,7],             tags: ["albicocche"] },
+  { id: "ing_anguria",    nome: "Anguria",                 cat: "🍎 Frutta",        deperibile: 5,   stagioni: [6,7,8,9],         tags: ["anguria"] },
+  { id: "ing_melone",     nome: "Melone",                  cat: "🍎 Frutta",        deperibile: 4,   stagioni: [6,7,8,9],         tags: ["melone"] },
+  { id: "ing_ciliegie",   nome: "Ciliegie",                cat: "🍎 Frutta",        deperibile: 3,   stagioni: [5,6,7],           tags: ["ciliegie"] },
+  { id: "ing_mirtilli",   nome: "Mirtilli",                cat: "🍎 Frutta",        deperibile: 5,   stagioni: [6,7,8,9],         tags: ["mirtilli"] },
+  { id: "ing_bosco",      nome: "Frutti di bosco",         cat: "🍎 Frutta",        deperibile: 3,   stagioni: [5,6,7,8,9],       tags: ["frutti di bosco"] },
+  { id: "ing_uva",        nome: "Uva",                     cat: "🍎 Frutta",        deperibile: 5,   stagioni: [8,9,10],          tags: ["uva"] },
+  // ── Frutta secca (sempre disponibile) ────────────────────────────
+  { id: "ing_mandorle",   nome: "Mandorle",                cat: "🥜 Frutta secca",  deperibile: 180, stagioni: null, tags: ["mandorle"] },
+  { id: "ing_noci",       nome: "Noci",                    cat: "🥜 Frutta secca",  deperibile: 90,  stagioni: null, tags: ["noci"] },
+  { id: "ing_pistacchi",  nome: "Pistacchi sgusciati",     cat: "🥜 Frutta secca",  deperibile: 90,  stagioni: null, tags: ["pistacchi","pistacchio"] },
+  { id: "ing_bm",         nome: "Burro di mandorle",       cat: "🥜 Frutta secca",  deperibile: 180, stagioni: null, tags: ["burro di mandorle"] },
+  { id: "ing_mista",      nome: "Mix frutta secca",        cat: "🥜 Frutta secca",  deperibile: 90,  stagioni: null, tags: ["frutta secca mista"] },
+  // ── Dispensa (sempre disponibile) ────────────────────────────────
+  { id: "ing_evo",        nome: "Olio EVO",                cat: "🧂 Dispensa",      deperibile: 365, stagioni: null, tags: ["evo","olio"] },
   { id: "ing_miele",      nome: "Miele",                   cat: "🧂 Dispensa",      deperibile: 365, tags: ["miele"] },
   { id: "ing_passata",    nome: "Passata di pomodoro",     cat: "🧂 Dispensa",      deperibile: 365, tags: ["passata"] },
   { id: "ing_spezie",     nome: "Spezie varie",            cat: "🧂 Dispensa",      deperibile: 365, tags: ["spezie","cannella","curcuma","origano"] },
   { id: "ing_brodo",      nome: "Brodo / dado vegetale",   cat: "🧂 Dispensa",      deperibile: 365, tags: ["brodo","minestrone"] },
-  { id: "ing_lievito",    nome: "Lievito di birra",        cat: "🧂 Dispensa",      deperibile: 14,  tags: ["pizza","lievito"] },
-  { id: "ing_olive",           nome: "Olive",                   cat: "🧂 Dispensa",      deperibile: 30,  tags: ["olive"] },
-  { id: "ing_pomodori_secchi", nome: "Pomodori secchi",         cat: "🧂 Dispensa",      deperibile: 180, tags: ["pomodori secchi"] },
+  { id: "ing_lievito",    nome: "Lievito di birra",        cat: "🧂 Dispensa",      deperibile: 14,  stagioni: null, kcal_per_kg: 150,  tags: ["pizza","lievito"] },
+  { id: "ing_olive",           nome: "Olive",                   cat: "🧂 Dispensa",      deperibile: 30,  stagioni: null, kcal_per_kg: 2680, tags: ["olive"] },
+  { id: "ing_pomodori_secchi", nome: "Pomodori secchi",         cat: "🧂 Dispensa",      deperibile: 180, stagioni: null, kcal_per_kg: 2570, tags: ["pomodori secchi"] },
+  // ── Nuovi ingredienti da lista calorie ────────────────────────────
+  // 🥩 Proteine – pesce e mare
+  { id: "ing_gamberi",      nome: "Gamberi",                      cat: "🥩 Proteine",     deperibile: 6,   stagioni: null,              kcal_per_kg: 600,  tags: ["gamberi","mazzancolle"] },
+  { id: "ing_polpo",        nome: "Polpo",                        cat: "🥩 Proteine",     deperibile: 2,   stagioni: null,              kcal_per_kg: 600,  tags: ["polpo"] },
+  { id: "ing_calamari",     nome: "Calamari",                     cat: "🥩 Proteine",     deperibile: 2,   stagioni: null,              kcal_per_kg: 700,  tags: ["calamari"] },
+  { id: "ing_baccala",      nome: "Baccalà (bagnato/surgelato)",  cat: "🥩 Proteine",     deperibile: 3,   stagioni: null,              kcal_per_kg: 1030, tags: ["baccala"] },
+  { id: "ing_ombrina",      nome: "Ombrina",                      cat: "🥩 Proteine",     deperibile: 2,   stagioni: null,              kcal_per_kg: 1000, tags: ["ombrina"] },
+  { id: "ing_tonno_olio",   nome: "Tonno sott'olio",              cat: "🥩 Proteine",     deperibile: 365, stagioni: null,              kcal_per_kg: 2580, tags: ["tonno sottolio","tonno olio"] },
+  { id: "ing_alici",        nome: "Alici / Acciughe",             cat: "🥩 Proteine",     deperibile: 14,  stagioni: null,              kcal_per_kg: 2040, tags: ["alici","acciughe"] },
+  { id: "ing_salmone_aff",  nome: "Salmone affumicato",           cat: "🥩 Proteine",     deperibile: 7,   stagioni: null,              kcal_per_kg: 1800, tags: ["salmone affumicato"] },
+  // 🥩 Proteine – carne
+  { id: "ing_anatra",       nome: "Petto d'anatra",               cat: "🥩 Proteine",     deperibile: 3,   stagioni: null,              kcal_per_kg: 1590, tags: ["anatra"] },
+  { id: "ing_agnello",      nome: "Agnello",                      cat: "🥩 Proteine",     deperibile: 3,   stagioni: null,              kcal_per_kg: 1500, tags: ["agnello"] },
+  { id: "ing_salsiccia",    nome: "Salsiccia",                    cat: "🥩 Proteine",     deperibile: 3,   stagioni: null,              kcal_per_kg: 1500, tags: ["salsiccia"] },
+  { id: "ing_prosciutto",   nome: "Prosciutto crudo",             cat: "🥩 Proteine",     deperibile: 14,  stagioni: null,              kcal_per_kg: 2240, tags: ["prosciutto"] },
+  { id: "ing_tofu",         nome: "Tofu",                         cat: "🥩 Proteine",     deperibile: 5,   stagioni: null,              kcal_per_kg: 990,  tags: ["tofu"] },
+  // 🥛 Latticini
+  { id: "ing_burro",        nome: "Burro",                        cat: "🥛 Latticini",    deperibile: 14,  stagioni: null,              kcal_per_kg: 7500, tags: ["burro"] },
+  { id: "ing_panna",        nome: "Panna fresca",                 cat: "🥛 Latticini",    deperibile: 5,   stagioni: null,              kcal_per_kg: 3000, tags: ["panna"] },
+  { id: "ing_mascarpone",   nome: "Mascarpone",                   cat: "🥛 Latticini",    deperibile: 7,   stagioni: null,              kcal_per_kg: 4120, tags: ["mascarpone"] },
+  { id: "ing_philadelphia", nome: "Philadelphia / Caprino",       cat: "🥛 Latticini",    deperibile: 7,   stagioni: null,              kcal_per_kg: 2800, tags: ["philadelphia","caprino"] },
+  { id: "ing_burrata",      nome: "Burrata / Stracciatella",      cat: "🥛 Latticini",    deperibile: 3,   stagioni: null,              kcal_per_kg: 4500, tags: ["burrata","stracciatella"] },
+  { id: "ing_pecorino",     nome: "Pecorino",                     cat: "🥛 Latticini",    deperibile: 30,  stagioni: null,              kcal_per_kg: 4020, tags: ["pecorino"] },
+  // 🌾 Cereali
+  { id: "ing_bulgur",       nome: "Bulgur",                       cat: "🌾 Cereali",      deperibile: 365, stagioni: null,              kcal_per_kg: 3560, tags: ["bulgur"] },
+  { id: "ing_couscous",     nome: "Cous cous",                    cat: "🌾 Cereali",      deperibile: 365, stagioni: null,              kcal_per_kg: 3650, tags: ["cous cous","couscous"] },
+  { id: "ing_grano_sarac",  nome: "Grano saraceno",               cat: "🌾 Cereali",      deperibile: 365, stagioni: null,              kcal_per_kg: 2370, tags: ["grano saraceno"] },
+  { id: "ing_riso_venere",  nome: "Riso venere",                  cat: "🌾 Cereali",      deperibile: 365, stagioni: null,              kcal_per_kg: 3770, tags: ["riso venere"] },
+  { id: "ing_pasta_fresca", nome: "Pasta fresca",                 cat: "🌾 Cereali",      deperibile: 2,   stagioni: null,              kcal_per_kg: 2650, tags: ["pasta fresca","spaghettoni freschi","fettuccine"] },
+  { id: "ing_panko",        nome: "Panko / Pangrattato",          cat: "🌾 Cereali",      deperibile: 180, stagioni: null,              kcal_per_kg: 3500, tags: ["panko","pangrattato"] },
+  { id: "ing_farina_00",    nome: "Farina 00 / Semolino",         cat: "🌾 Cereali",      deperibile: 365, stagioni: null,              kcal_per_kg: 3450, tags: ["farina 00","semolino","maizena"] },
+  // 🫘 Legumi
+  { id: "ing_fag_azuki",    nome: "Fagioli azuki",                cat: "🫘 Legumi",       deperibile: 365, stagioni: null,              kcal_per_kg: 3300, tags: ["azuki","fagioli azuki"] },
+  // 🥦 Verdure
+  { id: "ing_cipolla",      nome: "Cipolla",                      cat: "🥦 Verdure",      deperibile: 14,  stagioni: null,              kcal_per_kg: 250,  tags: ["cipolla","cipolla rossa","cipollotto","scalogno"] },
+  { id: "ing_aglio",        nome: "Aglio",                        cat: "🥦 Verdure",      deperibile: 30,  stagioni: null,              kcal_per_kg: 900,  tags: ["aglio"] },
+  { id: "ing_sedano",       nome: "Sedano",                       cat: "🥦 Verdure",      deperibile: 7,   stagioni: null,              kcal_per_kg: 150,  tags: ["sedano"] },
+  { id: "ing_lattuga",      nome: "Lattuga / Songino / Iceberg",  cat: "🥦 Verdure",      deperibile: 3,   stagioni: null,              kcal_per_kg: 150,  tags: ["lattuga","songino","iceberg","lattughino","lollo"] },
+  { id: "ing_cavolfiore",   nome: "Cavolfiore",                   cat: "🥦 Verdure",      deperibile: 5,   stagioni: [10,11,12,1,2,3],  kcal_per_kg: 250,  tags: ["cavolfiore"] },
+  { id: "ing_datterini",    nome: "Datterini / Pomodoro ramato",  cat: "🥦 Verdure",      deperibile: 4,   stagioni: [5,6,7,8,9,10],    kcal_per_kg: 200,  tags: ["datterini","pomodoro ramato","pachino"] },
+  { id: "ing_barbabietole", nome: "Barbabietole",                 cat: "🥦 Verdure",      deperibile: 7,   stagioni: [9,10,11,12,1],    kcal_per_kg: 430,  tags: ["barbabietole"] },
+  { id: "ing_germogli",     nome: "Germogli di soia",             cat: "🥦 Verdure",      deperibile: 5,   stagioni: null,              kcal_per_kg: 350,  tags: ["germogli"] },
+  // 🍎 Frutta
+  { id: "ing_mango",        nome: "Mango",                        cat: "🍎 Frutta",       deperibile: 4,   stagioni: [4,5,6,7,8,9,10],  kcal_per_kg: 2000, tags: ["mango"] },
+  { id: "ing_ananas",       nome: "Ananas",                       cat: "🍎 Frutta",       deperibile: 5,   stagioni: null,              kcal_per_kg: 400,  tags: ["ananas"] },
+  { id: "ing_limone",       nome: "Limone / Lime",                cat: "🍎 Frutta",       deperibile: 14,  stagioni: null,              kcal_per_kg: 140,  tags: ["limone","lime","succo di lime","succo di limone"] },
+  // 🧂 Dispensa
+  { id: "ing_aceto",        nome: "Aceto (vino/mele/balsamico)",  cat: "🧂 Dispensa",     deperibile: 365, stagioni: null,              kcal_per_kg: 40,   tags: ["aceto"] },
+  { id: "ing_salsa_soia",   nome: "Salsa di soia",                cat: "🧂 Dispensa",     deperibile: 365, stagioni: null,              kcal_per_kg: 150,  tags: ["salsa di soia","salsa soia","tamari"] },
+  { id: "ing_concentrato",  nome: "Concentrato di pomodoro",      cat: "🧂 Dispensa",     deperibile: 30,  stagioni: null,              kcal_per_kg: 500,  tags: ["concentrato di pomodoro"] },
+  { id: "ing_senape",       nome: "Senape",                       cat: "🧂 Dispensa",     deperibile: 90,  stagioni: null,              kcal_per_kg: 650,  tags: ["senape"] },
+  { id: "ing_capperi",      nome: "Capperi",                      cat: "🧂 Dispensa",     deperibile: 90,  stagioni: null,              kcal_per_kg: 250,  tags: ["capperi"] },
+  { id: "ing_basilico",     nome: "Basilico fresco",              cat: "🧂 Dispensa",     deperibile: 5,   stagioni: [5,6,7,8,9],       kcal_per_kg: 150,  tags: ["basilico"] },
+  { id: "ing_prezzemolo",   nome: "Prezzemolo",                   cat: "🧂 Dispensa",     deperibile: 5,   stagioni: null,              kcal_per_kg: 150,  tags: ["prezzemolo"] },
+  { id: "ing_zenzero",      nome: "Zenzero",                      cat: "🧂 Dispensa",     deperibile: 7,   stagioni: null,              kcal_per_kg: 180,  tags: ["zenzero"] },
+  { id: "ing_cannella",     nome: "Cannella / Spezie dolci",      cat: "🧂 Dispensa",     deperibile: 365, stagioni: null,              kcal_per_kg: 40,   tags: ["cannella","curcuma","cumino","noce moscata","anice stellato","paprika"] },
+  { id: "ing_peperoncino",  nome: "Peperoncino",                  cat: "🧂 Dispensa",     deperibile: 30,  stagioni: null,              kcal_per_kg: 40,   tags: ["peperoncino"] },
+  { id: "ing_olio_semi",    nome: "Olio di semi",                 cat: "🧂 Dispensa",     deperibile: 365, stagioni: null,              kcal_per_kg: 8990, tags: ["olio semi","olio sesamo"] },
+  { id: "ing_cacao",        nome: "Cacao amaro in polvere",       cat: "🧂 Dispensa",     deperibile: 365, stagioni: null,              kcal_per_kg: 3200, tags: ["cacao"] },
+  { id: "ing_sesamo",       nome: "Semi di sesamo / Canapa",      cat: "🧂 Dispensa",     deperibile: 180, stagioni: null,              kcal_per_kg: 5740, tags: ["sesamo","semi di canapa"] },
+  // 🥜 Frutta secca
+  { id: "ing_pinoli",       nome: "Pinoli",                       cat: "🥜 Frutta secca", deperibile: 90,  stagioni: null,              kcal_per_kg: 5950, tags: ["pinoli"] },
+  { id: "ing_anacardi",     nome: "Anacardi",                     cat: "🥜 Frutta secca", deperibile: 90,  stagioni: null,              kcal_per_kg: 5800, tags: ["anacardi"] },
+  { id: "ing_nocciole",     nome: "Nocciole",                     cat: "🥜 Frutta secca", deperibile: 90,  stagioni: null,              kcal_per_kg: 6000, tags: ["nocciole"] },
 ];
 
 const ING_MAP = Object.fromEntries(INGREDIENTS.map(i => [i.id, i]));
@@ -171,148 +278,191 @@ const ING_QTY = {
 
 const DB = {
   colazione: [
-    { id:"col_01", nome:"Yogurt greco + avena + frutti di bosco", ingredients:["ing_yogurt","ing_avena","ing_bosco"],
+    { id:"col_01", prep:5,  nome:"Yogurt greco + avena + frutti di bosco", ingredients:["ing_yogurt","ing_avena","ing_bosco"],
       porzioni:{uomo:"200g yogurt · 60g avena · 80g frutti di bosco",donna:"150g yogurt · 45g avena · 80g frutti di bosco",bimbo:"80g yogurt · 20g avena · 40g frutti di bosco"},
       uomo:{kcal:420,p:32,c:45,g:12},donna:{kcal:330,p:25,c:35,g:10},bimbo:{kcal:180,p:8,c:25,g:6}},
-    { id:"col_02", nome:"Pane integrale + uova strapazzate + pomodorini", ingredients:["ing_pane","ing_uova","ing_pomodori","ing_evo"],
+    { id:"col_02", prep:10, nome:"Pane integrale + uova strapazzate + pomodorini", ingredients:["ing_pane","ing_uova","ing_pomodori","ing_evo"],
       porzioni:{uomo:"80g pane · 3 uova · 100g pomodorini · 1 cucchiaio EVO",donna:"60g pane · 2 uova · 100g pomodorini · 1 cucchiaino EVO",bimbo:"30g pane · 1 uovo · pomodorini"},
       uomo:{kcal:450,p:32,c:40,g:18},donna:{kcal:335,p:25,c:30,g:14},bimbo:{kcal:190,p:10,c:22,g:7}},
-    { id:"col_03", nome:"Pancakes d'avena con banana", ingredients:["ing_avena","ing_uova","ing_banana"],
+    { id:"col_03", prep:15, nome:"Pancakes d'avena con banana", ingredients:["ing_avena","ing_uova","ing_banana"],
       porzioni:{uomo:"3 pancakes (2 uova · 60g avena · 1 banana)",donna:"2 pancakes (1 uovo · 45g avena · ½ banana)",bimbo:"1 pancake piccolo · frutta fresca"},
       uomo:{kcal:460,p:28,c:55,g:14},donna:{kcal:340,p:22,c:40,g:11},bimbo:{kcal:200,p:9,c:28,g:6}},
-    { id:"col_04", nome:"Pane integrale + ricotta + miele + noci", ingredients:["ing_pane","ing_ricotta","ing_miele","ing_noci"],
+    { id:"col_04", prep:5,  nome:"Pane integrale + ricotta + miele + noci", ingredients:["ing_pane","ing_ricotta","ing_miele","ing_noci"],
       porzioni:{uomo:"80g pane · 80g ricotta · 1 cucchiaino miele · 15g noci",donna:"60g pane · 60g ricotta · ½ cucchiaino miele · 10g noci",bimbo:"30g pane · 30g ricotta · frutta"},
       uomo:{kcal:440,p:26,c:46,g:16},donna:{kcal:330,p:20,c:34,g:13},bimbo:{kcal:185,p:8,c:24,g:7}},
-    { id:"col_05", nome:"Yogurt greco + avena + banana + miele", ingredients:["ing_yogurt","ing_avena","ing_banana","ing_miele"],
+    { id:"col_05", prep:5,  nome:"Yogurt greco + avena + banana + miele", ingredients:["ing_yogurt","ing_avena","ing_banana","ing_miele"],
       porzioni:{uomo:"200g yogurt · 60g avena · 1 banana · 1 cucchiaino miele",donna:"150g yogurt · 45g avena · ½ banana",bimbo:"80g yogurt · 20g avena · ½ banana"},
       uomo:{kcal:430,p:30,c:52,g:10},donna:{kcal:320,p:24,c:38,g:8},bimbo:{kcal:180,p:7,c:27,g:5}},
-    { id:"col_06", nome:"Frittata dolce con avena e mela", ingredients:["ing_uova","ing_avena","ing_mela","ing_spezie"],
+    { id:"col_06", prep:12, nome:"Frittata dolce con avena e mela", ingredients:["ing_uova","ing_avena","ing_mela","ing_spezie"],
       porzioni:{uomo:"2 uova · 40g avena · 1 mela · cannella",donna:"2 uova · 30g avena · ½ mela",bimbo:"1 uovo · 20g avena · ½ mela"},
       uomo:{kcal:410,p:26,c:42,g:14},donna:{kcal:305,p:20,c:32,g:11},bimbo:{kcal:175,p:9,c:23,g:6}},
-    { id:"col_07", nome:"Smoothie proteico + pane integrale", ingredients:["ing_yogurt","ing_banana","ing_avena","ing_pane"],
+    { id:"col_07", prep:5,  nome:"Smoothie proteico + pane integrale", ingredients:["ing_yogurt","ing_banana","ing_avena","ing_pane"],
       porzioni:{uomo:"300ml smoothie · 40g pane",donna:"250ml smoothie · 30g pane",bimbo:"150ml smoothie · 20g pane"},
       uomo:{kcal:445,p:28,c:58,g:10},donna:{kcal:330,p:22,c:43,g:7},bimbo:{kcal:185,p:8,c:28,g:4}},
-    { id:"col_08", nome:"Pane integrale + avocado + uovo in camicia", ingredients:["ing_pane","ing_avocado","ing_uova","ing_evo"],
+    { id:"col_08", prep:10, nome:"Pane integrale + avocado + uovo in camicia", ingredients:["ing_pane","ing_avocado","ing_uova","ing_evo"],
       porzioni:{uomo:"80g pane · ½ avocado · 2 uova",donna:"60g pane · ¼ avocado · 1 uovo",bimbo:"30g pane · ¼ avocado schiacciato"},
       uomo:{kcal:460,p:28,c:38,g:22},donna:{kcal:335,p:18,c:28,g:17},bimbo:{kcal:185,p:6,c:20,g:9}},
-    { id:"col_09", nome:"Porridge di avena con frutta secca e cannella", ingredients:["ing_avena","ing_latte","ing_noci","ing_mista","ing_spezie"],
+    { id:"col_09", prep:8,  nome:"Porridge di avena con frutta secca e cannella", ingredients:["ing_avena","ing_latte","ing_noci","ing_mista","ing_spezie"],
       porzioni:{uomo:"80g avena · 300ml latte · 20g noci · frutta secca",donna:"60g avena · 250ml latte · 15g noci",bimbo:"30g avena · 150ml latte intero · frutta"},
       uomo:{kcal:470,p:22,c:58,g:16},donna:{kcal:350,p:17,c:44,g:12},bimbo:{kcal:190,p:8,c:28,g:6}},
-    { id:"col_10", nome:"Uova alla coque + pane integrale + frutta", ingredients:["ing_uova","ing_pane","ing_arancia"],
+    { id:"col_10", prep:8,  nome:"Uova alla coque + pane integrale + frutta", ingredients:["ing_uova","ing_pane","ing_arancia"],
       porzioni:{uomo:"3 uova · 70g pane · 1 frutto",donna:"2 uova · 50g pane · 1 frutto",bimbo:"1 uovo · 25g pane · frutta"},
       uomo:{kcal:420,p:30,c:38,g:16},donna:{kcal:310,p:22,c:28,g:12},bimbo:{kcal:175,p:9,c:20,g:7}},
+    // ── Colazioni nuove ────────────────────────────────────────────
+    { id:"col_11", prep:5,  nome:"Overnight oats con mirtilli e mandorle", ingredients:["ing_avena","ing_yogurt","ing_mirtilli","ing_mandorle","ing_miele"],
+      porzioni:{uomo:"80g avena · 150g yogurt · 80g mirtilli · 20g mandorle · 1 cucchiaino miele",donna:"60g avena · 120g yogurt · 60g mirtilli · 15g mandorle",bimbo:"30g avena · 70g yogurt · 40g mirtilli · 5g mandorle"},
+      uomo:{kcal:455,p:28,c:52,g:14},donna:{kcal:335,p:22,c:38,g:11},bimbo:{kcal:185,p:8,c:26,g:6}},
+    { id:"col_12", prep:10, nome:"Toast integrale con fiocchi di latte e fragole", ingredients:["ing_pane","ing_fiocchi_latte","ing_fragole","ing_miele"],
+      porzioni:{uomo:"80g pane · 100g fiocchi latte · 80g fragole · 1 cucchiaino miele",donna:"60g pane · 80g fiocchi latte · 80g fragole",bimbo:"30g pane · 50g fiocchi latte · 40g fragole"},
+      uomo:{kcal:420,p:28,c:55,g:8},donna:{kcal:305,p:22,c:40,g:6},bimbo:{kcal:175,p:8,c:28,g:3}},
+    { id:"col_13", prep:5,  nome:"Smoothie bowl mango e banana", ingredients:["ing_mango","ing_banana","ing_yogurt","ing_avena","ing_mista"],
+      porzioni:{uomo:"150g mango · 1 banana · 150g yogurt · 30g avena · 15g granola",donna:"100g mango · ½ banana · 120g yogurt · 25g avena",bimbo:"80g mango · ½ banana · 70g yogurt · 15g avena"},
+      uomo:{kcal:465,p:22,c:68,g:10},donna:{kcal:335,p:17,c:50,g:7},bimbo:{kcal:195,p:6,c:32,g:4}},
+    { id:"col_14", prep:8,  nome:"Porridge di avena con zucca e cannella", ingredients:["ing_avena","ing_latte","ing_zucca","ing_cannella","ing_miele"],
+      porzioni:{uomo:"80g avena · 250ml latte · 100g zucca cotta · cannella · 1 cucchiaino miele",donna:"60g avena · 200ml latte · 80g zucca · cannella",bimbo:"30g avena · 150ml latte · 50g zucca"},
+      uomo:{kcal:430,p:18,c:62,g:10},donna:{kcal:315,p:14,c:46,g:8},bimbo:{kcal:185,p:7,c:28,g:5}},
+    { id:"col_15", prep:12, nome:"Frittata al forno con verdure e feta", ingredients:["ing_uova","ing_spinaci","ing_feta","ing_pomodori","ing_evo"],
+      porzioni:{uomo:"3 uova · 80g spinaci · 40g feta · 80g pomodorini · 1 cucchiaio EVO",donna:"2 uova · 80g spinaci · 25g feta · 80g pomodorini",bimbo:"1 uovo · 40g spinaci · 15g feta"},
+      uomo:{kcal:410,p:30,c:8,g:28},donna:{kcal:290,p:22,c:6,g:20},bimbo:{kcal:165,p:9,c:4,g:11}},
+    { id:"col_16", prep:5,  nome:"Yogurt greco con pesche e pistacchi", ingredients:["ing_yogurt","ing_pesche","ing_pistacchi","ing_miele"],
+      porzioni:{uomo:"200g yogurt · 1 pesca · 20g pistacchi · 1 cucchiaino miele",donna:"150g yogurt · 1 pesca · 15g pistacchi",bimbo:"80g yogurt · ½ pesca · 8g pistacchi"},
+      uomo:{kcal:385,p:26,c:32,g:14},donna:{kcal:280,p:20,c:25,g:10},bimbo:{kcal:155,p:7,c:16,g:6}},
+    { id:"col_17", prep:10, nome:"Pancakes di avena con albicocche", ingredients:["ing_avena","ing_uova","ing_albicocche","ing_miele"],
+      porzioni:{uomo:"60g avena · 2 uova · 3 albicocche · 1 cucchiaino miele",donna:"45g avena · 1 uovo · 2 albicocche",bimbo:"25g avena · 1 uovo · 1 albicocca"},
+      uomo:{kcal:430,p:24,c:52,g:12},donna:{kcal:300,p:16,c:38,g:8},bimbo:{kcal:185,p:8,c:26,g:5}},
+    { id:"col_18", prep:5,  nome:"Pane integrale con burro di mandorle e banana", ingredients:["ing_pane","ing_bm","ing_banana"],
+      porzioni:{uomo:"80g pane · 20g burro mandorle · 1 banana",donna:"60g pane · 15g burro mandorle · ½ banana",bimbo:"30g pane · 8g burro mandorle · ½ banana"},
+      uomo:{kcal:455,p:16,c:62,g:14},donna:{kcal:320,p:12,c:44,g:10},bimbo:{kcal:185,p:5,c:28,g:5}},
+    { id:"col_19", prep:5,  nome:"Bowl proteica con fiocchi di latte, kiwi e noci", ingredients:["ing_fiocchi_latte","ing_kiwi","ing_noci","ing_miele"],
+      porzioni:{uomo:"200g fiocchi latte · 2 kiwi · 20g noci · 1 cucchiaino miele",donna:"150g fiocchi latte · 1 kiwi · 15g noci",bimbo:"80g fiocchi latte · 1 kiwi · 8g noci"},
+      uomo:{kcal:390,p:30,c:30,g:14},donna:{kcal:275,p:22,c:20,g:10},bimbo:{kcal:160,p:8,c:16,g:6}},
+    { id:"col_20", prep:8,  nome:"Porridge con castagne e cacao", ingredients:["ing_avena","ing_latte","ing_castagne","ing_cacao","ing_miele"],
+      porzioni:{uomo:"70g avena · 250ml latte · 60g castagne cotte · 1 cucchiaino cacao · 1 cucchiaino miele",donna:"55g avena · 200ml latte · 40g castagne",bimbo:"30g avena · 150ml latte · 25g castagne"},
+      uomo:{kcal:445,p:18,c:66,g:10},donna:{kcal:325,p:14,c:48,g:8},bimbo:{kcal:190,p:7,c:30,g:5}},
+    { id:"col_21", prep:7,  nome:"Uova strapazzate con salmone affumicato", ingredients:["ing_uova","ing_salmone_aff","ing_prezzemolo","ing_evo","ing_pane"],
+      porzioni:{uomo:"3 uova · 80g salmone affumicato · prezzemolo · 60g pane",donna:"2 uova · 60g salmone · prezzemolo · 40g pane",bimbo:"1 uovo · 30g salmone · 25g pane"},
+      uomo:{kcal:470,p:42,c:28,g:20},donna:{kcal:335,p:32,c:20,g:15},bimbo:{kcal:190,p:14,c:14,g:8}},
+    { id:"col_22", prep:5,  nome:"Smoothie proteico con fragole e avena", ingredients:["ing_yogurt","ing_fragole","ing_avena","ing_latte","ing_miele"],
+      porzioni:{uomo:"150g yogurt · 100g fragole · 40g avena · 150ml latte · 1 cucchiaino miele",donna:"120g yogurt · 80g fragole · 30g avena · 100ml latte",bimbo:"70g yogurt · 50g fragole · 20g avena · 80ml latte"},
+      uomo:{kcal:415,p:26,c:54,g:8},donna:{kcal:295,p:20,c:38,g:6},bimbo:{kcal:175,p:8,c:26,g:3}},
+    { id:"col_23", prep:15, nome:"Muffin d'avena con mirtilli (no forno)", ingredients:["ing_avena","ing_uova","ing_mirtilli","ing_miele","ing_latte"],
+      porzioni:{uomo:"3 muffin (80g avena · 2 uova · 80g mirtilli)",donna:"2 muffin (60g avena · 1 uovo · 60g mirtilli)",bimbo:"1 muffin piccolo"},
+      uomo:{kcal:430,p:22,c:54,g:12},donna:{kcal:295,p:15,c:38,g:8},bimbo:{kcal:165,p:7,c:24,g:5}},
+    { id:"col_24", prep:5,  nome:"Pane integrale con ricotta e uva", ingredients:["ing_pane","ing_ricotta","ing_uva","ing_miele"],
+      porzioni:{uomo:"80g pane · 80g ricotta · 80g uva · 1 cucchiaino miele",donna:"60g pane · 60g ricotta · 60g uva",bimbo:"30g pane · 30g ricotta · 40g uva"},
+      uomo:{kcal:415,p:22,c:56,g:10},donna:{kcal:295,p:16,c:40,g:7},bimbo:{kcal:170,p:7,c:26,g:4}},
   ],
   spuntino: [
-    { id:"spu_01", nome:"Frutta fresca + mandorle", ingredients:["ing_mela","ing_mandorle"],
+    { id:"spu_01", prep:2,  nome:"Frutta fresca + mandorle", ingredients:["ing_mela","ing_mandorle"],
       porzioni:{uomo:"1 mela · 20g mandorle",donna:"1 mela · 15g mandorle",bimbo:"½ banana · 5g mandorle tritate"},
       uomo:{kcal:200,p:5,c:22,g:10},donna:{kcal:150,p:4,c:18,g:8},bimbo:{kcal:80,p:2,c:12,g:3}},
-    { id:"spu_02", nome:"Yogurt greco + miele", ingredients:["ing_yogurt","ing_miele"],
+    { id:"spu_02", prep:2,  nome:"Yogurt greco + miele", ingredients:["ing_yogurt","ing_miele"],
       porzioni:{uomo:"150g yogurt · 1 cucchiaino miele",donna:"100g yogurt · ½ cucchiaino miele",bimbo:"60g yogurt · frutta frullata"},
       uomo:{kcal:170,p:14,c:16,g:4},donna:{kcal:120,p:10,c:11,g:3},bimbo:{kcal:70,p:4,c:9,g:2}},
-    { id:"spu_03", nome:"Crackers integrali + ricotta", ingredients:["ing_crackers","ing_ricotta"],
+    { id:"spu_03", prep:2,  nome:"Crackers integrali + ricotta", ingredients:["ing_crackers","ing_ricotta"],
       porzioni:{uomo:"4 crackers · 60g ricotta",donna:"3 crackers · 40g ricotta",bimbo:"2 crackers · 25g ricotta"},
       uomo:{kcal:185,p:8,c:22,g:7},donna:{kcal:130,p:6,c:15,g:5},bimbo:{kcal:75,p:3,c:9,g:3}},
-    { id:"spu_04", nome:"Carote + hummus", ingredients:["ing_carote","ing_ceci"],
+    { id:"spu_04", prep:3,  nome:"Carote + hummus", ingredients:["ing_carote","ing_ceci"],
       porzioni:{uomo:"150g carote · 60g hummus",donna:"150g carote · 40g hummus",bimbo:"80g carote · 20g hummus"},
       uomo:{kcal:165,p:6,c:18,g:7},donna:{kcal:120,p:4,c:14,g:5},bimbo:{kcal:65,p:2,c:8,g:3}},
-    { id:"spu_05", nome:"Pane integrale + avocado", ingredients:["ing_pane","ing_avocado"],
+    { id:"spu_05", prep:3,  nome:"Pane integrale + avocado", ingredients:["ing_pane","ing_avocado"],
       porzioni:{uomo:"40g pane · ½ avocado · limone",donna:"30g pane · ¼ avocado",bimbo:"20g pane · ¼ avocado schiacciato"},
       uomo:{kcal:210,p:5,c:18,g:13},donna:{kcal:145,p:3,c:13,g:9},bimbo:{kcal:80,p:2,c:8,g:5}},
-    { id:"spu_06", nome:"Frutta secca mista", ingredients:["ing_mista"],
+    { id:"spu_06", prep:1,  nome:"Frutta secca mista", ingredients:["ing_mista"],
       porzioni:{uomo:"30g mix mandorle/noci/anacardi",donna:"20g mix",bimbo:"10g mix tritato"},
       uomo:{kcal:185,p:5,c:8,g:15},donna:{kcal:125,p:3,c:5,g:10},bimbo:{kcal:60,p:2,c:3,g:5}},
-    { id:"spu_07", nome:"Mela + burro di mandorle", ingredients:["ing_mela","ing_bm"],
+    { id:"spu_07", prep:2,  nome:"Mela + burro di mandorle", ingredients:["ing_mela","ing_bm"],
       porzioni:{uomo:"1 mela · 15g burro mandorle",donna:"1 mela · 10g burro mandorle",bimbo:"½ mela · 5g burro mandorle"},
       uomo:{kcal:175,p:4,c:24,g:8},donna:{kcal:135,p:3,c:20,g:6},bimbo:{kcal:70,p:2,c:10,g:3}},
-    { id:"spu_08", nome:"Banana + yogurt greco", ingredients:["ing_banana","ing_yogurt"],
+    { id:"spu_08", prep:2,  nome:"Banana + yogurt greco", ingredients:["ing_banana","ing_yogurt"],
       porzioni:{uomo:"1 banana · 100g yogurt",donna:"1 banana · 80g yogurt",bimbo:"½ banana · 50g yogurt"},
       uomo:{kcal:190,p:10,c:28,g:3},donna:{kcal:150,p:8,c:24,g:2},bimbo:{kcal:80,p:4,c:13,g:1}},
-    { id:"spu_09", nome:"Mandarini + pistacchi", ingredients:["ing_mandarino","ing_pistacchi"],
+    { id:"spu_09", prep:2,  nome:"Mandarini + pistacchi", ingredients:["ing_mandarino","ing_pistacchi"],
       porzioni:{uomo:"2 mandarini · 20g pistacchi",donna:"2 mandarini · 15g pistacchi",bimbo:"1 mandarino · 5g pistacchi tritati"},
       uomo:{kcal:180,p:5,c:20,g:9},donna:{kcal:135,p:4,c:17,g:7},bimbo:{kcal:65,p:2,c:9,g:3}},
-    { id:"spu_10", nome:"Frullato verde (spinaci, banana, latte)", ingredients:["ing_spinaci","ing_banana","ing_latte"],
+    { id:"spu_10", prep:5,  nome:"Frullato verde (spinaci, banana, latte)", ingredients:["ing_spinaci","ing_banana","ing_latte"],
       porzioni:{uomo:"300ml (30g spinaci · 1 banana · 200ml latte)",donna:"250ml (30g spinaci · ½ banana · 150ml latte)",bimbo:"150ml"},
       uomo:{kcal:195,p:9,c:30,g:5},donna:{kcal:145,p:7,c:22,g:4},bimbo:{kcal:85,p:4,c:13,g:3}},
-    { id:"spu_11", nome:"Crackers di riso + hummus + verdure crude", ingredients:["ing_crackers","ing_ceci","ing_peperone","ing_carote"],
+    { id:"spu_11", prep:3,  nome:"Crackers di riso + hummus + verdure crude", ingredients:["ing_crackers","ing_ceci","ing_peperone","ing_carote"],
       porzioni:{uomo:"4 crackers · 60g hummus · sedano e peperone",donna:"3 crackers · 40g hummus · verdure",bimbo:"2 crackers · 20g hummus"},
       uomo:{kcal:190,p:7,c:22,g:8},donna:{kcal:135,p:5,c:16,g:6},bimbo:{kcal:70,p:2,c:9,g:3}},
-    { id:"spu_12", nome:"Pera + noci", ingredients:["ing_pera","ing_noci"],
+    { id:"spu_12", prep:2,  nome:"Pera + noci", ingredients:["ing_pera","ing_noci"],
       porzioni:{uomo:"1 pera · 20g noci",donna:"1 pera · 12g noci",bimbo:"½ pera · 5g noci tritate"},
       uomo:{kcal:195,p:4,c:24,g:10},donna:{kcal:140,p:3,c:20,g:7},bimbo:{kcal:75,p:1,c:11,g:3}},
   ],
   pranzo: [
-    { id:"pra_01", nome:"Insalata di farro, tonno, pomodorini, olive, rucola", ingredients:["ing_farro","ing_tonno","ing_pomodori","ing_insalata","ing_olive","ing_evo"],
+    { id:"pra_01", prep:20, nome:"Insalata di farro, tonno, pomodorini, olive, rucola", ingredients:["ing_farro","ing_tonno","ing_pomodori","ing_insalata","ing_olive","ing_evo"],
       porzioni:{uomo:"100g farro · 160g tonno · 150g pomodorini · 30g olive · rucola · 1 cucchiaio EVO",donna:"70g farro · 120g tonno · 150g pomodorini · 20g olive · 1 cucchiaino EVO",bimbo:"40g farro · 60g tonno · 80g pomodorini · 10g olive"},
       uomo:{kcal:580,p:45,c:60,g:15},donna:{kcal:400,p:35,c:38,g:12},bimbo:{kcal:220,p:10,c:30,g:7}},
-    { id:"pra_02", nome:"Pollo grigliato + quinoa + verdure arrosto", ingredients:["ing_pollo","ing_quinoa","ing_zucchine","ing_peperone","ing_evo"],
+    { id:"pra_02", prep:25, nome:"Pollo grigliato + quinoa + verdure arrosto", ingredients:["ing_pollo","ing_quinoa","ing_zucchine","ing_peperone","ing_evo"],
       porzioni:{uomo:"200g pollo · 90g quinoa · 200g verdure · 1 cucchiaio EVO",donna:"150g pollo · 65g quinoa · 200g verdure · 1 cucchiaino EVO",bimbo:"80g pollo · 35g quinoa · 100g verdure"},
       uomo:{kcal:600,p:52,c:55,g:14},donna:{kcal:410,p:40,c:36,g:10},bimbo:{kcal:230,p:12,c:28,g:7}},
-    { id:"pra_03", nome:"Zuppa di legumi e verdure", ingredients:["ing_legumi","ing_carote","ing_brodo","ing_pane","ing_evo"],
+    { id:"pra_03", prep:30, nome:"Zuppa di legumi e verdure", ingredients:["ing_legumi","ing_carote","ing_brodo","ing_pane","ing_evo"],
       porzioni:{uomo:"400ml zuppa · 80g pane",donna:"300ml zuppa · 50g pane",bimbo:"180ml zuppa · 25g pane"},
       uomo:{kcal:560,p:38,c:65,g:12},donna:{kcal:380,p:28,c:44,g:9},bimbo:{kcal:210,p:10,c:32,g:6}},
-    { id:"pra_04", nome:"Uova sode + insalata mista + crostini integrali", ingredients:["ing_uova","ing_insalata","ing_crackers","ing_evo"],
+    { id:"pra_04", prep:10, nome:"Uova sode + insalata mista + crostini integrali", ingredients:["ing_uova","ing_insalata","ing_crackers","ing_evo"],
       porzioni:{uomo:"3 uova · insalata · 50g crostini · 1 cucchiaio EVO",donna:"2 uova · insalata · 35g crostini · 1 cucchiaino EVO",bimbo:"1 uovo · insalata · 20g crostini"},
       uomo:{kcal:520,p:38,c:45,g:18},donna:{kcal:370,p:28,c:30,g:15},bimbo:{kcal:200,p:10,c:24,g:7}},
-    { id:"pra_05", nome:"Riso integrale + salmone al forno + zucchine", ingredients:["ing_riso","ing_salmone","ing_zucchine","ing_evo"],
+    { id:"pra_05", prep:25, nome:"Riso integrale + salmone al forno + zucchine", ingredients:["ing_riso","ing_salmone","ing_zucchine","ing_evo"],
       porzioni:{uomo:"90g riso · 180g salmone · 200g zucchine · 1 cucchiaio EVO",donna:"65g riso · 130g salmone · 200g zucchine · 1 cucchiaino EVO",bimbo:"35g riso · 70g salmone · 100g zucchine"},
       uomo:{kcal:610,p:44,c:65,g:16},donna:{kcal:420,p:34,c:42,g:13},bimbo:{kcal:240,p:12,c:32,g:7}},
-    { id:"pra_06", nome:"Pasta integrale al pomodoro fresco + mozzarella", ingredients:["ing_pasta","ing_pomodori","ing_mozzarella","ing_evo"],
+    { id:"pra_06", prep:15, nome:"Pasta integrale al pomodoro fresco + mozzarella", ingredients:["ing_pasta","ing_pomodori","ing_mozzarella","ing_evo"],
       porzioni:{uomo:"100g pasta · 200g pomodoro · 80g mozzarella · 1 cucchiaio EVO",donna:"70g pasta · 200g pomodoro · 50g mozzarella · 1 cucchiaino EVO",bimbo:"50g pasta · 100g pomodoro · 30g mozzarella"},
       uomo:{kcal:620,p:32,c:80,g:18},donna:{kcal:440,p:24,c:56,g:14},bimbo:{kcal:270,p:11,c:38,g:8}},
-    { id:"pra_07", nome:"Frittata di verdure + insalata + pane", ingredients:["ing_uova","ing_zucchine","ing_spinaci","ing_insalata","ing_pane","ing_evo"],
+    { id:"pra_07", prep:15, nome:"Frittata di verdure + insalata + pane", ingredients:["ing_uova","ing_zucchine","ing_spinaci","ing_insalata","ing_pane","ing_evo"],
       porzioni:{uomo:"3 uova · 150g verdure · 40g pane · 1 cucchiaio EVO",donna:"2 uova · 150g verdure · 30g pane · 1 cucchiaino EVO",bimbo:"1 uovo · 80g verdure · 20g pane"},
       uomo:{kcal:540,p:38,c:30,g:28},donna:{kcal:380,p:30,c:20,g:22},bimbo:{kcal:210,p:11,c:18,g:9}},
-    { id:"pra_08", nome:"Insalata di pollo + avocado + pomodorini + rucola", ingredients:["ing_pollo","ing_avocado","ing_pomodori","ing_insalata","ing_evo"],
+    { id:"pra_08", prep:20, nome:"Insalata di pollo + avocado + pomodorini + rucola", ingredients:["ing_pollo","ing_avocado","ing_pomodori","ing_insalata","ing_evo"],
       porzioni:{uomo:"180g pollo · ½ avocado · 150g pomodorini · rucola · 1 cucchiaio EVO",donna:"130g pollo · ¼ avocado · 150g pomodorini · rucola",bimbo:"70g pollo · pomodorini · 1 cucchiaino EVO"},
       uomo:{kcal:550,p:48,c:14,g:30},donna:{kcal:385,p:36,c:10,g:22},bimbo:{kcal:200,p:14,c:5,g:10}},
-    { id:"pra_09", nome:"Merluzzo al vapore + riso basmati + broccoli", ingredients:["ing_merluzzo","ing_riso","ing_broccoli","ing_evo"],
+    { id:"pra_09", prep:25, nome:"Merluzzo al vapore + riso basmati + broccoli", ingredients:["ing_merluzzo","ing_riso","ing_broccoli","ing_evo"],
       porzioni:{uomo:"220g merluzzo · 90g riso · 250g broccoli · 1 cucchiaio EVO",donna:"160g merluzzo · 65g riso · 250g broccoli · 1 cucchiaino EVO",bimbo:"80g merluzzo · 40g riso · 120g broccoli"},
       uomo:{kcal:570,p:50,c:60,g:10},donna:{kcal:400,p:38,c:40,g:8},bimbo:{kcal:260,p:14,c:35,g:6}},
-    { id:"pra_10", nome:"Bowl di ceci + spinaci + pomodori secchi + feta", ingredients:["ing_ceci","ing_spinaci","ing_feta","ing_pomodori_secchi","ing_evo"],
+    { id:"pra_10", prep:10, nome:"Bowl di ceci + spinaci + pomodori secchi + feta", ingredients:["ing_ceci","ing_spinaci","ing_feta","ing_pomodori_secchi","ing_evo"],
       porzioni:{uomo:"200g ceci · 80g spinaci · 30g feta · 40g pomodori secchi · 1 cucchiaio EVO",donna:"150g ceci · 80g spinaci · 20g feta · 30g pomodori secchi · 1 cucchiaino EVO",bimbo:"80g ceci · spinaci · feta · 15g pomodori secchi"},
       uomo:{kcal:555,p:30,c:58,g:20},donna:{kcal:390,p:22,c:42,g:15},bimbo:{kcal:210,p:10,c:28,g:7}},
-    { id:"pra_11", nome:"Wrap integrale + pollo + verdure grigliate + hummus", ingredients:["ing_pane","ing_pollo","ing_peperone","ing_zucchine","ing_ceci"],
+    { id:"pra_11", prep:20, nome:"Wrap integrale + pollo + verdure grigliate + hummus", ingredients:["ing_pane","ing_pollo","ing_peperone","ing_zucchine","ing_ceci"],
       porzioni:{uomo:"2 wrap · 160g pollo · 150g verdure · 50g hummus",donna:"1 wrap · 120g pollo · 150g verdure · 30g hummus",bimbo:"½ wrap · 60g pollo · verdure"},
       uomo:{kcal:590,p:46,c:56,g:16},donna:{kcal:410,p:35,c:38,g:12},bimbo:{kcal:215,p:14,c:24,g:6}},
-    { id:"pra_12", nome:"Tonno + lenticchie + carote + prezzemolo", ingredients:["ing_tonno","ing_lenticchie","ing_carote","ing_evo"],
+    { id:"pra_12", prep:15, nome:"Tonno + lenticchie + carote + prezzemolo", ingredients:["ing_tonno","ing_lenticchie","ing_carote","ing_evo"],
       porzioni:{uomo:"140g tonno · 120g lenticchie · 150g carote · EVO",donna:"100g tonno · 90g lenticchie · 150g carote · EVO",bimbo:"60g tonno · 60g lenticchie · carote"},
       uomo:{kcal:530,p:48,c:42,g:14},donna:{kcal:370,p:35,c:30,g:10},bimbo:{kcal:200,p:14,c:22,g:5}},
   ],
   cena: [
-    { id:"cen_01", nome:"Salmone al forno + patate dolci + insalata", ingredients:["ing_salmone","ing_patatedolci","ing_insalata","ing_evo"],
+    { id:"cen_01", prep:30, nome:"Salmone al forno + patate dolci + insalata", ingredients:["ing_salmone","ing_patatedolci","ing_insalata","ing_evo"],
       porzioni:{uomo:"220g salmone · 250g patate dolci · insalata · 1 cucchiaio EVO",donna:"160g salmone · 180g patate dolci · insalata · 1 cucchiaino EVO",bimbo:"80g salmone · 100g patate dolci · 1 cucchiaino EVO"},
       uomo:{kcal:620,p:48,c:55,g:18},donna:{kcal:450,p:38,c:35,g:15},bimbo:{kcal:300,p:15,c:35,g:10}},
-    { id:"cen_02", nome:"Pollo arrosto + verdure saltate + pane integrale", ingredients:["ing_pollo","ing_zucchine","ing_peperone","ing_pane","ing_evo"],
+    { id:"cen_02", prep:25, nome:"Pollo arrosto + verdure saltate + pane integrale", ingredients:["ing_pollo","ing_zucchine","ing_peperone","ing_pane","ing_evo"],
       porzioni:{uomo:"220g pollo · 250g verdure · 60g pane · 1 cucchiaio EVO",donna:"160g pollo · 250g verdure · 40g pane · 1 cucchiaino EVO",bimbo:"80g pollo · 120g verdure · 30g pane"},
       uomo:{kcal:590,p:50,c:50,g:16},donna:{kcal:430,p:40,c:32,g:12},bimbo:{kcal:280,p:14,c:32,g:9}},
-    { id:"cen_03", nome:"Pasta integrale al ragù di lenticchie", ingredients:["ing_pasta","ing_lenticchie","ing_passata","ing_evo","ing_parmigiano"],
+    { id:"cen_03", prep:35, nome:"Pasta integrale al ragù di lenticchie", ingredients:["ing_pasta","ing_lenticchie","ing_passata","ing_evo","ing_parmigiano"],
       porzioni:{uomo:"100g pasta · 150g lenticchie · passata · 1 cucchiaio EVO · parmigiano",donna:"70g pasta · 120g lenticchie · passata · 1 cucchiaino EVO",bimbo:"50g pasta · 80g lenticchie · passata · parmigiano"},
       uomo:{kcal:640,p:38,c:85,g:14},donna:{kcal:460,p:28,c:60,g:11},bimbo:{kcal:300,p:12,c:45,g:8}},
-    { id:"cen_04", nome:"Merluzzo al vapore + riso basmati + broccoli", ingredients:["ing_merluzzo","ing_riso","ing_broccoli","ing_evo"],
+    { id:"cen_04", prep:25, nome:"Merluzzo al vapore + riso basmati + broccoli", ingredients:["ing_merluzzo","ing_riso","ing_broccoli","ing_evo"],
       porzioni:{uomo:"220g merluzzo · 90g riso · 250g broccoli · 1 cucchiaio EVO",donna:"160g merluzzo · 65g riso · 250g broccoli · 1 cucchiaino EVO",bimbo:"80g merluzzo · 40g riso · 120g broccoli"},
       uomo:{kcal:570,p:50,c:60,g:10},donna:{kcal:400,p:38,c:40,g:8},bimbo:{kcal:260,p:14,c:35,g:6}},
-    { id:"cen_05", nome:"Pizza integrale fatta in casa", ingredients:["ing_farina","ing_lievito","ing_passata","ing_mozzarella","ing_evo"],
+    { id:"cen_05", prep:60, nome:"Pizza integrale fatta in casa", ingredients:["ing_farina","ing_lievito","ing_passata","ing_mozzarella","ing_evo"],
       porzioni:{uomo:"2 fette grandi · condimento leggero",donna:"1.5 fette · condimento leggero",bimbo:"1 fetta piccola"},
       uomo:{kcal:650,p:30,c:80,g:20},donna:{kcal:480,p:22,c:58,g:16},bimbo:{kcal:310,p:10,c:42,g:10}},
-    { id:"cen_06", nome:"Risotto alle verdure + spezzatino di manzo", ingredients:["ing_riso","ing_manzo","ing_carote","ing_brodo","ing_evo","ing_parmigiano"],
+    { id:"cen_06", prep:45, nome:"Risotto alle verdure + spezzatino di manzo", ingredients:["ing_riso","ing_manzo","ing_carote","ing_brodo","ing_evo","ing_parmigiano"],
       porzioni:{uomo:"90g riso · 180g manzo · verdure · 1 cucchiaio EVO · parmigiano",donna:"65g riso · 130g manzo · verdure · 1 cucchiaino EVO",bimbo:"40g riso · 80g manzo · verdure · parmigiano"},
       uomo:{kcal:660,p:46,c:75,g:18},donna:{kcal:470,p:35,c:52,g:14},bimbo:{kcal:310,p:14,c:40,g:9}},
-    { id:"cen_07", nome:"Minestrone ricco + uova al tegamino + pane", ingredients:["ing_legumi","ing_carote","ing_spinaci","ing_brodo","ing_uova","ing_pane","ing_evo"],
+    { id:"cen_07", prep:30, nome:"Minestrone ricco + uova al tegamino + pane", ingredients:["ing_legumi","ing_carote","ing_spinaci","ing_brodo","ing_uova","ing_pane","ing_evo"],
       porzioni:{uomo:"400ml minestrone · 2 uova · 60g pane · 1 cucchiaio EVO",donna:"300ml minestrone · 2 uova · 40g pane · 1 cucchiaino EVO",bimbo:"200ml minestrone · 1 uovo · 25g pane"},
       uomo:{kcal:580,p:36,c:65,g:16},donna:{kcal:410,p:28,c:46,g:12},bimbo:{kcal:270,p:12,c:36,g:8}},
-    { id:"cen_08", nome:"Salmone teriyaki + riso basmati + edamame", ingredients:["ing_salmone","ing_riso","ing_edamame"],
+    { id:"cen_08", prep:20, nome:"Salmone teriyaki + riso basmati + edamame", ingredients:["ing_salmone","ing_riso","ing_edamame"],
       porzioni:{uomo:"200g salmone · 90g riso · 80g edamame · salsa teriyaki light",donna:"150g salmone · 65g riso · 60g edamame",bimbo:"80g salmone · 40g riso · 30g edamame"},
       uomo:{kcal:640,p:50,c:62,g:18},donna:{kcal:455,p:38,c:44,g:13},bimbo:{kcal:280,p:16,c:32,g:8}},
-    { id:"cen_09", nome:"Petto di pollo in crosta di erbe + quinoa + spinaci", ingredients:["ing_pollo","ing_quinoa","ing_spinaci","ing_spezie","ing_evo"],
+    { id:"cen_09", prep:25, nome:"Petto di pollo in crosta di erbe + quinoa + spinaci", ingredients:["ing_pollo","ing_quinoa","ing_spinaci","ing_spezie","ing_evo"],
       porzioni:{uomo:"220g pollo · 90g quinoa · 150g spinaci · 1 cucchiaio EVO",donna:"160g pollo · 65g quinoa · 150g spinaci · 1 cucchiaino EVO",bimbo:"80g pollo · 35g quinoa · spinaci"},
       uomo:{kcal:595,p:54,c:52,g:16},donna:{kcal:425,p:42,c:36,g:12},bimbo:{kcal:265,p:16,c:28,g:7}},
-    { id:"cen_10", nome:"Polpette di tacchino + purè di patate dolci + fagiolini", ingredients:["ing_tacchino","ing_patatedolci","ing_fagiolini","ing_evo"],
+    { id:"cen_10", prep:30, nome:"Polpette di tacchino + purè di patate dolci + fagiolini", ingredients:["ing_tacchino","ing_patatedolci","ing_fagiolini","ing_evo"],
       porzioni:{uomo:"200g tacchino · 200g patate dolci · 150g fagiolini · 1 cucchiaio EVO",donna:"150g tacchino · 150g patate dolci · 150g fagiolini · 1 cucchiaino EVO",bimbo:"80g tacchino · 100g patate dolci · fagiolini"},
       uomo:{kcal:600,p:48,c:55,g:16},donna:{kcal:430,p:36,c:40,g:12},bimbo:{kcal:275,p:15,c:33,g:7}},
-    { id:"cen_11", nome:"Zuppa di ceci e rosmarino + crostini integrali", ingredients:["ing_ceci","ing_brodo","ing_spezie","ing_crackers","ing_evo"],
+    { id:"cen_11", prep:25, nome:"Zuppa di ceci e rosmarino + crostini integrali", ingredients:["ing_ceci","ing_brodo","ing_spezie","ing_crackers","ing_evo"],
       porzioni:{uomo:"400ml zuppa (200g ceci) · 60g pane · 1 cucchiaio EVO",donna:"300ml zuppa (150g ceci) · 40g pane · 1 cucchiaino EVO",bimbo:"200ml zuppa · 25g pane"},
       uomo:{kcal:580,p:30,c:72,g:16},donna:{kcal:410,p:22,c:52,g:12},bimbo:{kcal:255,p:10,c:38,g:7}},
-    { id:"cen_12", nome:"Orata al forno con limone + patate al forno + insalata", ingredients:["ing_orata","ing_patate","ing_insalata","ing_evo"],
+    { id:"cen_12", prep:35, nome:"Orata al forno con limone + patate al forno + insalata", ingredients:["ing_orata","ing_patate","ing_insalata","ing_evo"],
       porzioni:{uomo:"250g orata · 200g patate · insalata · 1 cucchiaio EVO",donna:"180g orata · 150g patate · insalata · 1 cucchiaino EVO",bimbo:"90g orata · 80g patate · 1 cucchiaino EVO"},
       uomo:{kcal:575,p:46,c:48,g:16},donna:{kcal:410,p:34,c:36,g:12},bimbo:{kcal:255,p:14,c:26,g:7}},
   ],
@@ -343,7 +493,42 @@ const MEAL_META = {
   cena:       { label:"🍽️ Cena",               isSnack:false },
 };
 
-const SK_SEED="pf-seed", SK_HISTORY="pf-history", SK_EXCL="pf-excluded", SK_PERSONAS="pf-personas", SK_MY_PERSONA="pf-my-persona", SK_MISURE="pf-misure";
+const SK_SEED="pf-seed", SK_HISTORY="pf-history", SK_EXCL="pf-excluded", SK_PERSONAS="pf-personas", SK_MY_PERSONA="pf-my-persona", SK_MISURE="pf-misure", SK_OVERRIDES="pf-overrides";
+
+// ─── Trova alternativa per tempo ────────────────────────────────────
+// Restituisce le ricette della stessa categoria ordinate per:
+// 1. rispettano maxPrep
+// 2. simili per kcal al pasto corrente (slot personaSlot)
+// 3. non già usate nella settimana (weekMealIds)
+function findAlternatives(mealKey, currentMeal, maxPrep, excludedIds, weekMealIds, personaSlot) {
+  // Mappa mealKey → categoria DB
+  const cat = mealKey === "spuntino_m" || mealKey === "spuntino_p" ? "spuntino"
+            : mealKey === "colazione" ? "colazione"
+            : mealKey === "pranzo"    ? "pranzo"
+            : "cena";
+
+  const currentKcal = currentMeal[personaSlot]?.kcal || 500;
+  const m = meseCorrente();
+
+  return DB[cat]
+    .filter(r =>
+      r.id !== currentMeal.id &&                                      // non la stessa
+      (r.prep || 0) <= maxPrep &&                                     // entro il tempo
+      !r.ingredients.some(id => excludedIds.includes(id)) &&          // no esclusi
+      pesoStagionale(r, m) > 0                                        // di stagione
+    )
+    .map(r => ({
+      ...r,
+      _kcalDiff: Math.abs((r[personaSlot]?.kcal || 0) - currentKcal),
+      _inWeek:   weekMealIds.has(r.id),
+    }))
+    .sort((a, b) => {
+      // prima le non già in settimana, poi per kcal più simili
+      if (a._inWeek !== b._inWeek) return a._inWeek ? 1 : -1;
+      return a._kcalDiff - b._kcalDiff;
+    })
+    .slice(0, 6); // max 6 alternative da mostrare
+}
 
 // ─── Giorno corrente automatico (0=Lun … 6=Dom) ───────────────────
 function todayDayIndex() {
@@ -748,30 +933,79 @@ function seededRng(seed) {
   return () => { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff; };
 }
 
-function generateWeekPlan(seed, excludedIds = []) {
+// ─── Helpers stagionalità ───────────────────────────────────────────
+function meseCorrente() { return new Date().getMonth() + 1; } // 1–12
+
+function pesoStagionale(ricetta, mese) {
+  // Conta quanti ingredienti della ricetta sono fuori stagione
+  let fuori = 0;
+  for (const ingId of ricetta.ingredients) {
+    const ing = ING_MAP[ingId];
+    if (!ing) continue;
+    if (ing.stagioni && !ing.stagioni.includes(mese)) fuori++;
+  }
+  if (fuori === 0) return 4;  // tutto di stagione → priorità massima
+  if (fuori === 1) return 2;  // un ingrediente fuori → accettabile
+  if (fuori === 2) return 1;  // due fuori → bassa priorità
+  return 0;                   // tre+ fuori → esclusa
+}
+
+function buildWeightedPool(ricette, excludedIds, mese) {
+  const pool = [];
+  for (const r of ricette) {
+    if (r.ingredients.some(id => excludedIds.includes(id))) continue;
+    const w = pesoStagionale(r, mese);
+    if (w > 0) for (let i = 0; i < w; i++) pool.push(r);
+  }
+  // fallback: se il pool è vuoto (tutti esclusi o fuori stagione) usa tutto
+  return pool.length > 0 ? pool : ricette.filter(r => !r.ingredients.some(id => excludedIds.includes(id)));
+}
+
+function generateWeekPlan(seed, excludedIds = [], mese) {
+  const m = mese || meseCorrente();
   const rng = seededRng(seed);
-  const avail = cat => DB[cat].filter(r => !r.ingredients.some(id => excludedIds.includes(id)));
+
   const pickSeven = (cat) => {
-    const pool = avail(cat);
+    const pool = buildWeightedPool(DB[cat], excludedIds, m);
     if (!pool.length) return DB[cat].slice(0, 7);
-    const picked = [], used = new Set();
-    while (picked.length < 7) {
-      const idx = Math.floor(rng() * pool.length);
-      if (!used.has(idx) || used.size >= pool.length) { used.add(idx); picked.push(pool[idx % pool.length]); }
-      if (picked.length >= pool.length) { picked.push(pool[Math.floor(rng() * pool.length)]); }
-      if (picked.length >= 7) break;
+    const picked = [], usedIds = new Set();
+    let attempts = 0;
+    while (picked.length < 7 && attempts < 300) {
+      attempts++;
+      const r = pool[Math.floor(rng() * pool.length)];
+      if (!usedIds.has(r.id) || usedIds.size >= new Set(pool.map(x=>x.id)).size) {
+        usedIds.add(r.id);
+        picked.push(r);
+      }
     }
     return picked.slice(0, 7);
   };
-  const cols = pickSeven("colazione"), pranzi = pickSeven("pranzo"), cene = pickSeven("cena");
-  const sPool = avail("spuntino").length ? avail("spuntino") : DB.spuntino;
+
+  const cols   = pickSeven("colazione");
+  const pranzi = pickSeven("pranzo");
+  const cene   = pickSeven("cena");
+
+  // Spuntini: pool pesato, no due uguali consecutivi
+  const spPool = buildWeightedPool(DB.spuntino, excludedIds, m).length
+    ? buildWeightedPool(DB.spuntino, excludedIds, m)
+    : DB.spuntino;
   const spuntini = [];
   for (let i = 0; i < 14; i++) {
     const excl = spuntini.slice(-2).map(s => s.id);
-    const pool = sPool.filter(s => !excl.includes(s.id));
-    spuntini.push(pool[Math.floor(rng() * pool.length)]);
+    const avail = spPool.filter(s => !excl.includes(s.id));
+    const src   = avail.length ? avail : spPool;
+    spuntini.push(src[Math.floor(rng() * src.length)]);
   }
-  return DAYS.map((day, i) => ({ day, colazione:cols[i], spuntino_m:spuntini[i*2], pranzo:pranzi[i], spuntino_p:spuntini[i*2+1], cena:cene[i] }));
+
+  return DAYS.map((day, i) => ({
+    day,
+    colazione:  cols[i],
+    spuntino_m: spuntini[i * 2],
+    pranzo:     pranzi[i],
+    spuntino_p: spuntini[i * 2 + 1],
+    cena:       cene[i],
+    mese:       m,
+  }));
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1052,33 +1286,148 @@ function ProgressBar({ value, max, color }) {
 }
 
 // ─── MealCard ────────────────────────────────────────────────────────
-function MealCard({ mealKey, meal, personaKey, color }) {
-  const [open, setOpen] = useState(false);
+// Soglie tempo per i pulsanti del selettore
+const PREP_SLOTS = [
+  { label:"≤10'",  max:10,  color:"#16a34a", bg:"#f0fdf4" },
+  { label:"≤20'",  max:20,  color:"#0891b2", bg:"#f0f9ff" },
+  { label:"≤30'",  max:30,  color:"#d97706", bg:"#fffbeb" },
+  { label:"≤60'",  max:60,  color:"#dc2626", bg:"#fef2f2" },
+];
+
+function MealCard({ mealKey, meal, personaKey, color, onSwap, weekMealIds, excludedIds, isOverride, onReset }) {
+  const [open, setOpen]         = useState(false);
+  const [swapOpen, setSwapOpen] = useState(false);
+  const [maxPrep, setMaxPrep]   = useState(null);  // null = nessun filtro attivo
+
   const m = meal[personaKey];
   const { label, isSnack } = MEAL_META[mealKey];
+
+  const prep = meal.prep;
+  const prepColor = !prep ? "#94a3b8" : prep <= 15 ? "#16a34a" : prep <= 30 ? "#d97706" : "#dc2626";
+  const prepBg    = !prep ? "#f8fafc"  : prep <= 15 ? "#f0fdf4" : prep <= 30 ? "#fffbeb" : "#fef2f2";
+  const prepLabel = !prep ? null : prep >= 60 ? `${prep/60}h` : `${prep}'`;
+
+  // Alternative calcolate al volo quando l'utente sceglie un filtro tempo
+  const alternatives = maxPrep !== null
+    ? findAlternatives(mealKey, meal, maxPrep, excludedIds || [], weekMealIds || new Set(), personaKey)
+    : [];
+
   return (
-    <div style={{background:isSnack?"#fafafa":"#fff",borderRadius:12,border:`1.5px solid ${isSnack?"#f1f5f9":"#e2e8f0"}`,marginBottom:8,overflow:"hidden",boxShadow:isSnack?"none":"0 2px 10px #0000000a"}}>
-      <div onClick={()=>setOpen(o=>!o)} style={{background:isSnack?"transparent":color+"0e",borderBottom:open?`1px solid ${color}20`:"none",padding:"9px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer",userSelect:"none"}}>
-        <span style={{fontWeight:800,fontSize:isSnack?11:13,color:isSnack?"#94a3b8":color}}>{label}</span>
+    <div style={{background:isSnack?"#fafafa":"#fff",borderRadius:12,border:`1.5px solid ${isOverride?"#7c3aed40":isSnack?"#f1f5f9":"#e2e8f0"}`,marginBottom:8,overflow:"hidden",boxShadow:isSnack?"none":isOverride?"0 2px 12px #7c3aed18":"0 2px 10px #0000000a"}}>
+
+      {/* ── Header pasto ── */}
+      <div onClick={()=>{ setOpen(o=>!o); if(swapOpen) setSwapOpen(false); }}
+        style={{background:isSnack?"transparent":isOverride?`#7c3aed0e`:color+"0e",borderBottom:(open||swapOpen)?`1px solid ${isOverride?"#7c3aed20":color+"20"}`:"none",padding:"9px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer",userSelect:"none"}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
+          <span style={{fontWeight:800,fontSize:isSnack?11:13,color:isSnack?"#94a3b8":isOverride?"#7c3aed":color}}>{label}</span>
+          {isOverride && <span style={{fontSize:9,background:"#7c3aed",color:"#fff",borderRadius:4,padding:"1px 5px",fontWeight:800}}>MOD</span>}
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          {prepLabel && (
+            <span style={{fontSize:10,fontWeight:700,color:prepColor,background:prepBg,borderRadius:5,padding:"2px 6px"}}>
+              ⏱ {prepLabel}
+            </span>
+          )}
           <span style={{fontFamily:"monospace",fontSize:12,fontWeight:700,color:"#1e293b"}}>{m.kcal} kcal</span>
           <span style={{color:"#cbd5e1",fontSize:10}}>{open?"▲":"▼"}</span>
         </div>
       </div>
+
+      {/* ── Corpo principale ── */}
       <div style={{padding:"10px 14px"}}>
-        <div style={{fontSize:isSnack?12:13,fontWeight:600,color:"#1e293b",marginBottom:8,lineHeight:1.4}}>{meal.nome}</div>
+        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:8,marginBottom:8}}>
+          <div style={{fontSize:isSnack?12:13,fontWeight:600,color:"#1e293b",lineHeight:1.4,flex:1}}>{meal.nome}</div>
+          {/* Bottone swap */}
+          <button
+            onClick={e=>{ e.stopPropagation(); setSwapOpen(s=>!s); setOpen(false); if(!swapOpen) setMaxPrep(null); }}
+            style={{flexShrink:0,padding:"5px 10px",borderRadius:7,border:`1.5px solid ${swapOpen?"#7c3aed":"#e2e8f0"}`,background:swapOpen?"#7c3aed":"#f8fafc",color:swapOpen?"#fff":"#64748b",fontWeight:700,fontSize:11,cursor:"pointer",transition:"all 0.15s",whiteSpace:"nowrap"}}>
+            {swapOpen?"✕":"⇄ Cambia"}
+          </button>
+        </div>
         <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
           <MacroBadge label="P" value={m.p} color="#2563eb"/>
           <MacroBadge label="C" value={m.c} color="#d97706"/>
           <MacroBadge label="G" value={m.g} color="#16a34a"/>
         </div>
+
+        {/* Porzione (espansa) */}
         {open && meal.porzioni?.[personaKey] && (
           <div style={{marginTop:10,background:color+"08",border:`1px solid ${color}20`,borderRadius:8,padding:"8px 12px",fontSize:12,color:"#334155",lineHeight:1.6}}>
             <span style={{fontWeight:700,color,fontSize:10,textTransform:"uppercase",letterSpacing:0.8}}>📏 Porzione · </span>
             {meal.porzioni[personaKey]}
           </div>
         )}
+
+        {/* Reset override */}
+        {isOverride && !swapOpen && (
+          <button onClick={e=>{ e.stopPropagation(); onReset(); }}
+            style={{marginTop:8,width:"100%",padding:"6px",borderRadius:7,border:"1px solid #7c3aed30",background:"#f5f3ff",color:"#7c3aed",fontSize:11,fontWeight:700,cursor:"pointer"}}>
+            ↩ Ripristina originale
+          </button>
+        )}
       </div>
+
+      {/* ── Drawer sostituzione ── */}
+      {swapOpen && (
+        <div style={{borderTop:"1px solid #e2e8f0",background:"#fafafa",padding:"12px 14px"}}>
+          {/* Selettore tempo */}
+          <div style={{fontSize:10,fontWeight:800,color:"#1e293b",marginBottom:8,textTransform:"uppercase",letterSpacing:0.8}}>
+            ⏱ Quanto tempo hai?
+          </div>
+          <div style={{display:"flex",gap:6,marginBottom:12,flexWrap:"wrap"}}>
+            {PREP_SLOTS.map(s=>(
+              <button key={s.max} onClick={()=>setMaxPrep(maxPrep===s.max?null:s.max)}
+                style={{padding:"6px 12px",borderRadius:8,border:`2px solid ${maxPrep===s.max?s.color:"#e2e8f0"}`,background:maxPrep===s.max?s.bg:"#fff",color:maxPrep===s.max?s.color:"#64748b",fontWeight:700,fontSize:12,cursor:"pointer",transition:"all 0.15s"}}>
+                {s.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Risultati */}
+          {maxPrep === null ? (
+            <div style={{textAlign:"center",padding:"12px 0",color:"#94a3b8",fontSize:12}}>
+              Seleziona il tempo disponibile per vedere le alternative
+            </div>
+          ) : alternatives.length === 0 ? (
+            <div style={{textAlign:"center",padding:"12px 0",color:"#94a3b8",fontSize:12}}>
+              Nessuna ricetta disponibile in {maxPrep} minuti 😔<br/>
+              <span style={{fontSize:11}}>Prova ad aumentare il tempo o riabilita qualche ingrediente</span>
+            </div>
+          ) : (
+            <div>
+              <div style={{fontSize:10,color:"#64748b",marginBottom:8,fontWeight:600}}>
+                {alternatives.length} alternative trovate · ordinate per calorie simili
+              </div>
+              {alternatives.map(alt=>{
+                const altM = alt[personaKey];
+                const altPrep = alt.prep || 0;
+                const altPrepColor = altPrep<=15?"#16a34a":altPrep<=30?"#d97706":"#dc2626";
+                const kcalDiff = altM?.kcal - m.kcal;
+                const diffColor = Math.abs(kcalDiff)<=50?"#16a34a":Math.abs(kcalDiff)<=100?"#d97706":"#94a3b8";
+                return (
+                  <div key={alt.id} onClick={()=>{ onSwap(alt); setSwapOpen(false); setMaxPrep(null); }}
+                    style={{background:"#fff",borderRadius:10,border:"1.5px solid #e2e8f0",padding:"10px 12px",marginBottom:7,cursor:"pointer",transition:"border-color 0.15s",display:"flex",alignItems:"center",gap:10}}
+                    onMouseEnter={e=>e.currentTarget.style.borderColor="#7c3aed80"}
+                    onMouseLeave={e=>e.currentTarget.style.borderColor="#e2e8f0"}>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:12,fontWeight:700,color:"#1e293b",lineHeight:1.3,marginBottom:5}}>{alt.nome}</div>
+                      <div style={{display:"flex",gap:5,flexWrap:"wrap",alignItems:"center"}}>
+                        <span style={{fontSize:10,fontWeight:700,color:altPrepColor,background:altPrepColor+"18",borderRadius:5,padding:"1px 6px"}}>⏱ {altPrep}'</span>
+                        <span style={{fontSize:10,fontFamily:"monospace",fontWeight:700,color:"#1e293b"}}>{altM?.kcal} kcal</span>
+                        <span style={{fontSize:10,fontWeight:700,color:diffColor}}>
+                          {kcalDiff===0?"=":`${kcalDiff>0?"+":""}${kcalDiff} kcal`}
+                        </span>
+                        {alt._inWeek && <span style={{fontSize:9,color:"#f97316",background:"#fff7ed",borderRadius:4,padding:"1px 5px",fontWeight:700}}>già in sett.</span>}
+                      </div>
+                    </div>
+                    <div style={{flexShrink:0,width:28,height:28,borderRadius:"50%",background:"#7c3aed10",border:"1.5px solid #7c3aed30",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>→</div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -1230,7 +1579,16 @@ function IngredientiPage({ excluded, onToggle }) {
                     </div>
                     <div style={{flex:1}}>
                       <div style={{fontSize:13,fontWeight:600,color:isExcl?"#94a3b8":"#1e293b",textDecoration:isExcl?"line-through":"none"}}>{ing.nome}</div>
-                      <div style={{fontSize:10,color:"#94a3b8",marginTop:1}}>{recCount} ricett{recCount===1?"a":"e"} · <span style={{color:dc,fontWeight:700}}>{ing.deperibile>=365?"stabile":`${ing.deperibile}g`}</span></div>
+                      <div style={{fontSize:10,color:"#94a3b8",marginTop:1,display:"flex",gap:6,flexWrap:"wrap"}}>
+                        <span>{recCount} ricett{recCount===1?"a":"e"}</span>
+                        <span style={{color:dc,fontWeight:700}}>{ing.deperibile>=365?"stabile":`${ing.deperibile}g`}</span>
+                        {ing.stagioni ? (()=>{
+                          const m=meseCorrente();
+                          const nomiMesi=["","Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic"];
+                          const inStag=ing.stagioni.includes(m);
+                          return <span style={{color:inStag?"#16a34a":"#f97316",fontWeight:700}}>{inStag?"✓ stagione":"⚠ fuori stagione"} · {ing.stagioni.map(x=>nomiMesi[x]).join(" ")}</span>;
+                        })() : <span>tutto l'anno</span>}
+                      </div>
                     </div>
                     {isExcl&&<span style={{fontSize:10,background:"#fef2f2",color:"#dc2626",border:"1px solid #fecaca",borderRadius:5,padding:"2px 6px",fontWeight:700}}>Escluso</span>}
                   </div>
@@ -1316,14 +1674,45 @@ function PersonaForm({ persona, onSave, onCancel, isNew }) {
   );
 }
 
+// ─── Seme composito: base seed + overrides serializzati ──────────────
+// Formato: "SEED:123456789" oppure "SEED:123456789|OV:base64(json)"
+function encodeSeed(seed, overrides) {
+  const hasOverrides = overrides && Object.keys(overrides).length > 0;
+  if (!hasOverrides) return String(seed);
+  try {
+    const ovStr = btoa(unescape(encodeURIComponent(JSON.stringify(overrides))));
+    return `${seed}|OV:${ovStr}`;
+  } catch { return String(seed); }
+}
+
+function decodeSeed(raw) {
+  const s = raw.trim();
+  if (!s.includes("|OV:")) {
+    const n = parseInt(s, 10);
+    return isNaN(n) || n <= 0 ? null : { seed: n, overrides: {} };
+  }
+  try {
+    const [seedPart, ovPart] = s.split("|OV:");
+    const seed = parseInt(seedPart, 10);
+    if (isNaN(seed) || seed <= 0) return null;
+    const overrides = JSON.parse(decodeURIComponent(escape(atob(ovPart))));
+    return { seed, overrides };
+  } catch { return null; }
+}
+
 // ─── SeedSyncSection ─────────────────────────────────────────────────
-function SeedSyncSection({ currentSeed, onApplySeed }) {
+function SeedSyncSection({ currentSeed, overrides, onApplySeed }) {
   const [inputSeed, setInputSeed] = useState("");
-  const [copied, setCopied] = useState(false);
-  const [applied, setApplied] = useState(false);
-  const [error, setError] = useState("");
+  const [copied, setCopied]       = useState(false);
+  const [applied, setApplied]     = useState(false);
+  const [error, setError]         = useState("");
+
+  const hasOverrides   = overrides && Object.keys(overrides).length > 0;
+  const nOverrides     = hasOverrides ? Object.keys(overrides).length : 0;
+  const composite      = encodeSeed(currentSeed, overrides);
+
   const handleCopy = () => {
-    const text = String(currentSeed);
+    const text = composite;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(text).then(()=>{ setCopied(true); setTimeout(()=>setCopied(false),2000); });
     } else {
@@ -1331,49 +1720,81 @@ function SeedSyncSection({ currentSeed, onApplySeed }) {
       setCopied(true); setTimeout(()=>setCopied(false),2000);
     }
   };
+
   const handleApply = () => {
-    const parsed = parseInt(inputSeed.trim(), 10);
-    if (isNaN(parsed)||parsed<=0) { setError("Seme non valido. Deve essere un numero intero positivo."); return; }
-    setError(""); onApplySeed(parsed); setInputSeed(""); setApplied(true); setTimeout(()=>setApplied(false),2500);
+    const decoded = decodeSeed(inputSeed);
+    if (!decoded) { setError("Seme non valido."); return; }
+    setError("");
+    onApplySeed(decoded.seed, decoded.overrides);
+    setInputSeed(""); setApplied(true); setTimeout(()=>setApplied(false),2500);
   };
+
   return (
     <div style={{background:"#fff",borderRadius:14,border:"1.5px solid #e2e8f0",padding:"16px",marginBottom:16,boxShadow:"0 2px 10px #0000000a"}}>
       <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
         <span style={{fontSize:20}}>🔗</span>
-        <div><div style={{fontSize:13,fontWeight:800,color:"#1e293b"}}>Sincronizzazione piano</div><div style={{fontSize:10,color:"#64748b",marginTop:1}}>Condividi il seme per avere lo stesso piano su tutti i dispositivi</div></div>
+        <div>
+          <div style={{fontSize:13,fontWeight:800,color:"#1e293b"}}>Sincronizzazione piano</div>
+          <div style={{fontSize:10,color:"#64748b",marginTop:1}}>Condividi il seme per avere lo stesso piano su tutti i dispositivi</div>
+        </div>
       </div>
+
+      {/* Seme attivo */}
       <div style={{background:"#f8fafc",borderRadius:10,border:"1.5px solid #e2e8f0",padding:"12px 14px",marginBottom:14}}>
-        <div style={{fontSize:10,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:0.8,marginBottom:8}}>🌱 Seme attivo</div>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+          <div style={{fontSize:10,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:0.8}}>🌱 Seme attivo</div>
+          {hasOverrides && (
+            <div style={{fontSize:10,fontWeight:700,color:"#7c3aed",background:"#f5f3ff",borderRadius:5,padding:"2px 8px",border:"1px solid #ddd6fe"}}>
+              {nOverrides} pasto{nOverrides>1?"i":""} modificato{nOverrides>1?"i":""}
+            </div>
+          )}
+        </div>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <div style={{flex:1,fontFamily:"monospace",fontSize:17,fontWeight:800,color:"#1e293b",letterSpacing:1,wordBreak:"break-all"}}>{String(currentSeed)}</div>
+          <div style={{flex:1,fontFamily:"monospace",fontSize:hasOverrides?11:17,fontWeight:800,color:"#1e293b",letterSpacing:hasOverrides?0:1,wordBreak:"break-all",lineHeight:1.4}}>
+            {hasOverrides ? (
+              <>
+                <span style={{fontSize:15,letterSpacing:1}}>{currentSeed}</span>
+                <span style={{fontSize:9,color:"#7c3aed",display:"block",marginTop:2,fontWeight:600}}>+ {nOverrides} sostituzion{nOverrides>1?"i":"e"} incluse nel seme</span>
+              </>
+            ) : String(currentSeed)}
+          </div>
           <button onClick={handleCopy} style={{flexShrink:0,padding:"9px 14px",borderRadius:8,border:"none",background:copied?"#16a34a":"#2563eb",color:"#fff",fontWeight:700,fontSize:12,cursor:"pointer",transition:"background 0.2s",whiteSpace:"nowrap"}}>
             {copied?"✓ Copiato!":"📋 Copia"}
           </button>
         </div>
-        <div style={{marginTop:8,fontSize:10,color:"#94a3b8",lineHeight:1.5}}>Invia questo numero agli altri membri per sincronizzare il piano.</div>
+        <div style={{marginTop:8,fontSize:10,color:"#94a3b8",lineHeight:1.5}}>
+          {hasOverrides
+            ? "Il seme include le tue sostituzioni manuali — chi lo riceve vedrà lo stesso piano identico."
+            : "Invia questo numero agli altri membri per sincronizzare il piano."}
+        </div>
       </div>
+
+      {/* Inserisci seme */}
       <div>
         <div style={{fontSize:10,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:0.8,marginBottom:8}}>📥 Inserisci seme ricevuto</div>
         <div style={{display:"flex",gap:8,alignItems:"stretch"}}>
-          <input value={inputSeed} onChange={e=>{setInputSeed(e.target.value);setError("");}} onKeyDown={e=>e.key==="Enter"&&handleApply()}
-            placeholder="Incolla o digita il seme..." inputMode="numeric"
-            style={{flex:1,padding:"10px 12px",border:`1.5px solid ${error?"#ef4444":"#e2e8f0"}`,borderRadius:9,fontSize:14,fontFamily:"monospace",outline:"none",boxSizing:"border-box",color:"#1e293b"}}/>
-          <button onClick={handleApply} disabled={!inputSeed.trim()} style={{flexShrink:0,padding:"10px 16px",borderRadius:9,border:"none",background:!inputSeed.trim()?"#e2e8f0":applied?"#16a34a":"#2563eb",color:!inputSeed.trim()?"#94a3b8":"#fff",fontWeight:700,fontSize:12,cursor:!inputSeed.trim()?"not-allowed":"pointer",transition:"all 0.2s",whiteSpace:"nowrap"}}>
+          <input value={inputSeed} onChange={e=>{setInputSeed(e.target.value);setError("");}}
+            onKeyDown={e=>e.key==="Enter"&&handleApply()}
+            placeholder="Incolla il seme ricevuto..."
+            style={{flex:1,padding:"10px 12px",border:`1.5px solid ${error?"#ef4444":"#e2e8f0"}`,borderRadius:9,fontSize:13,fontFamily:"monospace",outline:"none",boxSizing:"border-box",color:"#1e293b"}}/>
+          <button onClick={handleApply} disabled={!inputSeed.trim()}
+            style={{flexShrink:0,padding:"10px 16px",borderRadius:9,border:"none",background:!inputSeed.trim()?"#e2e8f0":applied?"#16a34a":"#2563eb",color:!inputSeed.trim()?"#94a3b8":"#fff",fontWeight:700,fontSize:12,cursor:!inputSeed.trim()?"not-allowed":"pointer",transition:"all 0.2s",whiteSpace:"nowrap"}}>
             {applied?"✓ Applicato!":"Applica →"}
           </button>
         </div>
         {error&&<div style={{marginTop:6,fontSize:11,color:"#dc2626",fontWeight:600}}>⚠️ {error}</div>}
-        {applied&&<div style={{marginTop:6,fontSize:11,color:"#16a34a",fontWeight:600}}>✅ Piano sincronizzato!</div>}
+        {applied&&<div style={{marginTop:6,fontSize:11,color:"#16a34a",fontWeight:600}}>✅ Piano sincronizzato con tutte le modifiche!</div>}
       </div>
+
       <div style={{marginTop:12,background:"#fffbeb",border:"1px solid #fde68a",borderRadius:8,padding:"8px 12px",fontSize:10,color:"#92400e",lineHeight:1.6}}>
-        💡 <strong>Funziona offline:</strong> stesso seme = stesso piano per tutta la famiglia, senza internet.
+        💡 <strong>Funziona offline:</strong> stesso seme = stesso piano identico per tutta la famiglia, sostituzioni incluse.
       </div>
     </div>
   );
 }
 
 // ─── FamigliaPage ────────────────────────────────────────────────────
-function FamigliaPage({ personas, onUpdate, onAdd, onDelete, currentSeed, onApplySeed, myPersonaId, onSetMyPersona, misureApp }) {
+function FamigliaPage({ personas, onUpdate, onAdd, onDelete, currentSeed, overrides, onApplySeed, myPersonaId, onSetMyPersona, misureApp }) {
   const [editing, setEditing] = useState(null);
   const [adding, setAdding]   = useState(false);
   const newPersona = () => ({ id:"p"+Date.now(), nome:"Nuovo", sesso:"M", eta:30, peso:70, altezza:170, stile:"attivo", obiettivo:"mantenimento", color:COLORS[personas.length%COLORS.length] });
@@ -1398,7 +1819,7 @@ function FamigliaPage({ personas, onUpdate, onAdd, onDelete, currentSeed, onAppl
           })}
         </div>
       </div>
-      <SeedSyncSection currentSeed={currentSeed} onApplySeed={onApplySeed}/>
+      <SeedSyncSection currentSeed={currentSeed} overrides={overrides} onApplySeed={onApplySeed}/>
       <div style={{background:"#f0f9ff",border:"1px solid #bae6fd",borderRadius:10,padding:"10px 14px",marginBottom:14,fontSize:11,color:"#0369a1"}}>
         ℹ️ I target calorici vengono calcolati automaticamente da BMR + TDEE. I valori delle ricette sono approssimazioni medie.
       </div>
@@ -1469,13 +1890,15 @@ function App() {
   const [showHistory, setShowHistory] = useState(false);
   const [regenNeeded, setRegenNeeded] = useState(false);
   const [misureApp, setMisureApp]     = useState({});
+  const [overrides, setOverrides]     = useState({}); // { "dayIdx-mealKey": ricettaObj }
 
   useEffect(()=>{
     async function load(){
       try {
-        const [sS,hS,eS,pS,mS,miS] = await Promise.allSettled([
+        const [sS,hS,eS,pS,mS,miS,ovS] = await Promise.allSettled([
           window.storage.get(SK_SEED), window.storage.get(SK_HISTORY), window.storage.get(SK_EXCL),
           window.storage.get(SK_PERSONAS), window.storage.get(SK_MY_PERSONA), window.storage.get(SK_MISURE),
+          window.storage.get(SK_OVERRIDES),
         ]);
         const loadedSeed = sS.status==="fulfilled"&&sS.value ? parseInt(sS.value.value) : Date.now();
         const loadedHist = hS.status==="fulfilled"&&hS.value ? JSON.parse(hS.value.value) : [];
@@ -1483,10 +1906,11 @@ function App() {
         const loadedPers = pS.status==="fulfilled"&&pS.value ? JSON.parse(pS.value.value) : DEFAULT_PERSONAS;
         const loadedMyP  = mS.status==="fulfilled"&&mS.value ? mS.value.value : loadedPers[0].id;
         const loadedMisu = miS.status==="fulfilled"&&miS.value ? JSON.parse(miS.value.value) : {};
+        const loadedOvrd = ovS.status==="fulfilled"&&ovS.value ? JSON.parse(ovS.value.value) : {};
         const validMyP   = loadedPers.find(p=>p.id===loadedMyP) ? loadedMyP : loadedPers[0].id;
         setSeed(loadedSeed); setHistory(loadedHist); setExcluded(loadedExcl);
         setPersonas(loadedPers); setSelPersonaId(loadedPers[0].id); setMyPersonaId(validMyP);
-        setMisureApp(loadedMisu);
+        setMisureApp(loadedMisu); setOverrides(loadedOvrd);
         setPlan(generateWeekPlan(loadedSeed, loadedExcl));
       } catch {
         const ns=Date.now(); setSeed(ns); setPersonas(DEFAULT_PERSONAS);
@@ -1510,14 +1934,42 @@ function App() {
     setPersonas(prev=>{ const next=prev.filter(p=>p.id!==id); window.storage.set(SK_PERSONAS,JSON.stringify(next)).catch(()=>{}); if(selPersonaId===id) setSelPersonaId(next[0]?.id||null); return next; });
   },[selPersonaId]);
 
-  const handleSetMyPersona = useCallback((id)=>{ setMyPersonaId(id); setSelPersonaId(id); window.storage.set(SK_MY_PERSONA,id).catch(()=>{}); },[]);
+  const handleSetMyPersona = useCallback((id)=>{
+    setMyPersonaId(id);
+    setSelPersonaId(id);
+    window.storage.set(SK_MY_PERSONA, id).catch(()=>{});
+  },[]);
 
-  const handleApplySeed = useCallback(async(newSeed)=>{
+  const handleSwap = useCallback(async(dayIdx, mealKey, newMeal) => {
+    const key = `${dayIdx}-${mealKey}`;
+    setOverrides(prev => {
+      const next = {...prev, [key]: newMeal};
+      window.storage.set(SK_OVERRIDES, JSON.stringify(next)).catch(()=>{});
+      return next;
+    });
+  }, []);
+
+  const handleResetSwap = useCallback(async(dayIdx, mealKey) => {
+    const key = `${dayIdx}-${mealKey}`;
+    setOverrides(prev => {
+      const next = {...prev};
+      delete next[key];
+      window.storage.set(SK_OVERRIDES, JSON.stringify(next)).catch(()=>{});
+      return next;
+    });
+  }, []);
+
+  const handleApplySeed = useCallback(async(newSeed, newOverrides)=>{
     setSpinning(true); await new Promise(r=>setTimeout(r,400));
     const np=generateWeekPlan(newSeed,excluded);
     const nh=[{seed,date:new Date().toLocaleDateString("it-IT"),label:`Piano del ${new Date().toLocaleDateString("it-IT")}`},...history].slice(0,5);
-    setSeed(newSeed); setPlan(np); setHistory(nh); setSelDay(0); setRegenNeeded(false);
-    try { await window.storage.set(SK_SEED,String(newSeed)); await window.storage.set(SK_HISTORY,JSON.stringify(nh)); } catch{}
+    const resolvedOverrides = newOverrides || {};
+    setSeed(newSeed); setPlan(np); setHistory(nh); setSelDay(0); setRegenNeeded(false); setOverrides(resolvedOverrides);
+    try {
+      await window.storage.set(SK_SEED,String(newSeed));
+      await window.storage.set(SK_HISTORY,JSON.stringify(nh));
+      await window.storage.set(SK_OVERRIDES,JSON.stringify(resolvedOverrides));
+    } catch{}
     setSpinning(false);
   },[seed,history,excluded]);
 
@@ -1525,8 +1977,12 @@ function App() {
     setSpinning(true); await new Promise(r=>setTimeout(r,500));
     const ns=Date.now(), np=generateWeekPlan(ns,excluded);
     const nh=[{seed,date:new Date().toLocaleDateString("it-IT"),label:`Piano del ${new Date().toLocaleDateString("it-IT")}`},...history].slice(0,5);
-    setSeed(ns); setPlan(np); setHistory(nh); setSelDay(0); setRegenNeeded(false);
-    try { await window.storage.set(SK_SEED,String(ns)); await window.storage.set(SK_HISTORY,JSON.stringify(nh)); } catch{}
+    setSeed(ns); setPlan(np); setHistory(nh); setSelDay(0); setRegenNeeded(false); setOverrides({});
+    try {
+      await window.storage.set(SK_SEED,String(ns));
+      await window.storage.set(SK_HISTORY,JSON.stringify(nh));
+      await window.storage.set(SK_OVERRIDES,"{}");
+    } catch{}
     setSpinning(false);
   },[seed,history,excluded]);
 
@@ -1578,6 +2034,17 @@ function App() {
           </div>
           <div style={{display:"flex",alignItems:"center",gap:6,marginTop:4}}>
             <span style={{fontSize:13,color:"#e2e8f0",fontWeight:700}}>{TABS.find(t=>t.key===page)?.label||""}</span>
+            {/* Badge stagione corrente */}
+            {page==="piano"&&!showHistory&&(()=>{
+              const m = meseCorrente();
+              const nomiMesi = ["","Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic"];
+              const stagEmoji = m>=3&&m<=5?"🌸":m>=6&&m<=8?"☀️":m>=9&&m<=11?"🍂":"❄️";
+              return (
+                <span style={{marginLeft:4,fontSize:10,background:"rgba(255,255,255,0.15)",borderRadius:5,padding:"2px 8px",color:"#e2e8f0",fontWeight:600}}>
+                  {stagEmoji} {nomiMesi[m]} · stagionale
+                </span>
+              );
+            })()}
             {history.length>0&&<button onClick={()=>setShowHistory(h=>!h)} style={{marginLeft:"auto",flexShrink:0,padding:"4px 10px",borderRadius:6,border:"none",background:showHistory?"#fff":"rgba(255,255,255,0.15)",color:showHistory?"#1e293b":"#e2e8f0",fontWeight:700,fontSize:11,cursor:"pointer"}}>🕐 Storico</button>}
           </div>
           {page==="piano"&&!showHistory&&(
@@ -1638,8 +2105,41 @@ function App() {
             </div>
             {spinning ? <div style={{textAlign:"center",padding:"40px 0",color:"#64748b"}}>🔄 Generando...</div> : (
               <>
-                {MEAL_KEYS.map(mk=><MealCard key={mk} mealKey={mk} meal={dayData[mk]} personaKey={personaSlot} color={persona.color}/>)}
-                <TotaleBar dayData={dayData} personaKey={personaSlot} color={persona.color} target={personaTarget}/>
+                {(()=>{
+                  // Set di tutti gli id ricette già presenti nel piano questa settimana
+                  const weekMealIds = new Set(
+                    plan.flatMap(d => MEAL_KEYS.map(mk => d[mk]?.id)).filter(Boolean)
+                  );
+                  // dayData con overrides applicati
+                  const effectiveDay = {...dayData};
+                  MEAL_KEYS.forEach(mk => {
+                    const key = `${selDay}-${mk}`;
+                    if (overrides[key]) effectiveDay[mk] = overrides[key];
+                  });
+                  return (
+                    <>
+                      {MEAL_KEYS.map(mk => {
+                        const key = `${selDay}-${mk}`;
+                        const isOverride = !!overrides[key];
+                        return (
+                          <MealCard
+                            key={mk}
+                            mealKey={mk}
+                            meal={effectiveDay[mk]}
+                            personaKey={personaSlot}
+                            color={persona.color}
+                            isOverride={isOverride}
+                            weekMealIds={weekMealIds}
+                            excludedIds={excluded}
+                            onSwap={alt => handleSwap(selDay, mk, alt)}
+                            onReset={() => handleResetSwap(selDay, mk)}
+                          />
+                        );
+                      })}
+                      <TotaleBar dayData={effectiveDay} personaKey={personaSlot} color={persona.color} target={personaTarget}/>
+                    </>
+                  );
+                })()}
                 <div style={{marginTop:14,background:"#fff",borderRadius:12,border:"1.5px solid #e2e8f0",padding:"12px 16px"}}>
                   {/* Intestazione con badge confidenza */}
                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
@@ -1697,7 +2197,7 @@ function App() {
         {!showHistory&&page==="misure"&&<MisurePage personas={personas} myPersonaId={myPersonaId} onMisureChange={setMisureApp}/>}
         {!showHistory&&page==="famiglia"&&(
           <FamigliaPage personas={personas} onUpdate={handleUpdatePersona} onAdd={handleAddPersona} onDelete={handleDeletePersona}
-            currentSeed={seed} onApplySeed={handleApplySeed} myPersonaId={myPersonaId} onSetMyPersona={handleSetMyPersona} misureApp={misureApp}/>
+            currentSeed={seed} overrides={overrides} onApplySeed={handleApplySeed} myPersonaId={myPersonaId} onSetMyPersona={handleSetMyPersona} misureApp={misureApp}/>
         )}
       </div>
 
