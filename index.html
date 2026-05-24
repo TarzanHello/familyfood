@@ -762,7 +762,98 @@ const MEAL_META = {
   cena:       { label:"🍽️ Cena",               isSnack:false },
 };
 
-const SK_SEED="pf-seed", SK_HISTORY="pf-history", SK_EXCL="pf-excluded", SK_PERSONAS="pf-personas", SK_MY_PERSONA="pf-my-persona", SK_MISURE="pf-misure", SK_OVERRIDES="pf-overrides", SK_WATER="pf-water";
+const SK_SEED="pf-seed", SK_HISTORY="pf-history", SK_EXCL="pf-excluded", SK_PERSONAS="pf-personas", SK_MY_PERSONA="pf-my-persona", SK_MISURE="pf-misure", SK_OVERRIDES="pf-overrides", SK_WATER="pf-water", SK_PREFS="pf-prefs";
+
+// ═══════════════════════════════════════════════════════════════════
+// SISTEMA PREFERENZE — accumulo segnali sui gusti
+// ═══════════════════════════════════════════════════════════════════
+// Uno swap NON è un segnale unico. Va distinto in due tipi:
+//
+//  • SWAP DI GUSTO   → fatto con anticipo (es. lunedì cambio il piatto
+//                      di mercoledì). È un giudizio sulla ricetta.
+//                      Penalizza/premia il punteggio gusti.
+//  • SWAP DI CONTESTO→ fatto a ridosso del pasto (es. cambio la cena
+//                      di stasera alle 19:30 perché è tardi). NON è un
+//                      giudizio sul gusto: la ricetta resta amata.
+//                      Si registra a parte come dato grezzo di fascia
+//                      oraria, per analisi future.
+//
+// Il discriminante è quante ORE mancano dal momento dello swap al
+// pasto bersaglio. Sotto la soglia = contesto, sopra = gusto.
+//
+// Struttura salvata in SK_PREFS:
+// {
+//   recipes: { "<id>": { score, liked, swapsOut, swapsIn, updated } },
+//   contextSwaps: [ { ts, dayIdx, mealKey, hoursAhead,
+//                      outId, outNome, outPrep, inId, inNome, inPrep } ]
+// }
+const PREF_WEIGHTS = { like: 3, swapOut: -1, swapIn: 1 };
+
+// Soglia in ore: sotto questo valore lo swap è "di contesto".
+const SWAP_CONTEXT_HOURS = 18;
+
+// Orari convenzionali di consumo di ogni pasto (ora del giorno, 0-24).
+const MEAL_HOUR = {
+  colazione: 8,
+  spuntino_m: 10.5,
+  pranzo: 13,
+  spuntino_p: 16.5,
+  cena: 20,
+};
+
+// Quante ore mancano da "adesso" al pasto (dayIdx 0=Lun..6=Dom, mealKey).
+// Usa todayDayIndex() per ancorare la settimana al giorno corrente.
+function hoursUntilMeal(dayIdx, mealKey) {
+  const now = new Date();
+  const today = todayDayIndex();          // 0=Lun..6=Dom
+  let dayDelta = dayIdx - today;          // giorni di distanza nel piano
+  // il piano è una settimana fissa Lun→Dom: niente wrap, range -6..+6
+  const mealHour = MEAL_HOUR[mealKey] != null ? MEAL_HOUR[mealKey] : 13;
+  const nowHours = now.getHours() + now.getMinutes() / 60;
+  return dayDelta * 24 + (mealHour - nowHours);
+}
+
+// Classifica uno swap: "contesto" se il pasto è imminente, "gusto" altrimenti.
+// Gli swap già passati (hoursAhead negativo) li trattiamo come gusto:
+// rivedere a posteriori un pasto è una valutazione, non fretta.
+function classifySwap(dayIdx, mealKey) {
+  const h = hoursUntilMeal(dayIdx, mealKey);
+  if (h >= 0 && h < SWAP_CONTEXT_HOURS) return "contesto";
+  return "gusto";
+}
+
+// Calcola lo score sintetico a partire dai segnali grezzi.
+function computePrefScore(entry) {
+  if (!entry) return 0;
+  const like = entry.liked ? PREF_WEIGHTS.like : 0;
+  const out  = (entry.swapsOut || 0) * PREF_WEIGHTS.swapOut;
+  const sIn  = (entry.swapsIn  || 0) * PREF_WEIGHTS.swapIn;
+  return like + out + sIn;
+}
+
+// Normalizza la struttura prefs completa (mai undefined).
+// Retrocompatibile col vecchio formato piatto { id: {...} }.
+function normalizePrefs(raw) {
+  if (!raw || typeof raw !== "object") return { recipes:{}, contextSwaps:[] };
+  // Vecchio formato: oggetto con chiavi ricetta direttamente in radice
+  if (!raw.recipes && !raw.contextSwaps) {
+    const looksLikeRecipes = Object.keys(raw).some(k => /^(col|spu|pra|cen)_/.test(k));
+    if (looksLikeRecipes) return { recipes: raw, contextSwaps: [] };
+    return { recipes:{}, contextSwaps:[] };
+  }
+  return {
+    recipes: (raw.recipes && typeof raw.recipes==="object") ? raw.recipes : {},
+    contextSwaps: Array.isArray(raw.contextSwaps) ? raw.contextSwaps : [],
+  };
+}
+
+// Restituisce la entry di una ricetta normalizzata (mai undefined).
+function getPrefEntry(prefs, recipeId) {
+  const recipes = (prefs && prefs.recipes) || {};
+  const e = recipes[recipeId];
+  return e ? { score:0, liked:false, swapsOut:0, swapsIn:0, ...e }
+           : { score:0, liked:false, swapsOut:0, swapsIn:0 };
+}
 
 // ─── Trova alternativa per tempo ────────────────────────────────────
 // Restituisce le ricette della stessa categoria ordinate per:
@@ -1701,7 +1792,7 @@ const PREP_SLOTS = [
   { label:"≤60'",  max:60,  color:"#dc2626", bg:"#fef2f2" },
 ];
 
-function MealCard({ mealKey, meal, personaKey, color, onSwap, weekMealIds, excludedIds, isOverride, onReset }) {
+function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealIds, excludedIds, isOverride, onReset, prefEntry, onToggleLike }) {
   const [open, setOpen]         = useState(false);
   const [swapOpen, setSwapOpen] = useState(false);
   const [maxPrep, setMaxPrep]   = useState(null);  // null = nessun filtro attivo
@@ -1744,12 +1835,22 @@ function MealCard({ mealKey, meal, personaKey, color, onSwap, weekMealIds, exclu
       <div style={{padding:"10px 14px"}}>
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:8,marginBottom:8}}>
           <div style={{fontSize:isSnack?12:13,fontWeight:600,color:"#1e293b",lineHeight:1.4,flex:1}}>{meal.nome}</div>
-          {/* Bottone swap */}
-          <button
-            onClick={e=>{ e.stopPropagation(); setSwapOpen(s=>!s); setOpen(false); if(!swapOpen) setMaxPrep(null); }}
-            style={{flexShrink:0,padding:"5px 10px",borderRadius:7,border:`1.5px solid ${swapOpen?"#7c3aed":"#e2e8f0"}`,background:swapOpen?"#7c3aed":"#f8fafc",color:swapOpen?"#fff":"#64748b",fontWeight:700,fontSize:11,cursor:"pointer",transition:"all 0.15s",whiteSpace:"nowrap"}}>
-            {swapOpen?"✕":"⇄ Cambia"}
-          </button>
+          <div style={{display:"flex",gap:6,flexShrink:0}}>
+            {/* Bottone like */}
+            <button
+              onClick={e=>{ e.stopPropagation(); onToggleLike && onToggleLike(); }}
+              aria-label={prefEntry?.liked ? "Rimuovi preferito" : "Segna come preferito"}
+              title={prefEntry?.liked ? "Tolta dai preferiti" : "Aggiungi ai preferiti"}
+              style={{flexShrink:0,width:31,height:28,borderRadius:7,border:`1.5px solid ${prefEntry?.liked?"#ef4444":"#e2e8f0"}`,background:prefEntry?.liked?"#fef2f2":"#f8fafc",cursor:"pointer",transition:"all 0.15s",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,padding:0}}>
+              <span style={{filter:prefEntry?.liked?"none":"grayscale(1) opacity(0.55)"}}>{prefEntry?.liked?"❤️":"🤍"}</span>
+            </button>
+            {/* Bottone swap */}
+            <button
+              onClick={e=>{ e.stopPropagation(); setSwapOpen(s=>!s); setOpen(false); if(!swapOpen) setMaxPrep(null); }}
+              style={{flexShrink:0,padding:"5px 10px",borderRadius:7,border:`1.5px solid ${swapOpen?"#7c3aed":"#e2e8f0"}`,background:swapOpen?"#7c3aed":"#f8fafc",color:swapOpen?"#fff":"#64748b",fontWeight:700,fontSize:11,cursor:"pointer",transition:"all 0.15s",whiteSpace:"nowrap"}}>
+              {swapOpen?"✕":"⇄ Cambia"}
+            </button>
+          </div>
         </div>
         <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
           <MacroBadge label="P" value={m.p} color="#2563eb"/>
@@ -1777,6 +1878,21 @@ function MealCard({ mealKey, meal, personaKey, color, onSwap, weekMealIds, exclu
       {/* ── Drawer sostituzione ── */}
       {swapOpen && (
         <div style={{borderTop:"1px solid #e2e8f0",background:"#fafafa",padding:"12px 14px"}}>
+          {/* Come verrà interpretato questo swap */}
+          {(()=>{
+            const tipo = classifySwap(dayIdx, mealKey);
+            const isContesto = tipo === "contesto";
+            return (
+              <div style={{display:"flex",alignItems:"flex-start",gap:7,background:isContesto?"#fffbeb":"#f5f3ff",border:`1px solid ${isContesto?"#fde68a":"#ddd6fe"}`,borderRadius:8,padding:"8px 11px",marginBottom:12,fontSize:10.5,lineHeight:1.5,color:isContesto?"#92400e":"#6d28d9"}}>
+                <span style={{fontSize:13,flexShrink:0}}>{isContesto?"⏱":"🔄"}</span>
+                <span>
+                  {isContesto
+                    ? <>Pasto imminente: questo cambio conta come <strong>fretta</strong>, non penalizza i gusti della ricetta.</>
+                    : <>Cambio pianificato in anticipo: conta come <strong>preferenza di gusto</strong>.</>}
+                </span>
+              </div>
+            );
+          })()}
           {/* Selettore tempo */}
           <div style={{fontSize:10,fontWeight:800,color:"#1e293b",marginBottom:8,textTransform:"uppercase",letterSpacing:0.8}}>
             ⏱ Quanto tempo hai?
@@ -2282,6 +2398,163 @@ function FamigliaPage({ personas, onUpdate, onAdd, onDelete, currentSeed, overri
   );
 }
 
+// ─── GustiPage ───────────────────────────────────────────────────────
+// Mostra i dati di preferenza accumulati: ricette preferite, ricette
+// sostituite spesso, e la classifica completa per punteggio.
+function GustiPage({ prefs, onToggleLike, onResetPrefs }) {
+  // Costruisce l'elenco completo: ogni ricetta del DB + i suoi segnali.
+  const allRecipes = Object.values(DB).flat();
+  const catLabel = { colazione:"☀️ Colazione", spuntino:"🍎 Spuntino", pranzo:"🥗 Pranzo", cena:"🍽️ Cena" };
+  const recipeCat = {};
+  Object.entries(DB).forEach(([cat, list]) => list.forEach(r => { recipeCat[r.id] = cat; }));
+
+  const rows = allRecipes.map(r => {
+    const e = getPrefEntry(prefs, r.id);
+    return { ...r, _pref:e, _hasSignal: e.liked || e.swapsOut>0 || e.swapsIn>0 };
+  });
+
+  const liked     = rows.filter(r => r._pref.liked);
+  const disliked  = rows.filter(r => !r._pref.liked && r._pref.swapsOut > 0)
+                        .sort((a,b) => b._pref.swapsOut - a._pref.swapsOut);
+  const nSignals  = rows.filter(r => r._hasSignal).length;
+
+  // Swap di contesto registrati (fretta / vincoli orari)
+  const contextSwaps = (prefs && prefs.contextSwaps) || [];
+  const hasAnyData   = nSignals > 0 || contextSwaps.length > 0;
+
+  // Sintesi per fascia oraria: per ogni pasto, quante volte è stato
+  // cambiato all'ultimo minuto e la media dei minuti di preparazione
+  // delle ricette scartate (segnale "in quella fascia voglio cose veloci").
+  const mealLabel = { colazione:"☀️ Colazione", spuntino_m:"🍎 Spunt. mattina",
+                      pranzo:"🥗 Pranzo", spuntino_p:"🫐 Spunt. pomeriggio", cena:"🍽️ Cena" };
+  const byMeal = {};
+  contextSwaps.forEach(s => {
+    if (!byMeal[s.mealKey]) byMeal[s.mealKey] = { n:0, sumOutPrep:0 };
+    byMeal[s.mealKey].n += 1;
+    byMeal[s.mealKey].sumOutPrep += (s.outPrep || 0);
+  });
+  const contextByMeal = Object.entries(byMeal)
+    .map(([mk,v]) => ({ mealKey:mk, n:v.n, avgOutPrep: Math.round(v.sumOutPrep / v.n) }))
+    .sort((a,b) => b.n - a.n);
+
+  const Stat = ({emoji,n,label,color}) => (
+    <div style={{flex:1,background:"#fff",borderRadius:10,border:"1.5px solid #e2e8f0",padding:"12px 8px",textAlign:"center"}}>
+      <div style={{fontSize:20}}>{emoji}</div>
+      <div style={{fontSize:20,fontWeight:800,color,fontFamily:"monospace",marginTop:2}}>{n}</div>
+      <div style={{fontSize:9,color:"#94a3b8",fontWeight:700,textTransform:"uppercase",letterSpacing:0.4,marginTop:2}}>{label}</div>
+    </div>
+  );
+
+  return (
+    <div>
+      {/* Intro */}
+      <div style={{background:"#f0f9ff",border:"1px solid #bae6fd",borderRadius:10,padding:"10px 14px",marginBottom:14,fontSize:11,color:"#0369a1",lineHeight:1.6}}>
+        ℹ️ L'app distingue due cose: le sostituzioni fatte <strong>con anticipo</strong> contano come <strong>gusto</strong>, quelle fatte <strong>a ridosso del pasto</strong> come <strong>fretta</strong> — e non penalizzano la ricetta.
+      </div>
+
+      {/* Statistiche */}
+      <div style={{display:"flex",gap:8,marginBottom:16}}>
+        <Stat emoji="❤️" n={liked.length}          label="Preferite"  color="#ef4444"/>
+        <Stat emoji="🔄" n={disliked.length}       label="Non gradite" color="#7c3aed"/>
+        <Stat emoji="⏱" n={contextSwaps.length}    label="Per fretta" color="#d97706"/>
+      </div>
+
+      {!hasAnyData ? (
+        <div style={{textAlign:"center",padding:"50px 20px",color:"#94a3b8"}}>
+          <div style={{fontSize:48,marginBottom:12}}>🌱</div>
+          <div style={{fontSize:14,fontWeight:700,color:"#64748b"}}>Nessun dato ancora</div>
+          <div style={{fontSize:12,marginTop:6,lineHeight:1.6}}>
+            Metti ❤️ alle ricette che ami e usa <strong>⇄ Cambia</strong> per sostituire quelle che non ti convincono.<br/>L'app inizierà a imparare.
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Preferite */}
+          {liked.length > 0 && (
+            <div style={{background:"#fff",borderRadius:12,border:"1.5px solid #e2e8f0",marginBottom:12,overflow:"hidden"}}>
+              <div style={{background:"#fef2f2",borderBottom:"1px solid #fee2e2",padding:"9px 14px",fontWeight:800,fontSize:12,color:"#dc2626"}}>
+                ❤️ Ricette preferite
+              </div>
+              <div style={{padding:"4px 14px"}}>
+                {liked.map((r,i)=>(
+                  <div key={r.id} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 0",borderBottom:i<liked.length-1?"1px solid #f8fafc":"none"}}>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:12.5,fontWeight:600,color:"#1e293b",lineHeight:1.3}}>{r.nome}</div>
+                      <div style={{fontSize:10,color:"#94a3b8",marginTop:1}}>{catLabel[recipeCat[r.id]]||""}</div>
+                    </div>
+                    <button onClick={()=>onToggleLike(r.id)}
+                      style={{flexShrink:0,width:30,height:28,borderRadius:7,border:"1.5px solid #ef4444",background:"#fef2f2",cursor:"pointer",fontSize:13,padding:0}}>
+                      ❤️
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Non gradite (swap di gusto) */}
+          {disliked.length > 0 && (
+            <div style={{background:"#fff",borderRadius:12,border:"1.5px solid #e2e8f0",marginBottom:12,overflow:"hidden"}}>
+              <div style={{background:"#f5f3ff",borderBottom:"1px solid #ede9fe",padding:"9px 14px",fontWeight:800,fontSize:12,color:"#7c3aed"}}>
+                🔄 Ricette che cambi spesso
+              </div>
+              <div style={{padding:"4px 14px"}}>
+                {disliked.map((r,i)=>(
+                  <div key={r.id} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 0",borderBottom:i<disliked.length-1?"1px solid #f8fafc":"none"}}>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:12.5,fontWeight:600,color:"#1e293b",lineHeight:1.3}}>{r.nome}</div>
+                      <div style={{fontSize:10,color:"#94a3b8",marginTop:1}}>{catLabel[recipeCat[r.id]]||""}</div>
+                    </div>
+                    <span style={{flexShrink:0,fontSize:10,fontWeight:700,color:"#7c3aed",background:"#f5f3ff",border:"1px solid #ddd6fe",borderRadius:5,padding:"3px 8px"}}>
+                      cambiata {r._pref.swapsOut}×
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div style={{padding:"8px 14px",fontSize:10,color:"#94a3b8",lineHeight:1.5}}>
+                Sostituzioni decise con anticipo: contano come gusto. Con la generazione adattiva verranno proposte meno spesso.
+              </div>
+            </div>
+          )}
+
+          {/* Fasce orarie — swap fatti per fretta */}
+          {contextByMeal.length > 0 && (
+            <div style={{background:"#fff",borderRadius:12,border:"1.5px solid #e2e8f0",marginBottom:12,overflow:"hidden"}}>
+              <div style={{background:"#fffbeb",borderBottom:"1px solid #fde68a",padding:"9px 14px",fontWeight:800,fontSize:12,color:"#d97706"}}>
+                ⏱ Pasti cambiati per fretta
+              </div>
+              <div style={{padding:"4px 14px"}}>
+                {contextByMeal.map((c,i)=>(
+                  <div key={c.mealKey} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 0",borderBottom:i<contextByMeal.length-1?"1px solid #f8fafc":"none"}}>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:12.5,fontWeight:600,color:"#1e293b",lineHeight:1.3}}>{mealLabel[c.mealKey]||c.mealKey}</div>
+                      <div style={{fontSize:10,color:"#94a3b8",marginTop:1}}>
+                        ricette scartate: ~{c.avgOutPrep}′ di preparazione in media
+                      </div>
+                    </div>
+                    <span style={{flexShrink:0,fontSize:10,fontWeight:700,color:"#d97706",background:"#fffbeb",border:"1px solid #fde68a",borderRadius:5,padding:"3px 8px"}}>
+                      {c.n}× di fretta
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div style={{padding:"8px 14px",fontSize:10,color:"#94a3b8",lineHeight:1.5}}>
+                Cambi fatti vicino all'orario del pasto: <strong>non penalizzano la ricetta</strong>. Indicano in quali fasce servono piatti più rapidi — utile per i piani futuri.
+              </div>
+            </div>
+          )}
+
+          {/* Reset */}
+          <button onClick={onResetPrefs}
+            style={{width:"100%",padding:"10px",borderRadius:10,border:"1.5px solid #fecaca",background:"#fef2f2",color:"#dc2626",fontWeight:700,fontSize:12,cursor:"pointer",marginTop:4}}>
+            🗑 Azzera tutti i dati sui gusti
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ─── Main App ─────────────────────────────────────────────────────────
 function App() {
   const [page, setPage]               = useState("piano");
@@ -2298,14 +2571,15 @@ function App() {
   const [regenNeeded, setRegenNeeded] = useState(false);
   const [misureApp, setMisureApp]     = useState({});
   const [overrides, setOverrides]     = useState({}); // { "dayIdx-mealKey": ricettaObj }
+  const [prefs, setPrefs]             = useState({ recipes:{}, contextSwaps:[] });
 
   useEffect(()=>{
     async function load(){
       try {
-        const [sS,hS,eS,pS,mS,miS,ovS] = await Promise.allSettled([
+        const [sS,hS,eS,pS,mS,miS,ovS,prS] = await Promise.allSettled([
           window.storage.get(SK_SEED), window.storage.get(SK_HISTORY), window.storage.get(SK_EXCL),
           window.storage.get(SK_PERSONAS), window.storage.get(SK_MY_PERSONA), window.storage.get(SK_MISURE),
-          window.storage.get(SK_OVERRIDES),
+          window.storage.get(SK_OVERRIDES), window.storage.get(SK_PREFS),
         ]);
         const parsedSeed = sS.status==="fulfilled"&&sS.value ? parseInt(sS.value.value, 10) : NaN;
         const loadedSeed = (!isNaN(parsedSeed) && parsedSeed > 0) ? parsedSeed : Date.now();
@@ -2326,10 +2600,11 @@ function App() {
         const loadedMyP  = mS.status==="fulfilled"&&mS.value ? mS.value.value : loadedPers[0].id;
         const loadedMisu = (() => { const v = safeParse(miS, {}); return (v && typeof v==="object" && !Array.isArray(v)) ? v : {}; })();
         const loadedOvrd = (() => { const v = safeParse(ovS, {}); return (v && typeof v==="object" && !Array.isArray(v)) ? v : {}; })();
+        const loadedPrefs = normalizePrefs(safeParse(prS, null));
         const validMyP   = loadedPers.find(p=>p.id===loadedMyP) ? loadedMyP : loadedPers[0].id;
         setSeed(loadedSeed); setHistory(loadedHist); setExcluded(loadedExcl);
         setPersonas(loadedPers); setSelPersonaId(loadedPers[0].id); setMyPersonaId(validMyP);
-        setMisureApp(loadedMisu); setOverrides(loadedOvrd);
+        setMisureApp(loadedMisu); setOverrides(loadedOvrd); setPrefs(loadedPrefs);
         setPlan(generateWeekPlan(loadedSeed, loadedExcl));
       } catch {
         const ns=Date.now(); setSeed(ns); setPersonas(DEFAULT_PERSONAS);
@@ -2359,14 +2634,76 @@ function App() {
     window.storage.set(SK_MY_PERSONA, id).catch(()=>{});
   },[]);
 
-  const handleSwap = useCallback(async(dayIdx, mealKey, newMeal) => {
+  // ─── Aggiorna la entry di una ricetta in modo persistente ────────
+  // mutator: funzione che riceve la entry corrente e ne restituisce una nuova.
+  // Opera solo sul ramo prefs.recipes; lascia intatto contextSwaps.
+  const updatePref = useCallback((recipeId, mutator) => {
+    if (!recipeId) return;
+    setPrefs(prev => {
+      const recipes = prev.recipes || {};
+      const current = recipes[recipeId]
+        ? { score:0, liked:false, swapsOut:0, swapsIn:0, ...recipes[recipeId] }
+        : { score:0, liked:false, swapsOut:0, swapsIn:0 };
+      const mutated = mutator(current);
+      mutated.score = computePrefScore(mutated);
+      mutated.updated = new Date().toLocaleDateString("it-IT");
+      const next = { ...prev, recipes: { ...recipes, [recipeId]: mutated } };
+      window.storage.set(SK_PREFS, JSON.stringify(next)).catch(()=>{});
+      return next;
+    });
+  }, []);
+
+  // Like esplicito: attiva/disattiva il cuore su una ricetta.
+  const handleToggleLike = useCallback((recipeId) => {
+    updatePref(recipeId, e => ({ ...e, liked: !e.liked }));
+  }, [updatePref]);
+
+  // Azzera tutti i dati sui gusti (ricette + registro contesto).
+  const handleResetPrefs = useCallback(() => {
+    const empty = { recipes:{}, contextSwaps:[] };
+    setPrefs(empty);
+    window.storage.set(SK_PREFS, JSON.stringify(empty)).catch(()=>{});
+  }, []);
+
+  // Registra uno swap di contesto nel registro grezzo (non tocca i gusti).
+  const logContextSwap = useCallback((dayIdx, mealKey, oldMeal, newMeal, hoursAhead) => {
+    setPrefs(prev => {
+      const entry = {
+        ts: Date.now(),
+        dayIdx, mealKey,
+        hoursAhead: Math.round(hoursAhead * 10) / 10,
+        outId: oldMeal.id, outNome: oldMeal.nome, outPrep: oldMeal.prep || 0,
+        inId:  newMeal.id, inNome:  newMeal.nome, inPrep:  newMeal.prep || 0,
+      };
+      // teniamo al massimo gli ultimi 200 eventi
+      const list = [entry, ...(prev.contextSwaps || [])].slice(0, 200);
+      const next = { ...prev, contextSwaps: list };
+      window.storage.set(SK_PREFS, JSON.stringify(next)).catch(()=>{});
+      return next;
+    });
+  }, []);
+
+  const handleSwap = useCallback(async(dayIdx, mealKey, oldMeal, newMeal) => {
     const key = `${dayIdx}-${mealKey}`;
     setOverrides(prev => {
       const next = {...prev, [key]: newMeal};
       window.storage.set(SK_OVERRIDES, JSON.stringify(next)).catch(()=>{});
       return next;
     });
-  }, []);
+    if (!oldMeal || !newMeal || oldMeal.id === newMeal.id) return;
+
+    // Classifica lo swap: contesto (fretta) o gusto (valutazione).
+    const tipo = classifySwap(dayIdx, mealKey);
+    if (tipo === "contesto") {
+      // Vincolo pratico, non un giudizio: i gusti NON vengono toccati.
+      // Registriamo il dato grezzo per analisi future sulle fasce orarie.
+      logContextSwap(dayIdx, mealKey, oldMeal, newMeal, hoursUntilMeal(dayIdx, mealKey));
+    } else {
+      // Giudizio sulla ricetta: penalizza la scartata, premia la scelta.
+      updatePref(oldMeal.id, e => ({ ...e, swapsOut: (e.swapsOut||0) + 1 }));
+      updatePref(newMeal.id, e => ({ ...e, swapsIn:  (e.swapsIn ||0) + 1 }));
+    }
+  }, [updatePref, logContextSwap]);
 
   const handleResetSwap = useCallback(async(dayIdx, mealKey) => {
     const key = `${dayIdx}-${mealKey}`;
@@ -2432,9 +2769,9 @@ function App() {
   const dayData = plan[selDay];
   const personaSlot = slotForPersona(persona);
 
-  const TABS = [{key:"piano",label:"📋 Piano"},{key:"spesa",label:"🛒 Spesa"},{key:"ingredienti",label:"🥦 Ingredienti"},{key:"misure",label:"📏 Misure"},{key:"famiglia",label:"👥 Famiglia"}];
-  const TAB_ICONS = { piano:"📋", spesa:"🛒", ingredienti:"🥦", misure:"📏", famiglia:"👥" };
-  const TAB_SHORT = { piano:"Piano", spesa:"Spesa", ingredienti:"Ingredienti", misure:"Misure", famiglia:"Famiglia" };
+  const TABS = [{key:"piano",label:"📋 Piano"},{key:"spesa",label:"🛒 Spesa"},{key:"ingredienti",label:"🥦 Ingredienti"},{key:"gusti",label:"❤️ Gusti"},{key:"misure",label:"📏 Misure"},{key:"famiglia",label:"👥 Famiglia"}];
+  const TAB_ICONS = { piano:"📋", spesa:"🛒", ingredienti:"🥦", gusti:"❤️", misure:"📏", famiglia:"👥" };
+  const TAB_SHORT = { piano:"Piano", spesa:"Spesa", ingredienti:"Ingredienti", gusti:"Gusti", misure:"Misure", famiglia:"Famiglia" };
 
   return (
     <div style={{minHeight:"100vh",background:"linear-gradient(135deg,#f8fafc 0%,#f1f5f9 100%)",fontFamily:"'Segoe UI',system-ui,sans-serif",paddingBottom:80}}>
@@ -2547,13 +2884,16 @@ function App() {
                           <MealCard
                             key={mk}
                             mealKey={mk}
+                            dayIdx={selDay}
                             meal={effectiveDay[mk]}
                             personaKey={personaSlot}
                             color={persona.color}
                             isOverride={isOverride}
                             weekMealIds={weekMealIds}
                             excludedIds={excluded}
-                            onSwap={alt => handleSwap(selDay, mk, alt)}
+                            prefEntry={getPrefEntry(prefs, effectiveDay[mk]?.id)}
+                            onToggleLike={() => handleToggleLike(effectiveDay[mk]?.id)}
+                            onSwap={alt => handleSwap(selDay, mk, effectiveDay[mk], alt)}
                             onReset={() => handleResetSwap(selDay, mk)}
                           />
                         );
@@ -2622,6 +2962,7 @@ function App() {
 
         {!showHistory&&page==="spesa"&&<ShoppingPage plan={plan}/>}
         {!showHistory&&page==="ingredienti"&&<IngredientiPage excluded={excluded} onToggle={toggleExcluded}/>}
+        {!showHistory&&page==="gusti"&&<GustiPage prefs={prefs} onToggleLike={handleToggleLike} onResetPrefs={handleResetPrefs}/>}
         {!showHistory&&page==="misure"&&<MisurePage personas={personas} myPersonaId={myPersonaId} onMisureChange={setMisureApp}/>}
         {!showHistory&&page==="famiglia"&&(
           <FamigliaPage personas={personas} onUpdate={handleUpdatePersona} onAdd={handleAddPersona} onDelete={handleDeletePersona}
@@ -2635,10 +2976,10 @@ function App() {
           const active=page===tab.key&&!showHistory;
           return (
             <button key={tab.key} onClick={()=>{setPage(tab.key);setShowHistory(false);}}
-              style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"8px 4px 6px",border:"none",background:"transparent",color:active?"#2563eb":"#94a3b8",cursor:"pointer",position:"relative",transition:"color 0.15s",gap:2}}>
-              {active&&<div style={{position:"absolute",top:0,left:"25%",right:"25%",height:2,background:"#2563eb",borderRadius:"0 0 3px 3px"}}/>}
-              <span style={{fontSize:18,lineHeight:1}}>{TAB_ICONS[tab.key]}</span>
-              <span style={{fontSize:tab.key==="ingredienti"||tab.key==="famiglia"?8:10,fontWeight:active?800:600,letterSpacing:0.2}}>{TAB_SHORT[tab.key]}</span>
+              style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"8px 2px 6px",border:"none",background:"transparent",color:active?"#2563eb":"#94a3b8",cursor:"pointer",position:"relative",transition:"color 0.15s",gap:2,minWidth:0}}>
+              {active&&<div style={{position:"absolute",top:0,left:"22%",right:"22%",height:2,background:"#2563eb",borderRadius:"0 0 3px 3px"}}/>}
+              <span style={{fontSize:17,lineHeight:1}}>{TAB_ICONS[tab.key]}</span>
+              <span style={{fontSize:tab.key==="ingredienti"?7.5:9,fontWeight:active?800:600,letterSpacing:0.1,whiteSpace:"nowrap"}}>{TAB_SHORT[tab.key]}</span>
               {tab.key==="ingredienti"&&excluded.length>0&&(
                 <div style={{position:"absolute",top:6,left:"50%",marginLeft:4,width:14,height:14,background:"#ef4444",borderRadius:"50%",fontSize:8,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900}}>{excluded.length}</div>
               )}
