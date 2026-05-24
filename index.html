@@ -23,27 +23,124 @@
 <div id="root"></div>
 
 <script>
-// ─── localStorage storage shim (sostituisce window.storage della Claude artifact API) ───
+// ─── Supabase client ────────────────────────────────────────────────
+const SUPA_URL  = "https://ubkeneobowlukxjtqwez.supabase.co";
+const SUPA_KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVia2VuZW9ib3dsdWt4anRxd2V6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MTczNjksImV4cCI6MjA5NTA5MzM2OX0.htEUuTQtluuP0kOx1DOMscQ5LoIcSMHTN6N9n1wWU8I";
+const supabase  = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+
+// ─── StorageAdapter ─────────────────────────────────────────────────
+// Quando l'utente è loggato usa Supabase, altrimenti localStorage.
+// Interfaccia identica al vecchio window.storage.
 window.storage = {
-  get: async (key) => {
-    const v = localStorage.getItem("pa__" + key);
-    if (v === null) throw new Error("Key not found: " + key);
-    return { key, value: v };
+  _userId: null, // impostato dopo il login
+
+  _ls: {
+    get: async (key) => {
+      const v = localStorage.getItem("pa__" + key);
+      if (v === null) throw new Error("Key not found: " + key);
+      return { key, value: v };
+    },
+    set: async (key, value) => {
+      localStorage.setItem("pa__" + key, JSON.stringify({v: value}));
+      // serializziamo con wrapper per distinguere da vecchi valori
+      localStorage.setItem("pa__" + key, value);
+      return { key, value };
+    },
+    delete: async (key) => {
+      localStorage.removeItem("pa__" + key);
+      return { key, deleted: true };
+    },
+    list: async (prefix = "") => {
+      const keys = Object.keys(localStorage)
+        .filter(k => k.startsWith("pa__" + prefix))
+        .map(k => k.slice(4));
+      return { keys };
+    }
   },
-  set: async (key, value) => {
-    localStorage.setItem("pa__" + key, value);
+
+  get: async function(key) {
+    if (!this._userId) return this._ls.get(key);
+    const { data, error } = await supabase
+      .from("kv_store")
+      .select("value")
+      .eq("user_id", this._userId)
+      .eq("key", key)
+      .single();
+    if (error || !data) throw new Error("Key not found: " + key);
+    return { key, value: data.value };
+  },
+
+  set: async function(key, value) {
+    if (!this._userId) return this._ls.set(key, value);
+    const { error } = await supabase
+      .from("kv_store")
+      .upsert({ user_id: this._userId, key, value, updated_at: new Date().toISOString() });
+    if (error) console.error("storage.set error:", error);
     return { key, value };
   },
-  delete: async (key) => {
-    localStorage.removeItem("pa__" + key);
+
+  delete: async function(key) {
+    if (!this._userId) return this._ls.delete(key);
+    await supabase.from("kv_store").delete()
+      .eq("user_id", this._userId).eq("key", key);
     return { key, deleted: true };
   },
-  list: async (prefix = "") => {
-    const keys = Object.keys(localStorage)
-      .filter(k => k.startsWith("pa__" + prefix))
-      .map(k => k.slice(4));
-    return { keys };
+
+  list: async function(prefix = "") {
+    if (!this._userId) return this._ls.list(prefix);
+    const { data } = await supabase
+      .from("kv_store")
+      .select("key")
+      .eq("user_id", this._userId)
+      .like("key", prefix + "%");
+    return { keys: (data || []).map(r => r.key) };
+  },
+
+  // Migra i dati localStorage → Supabase (chiamata una volta al login)
+  migrateFromLocal: async function(userId) {
+    this._userId = userId;
+    const localKeys = Object.keys(localStorage).filter(k => k.startsWith("pa__"));
+    if (!localKeys.length) return;
+    const rows = localKeys.map(k => ({
+      user_id: userId,
+      key: k.slice(4), // rimuovi "pa__"
+      value: localStorage.getItem(k),
+      updated_at: new Date().toISOString()
+    }));
+    const { error } = await supabase.from("kv_store").upsert(rows, { onConflict: "user_id,key", ignoreDuplicates: true });
+    if (!error) {
+      // Marca come migrato per non rifarlo
+      localStorage.setItem("pa__migrated", "1");
+      console.log(`Migrati ${rows.length} record su Supabase`);
+    }
   }
+};
+
+// ─── Auth helpers ────────────────────────────────────────────────────
+window.authState = { user: null, profile: null, loading: true };
+
+window.getProfile = async (userId) => {
+  const { data } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", userId)
+    .single();
+  return data;
+};
+
+window.signInWithGoogle = async () => {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: window.location.href }
+  });
+  if (error) console.error("Login error:", error);
+};
+
+window.signOut = async () => {
+  await supabase.auth.signOut();
+  window.storage._userId = null;
+  window.authState.user    = null;
+  window.authState.profile = null;
 };
 </script>
 
@@ -51,9 +148,11 @@ window.storage = {
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script type="text/babel">
-const { useState, useEffect, useCallback } = React;
+const { useState, useEffect, useCallback, useRef } = React;
 
 // ═══════════════════════════════════════════════════════════════════
 // INGREDIENTI MASTER
@@ -306,13 +405,13 @@ const ING_QTY = {
   // ── Nuovi pranzi ────────────────────────────────────────────────
   pra_13: { ing_couscous:{uomo:90,donna:65,bimbo:35,unit:"g"}, ing_gamberi:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_zucchine:{uomo:200,donna:180,bimbo:100,unit:"g"}, ing_limone:{uomo:0.5,donna:0.5,bimbo:0,unit:"pz"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   pra_14: { ing_bulgur:{uomo:90,donna:65,bimbo:35,unit:"g"}, ing_pollo:{uomo:180,donna:130,bimbo:70,unit:"g"}, ing_peperone:{uomo:100,donna:100,bimbo:60,unit:"g"}, ing_cipolla:{uomo:60,donna:60,bimbo:30,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
-  pra_15: { ing_zucca:{uomo:350,donna:280,bimbo:180,unit:"g"}, ing_brodo:{uomo:400,donna:300,bimbo:180,unit:"ml"}, ing_cipolla:{uomo:60,donna:60,bimbo:30,unit:"g"}, ing_pane:{uomo:60,donna:40,bimbo:25,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
+  pra_15: { ing_zucca:{uomo:350,donna:280,bimbo:180,unit:"g"}, ing_brodo:{uomo:350,donna:280,bimbo:180,unit:"ml"}, ing_cipolla:{uomo:60,donna:60,bimbo:30,unit:"g"}, ing_ricotta:{uomo:80,donna:50,bimbo:25,unit:"g"}, ing_pane:{uomo:60,donna:40,bimbo:25,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   pra_16: { ing_orzo:{uomo:100,donna:70,bimbo:40,unit:"g"}, ing_feta:{uomo:40,donna:25,bimbo:15,unit:"g"}, ing_cetrioli:{uomo:100,donna:100,bimbo:60,unit:"g"}, ing_datterini:{uomo:120,donna:100,bimbo:70,unit:"g"}, ing_olive:{uomo:20,donna:15,bimbo:0,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   pra_17: { ing_polpo:{uomo:220,donna:160,bimbo:80,unit:"g"}, ing_patate:{uomo:200,donna:150,bimbo:100,unit:"g"}, ing_limone:{uomo:0.5,donna:0.5,bimbo:0,unit:"pz"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   pra_18: { ing_pasta_fresca:{uomo:120,donna:90,bimbo:60,unit:"g"}, ing_zucchine:{uomo:100,donna:80,bimbo:50,unit:"g"}, ing_carote:{uomo:80,donna:60,bimbo:40,unit:"g"}, ing_cipolla:{uomo:60,donna:50,bimbo:30,unit:"g"}, ing_passata:{uomo:80,donna:60,bimbo:40,unit:"g"}, ing_parmigiano:{uomo:15,donna:10,bimbo:8,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   pra_19: { ing_riso_venere:{uomo:90,donna:65,bimbo:35,unit:"g"}, ing_salmone:{uomo:180,donna:130,bimbo:70,unit:"g"}, ing_avocado:{uomo:0.5,donna:0.25,bimbo:0,unit:"pz"}, ing_insalata:{uomo:50,donna:50,bimbo:30,unit:"g"}, ing_salsa_soia:{uomo:10,donna:8,bimbo:0,unit:"ml"}, ing_sesamo:{uomo:5,donna:3,bimbo:0,unit:"g"} },
   pra_20: { ing_cavolo:{uomo:150,donna:130,bimbo:80,unit:"g"}, ing_fagioli:{uomo:120,donna:90,bimbo:60,unit:"g"}, ing_cipolla:{uomo:60,donna:60,bimbo:30,unit:"g"}, ing_aglio:{uomo:1,donna:1,bimbo:0,unit:"pz"}, ing_brodo:{uomo:400,donna:300,bimbo:180,unit:"ml"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"}, ing_pane:{uomo:60,donna:40,bimbo:25,unit:"g"} },
-  pra_21: { ing_gamberi:{uomo:180,donna:130,bimbo:80,unit:"g"}, ing_finocchio:{uomo:200,donna:180,bimbo:100,unit:"g"}, ing_arancia:{uomo:1,donna:1,bimbo:0.5,unit:"pz"}, ing_insalata:{uomo:50,donna:50,bimbo:30,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
+  pra_21: { ing_gamberi:{uomo:180,donna:130,bimbo:80,unit:"g"}, ing_finocchio:{uomo:200,donna:180,bimbo:100,unit:"g"}, ing_arancia:{uomo:1,donna:1,bimbo:0.5,unit:"pz"}, ing_insalata:{uomo:50,donna:50,bimbo:30,unit:"g"}, ing_olive:{uomo:20,donna:15,bimbo:8,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   pra_22: { ing_grano_sarac:{uomo:90,donna:65,bimbo:35,unit:"g"}, ing_funghi:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_spinaci:{uomo:80,donna:80,bimbo:40,unit:"g"}, ing_noci:{uomo:20,donna:15,bimbo:0,unit:"g"}, ing_aglio:{uomo:1,donna:1,bimbo:0,unit:"pz"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   pra_23: { ing_lenticchie:{uomo:150,donna:120,bimbo:70,unit:"g"}, ing_carote:{uomo:150,donna:120,bimbo:80,unit:"g"}, ing_cipolla:{uomo:60,donna:50,bimbo:30,unit:"g"}, ing_limone:{uomo:0.5,donna:0.5,bimbo:0,unit:"pz"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   pra_24: { ing_cavolfiore:{uomo:300,donna:250,bimbo:150,unit:"g"}, ing_ceci:{uomo:150,donna:100,bimbo:60,unit:"g"}, ing_limone:{uomo:0.5,donna:0.5,bimbo:0,unit:"pz"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
@@ -348,7 +447,7 @@ const DB = {
       porzioni:{uomo:"80g pane · 3 uova · 100g pomodorini · 1 cucchiaio EVO",donna:"60g pane · 2 uova · 100g pomodorini · 1 cucchiaino EVO",bimbo:"30g pane · 1 uovo · pomodorini"},
       uomo:{kcal:450,p:32,c:40,g:18},donna:{kcal:335,p:25,c:30,g:14},bimbo:{kcal:190,p:10,c:22,g:7}},
     { id:"col_03", prep:15, nome:"Pancakes d'avena con banana", ingredients:["ing_avena","ing_uova","ing_banana"],
-      porzioni:{uomo:"3 pancakes (2 uova · 60g avena · 1 banana)",donna:"2 pancakes (1 uovo · 45g avena · ½ banana)",bimbo:"1 pancake piccolo · frutta fresca"},
+      porzioni:{uomo:"3 pancakes grandi · 60g avena · 2 uova · 1 banana matura schiacciata · pizzico bicarbonato · pizzico sale · padella antiaderente a fuoco medio",donna:"2 pancakes · 45g avena · 1 uovo · ½ banana · stesso processo",bimbo:"1 pancake · 25g avena · 1 uovo · ½ banana · tagliato a pezzetti"},
       uomo:{kcal:460,p:28,c:55,g:14},donna:{kcal:340,p:22,c:40,g:11},bimbo:{kcal:200,p:9,c:28,g:6}},
     { id:"col_04", prep:5,  nome:"Pane integrale + ricotta + miele + noci", ingredients:["ing_pane","ing_ricotta","ing_miele","ing_noci"],
       porzioni:{uomo:"80g pane · 80g ricotta · 1 cucchiaino miele · 15g noci",donna:"60g pane · 60g ricotta · ½ cucchiaino miele · 10g noci",bimbo:"30g pane · 30g ricotta · frutta"},
@@ -390,8 +489,8 @@ const DB = {
     { id:"col_16", prep:5,  nome:"Yogurt greco con pesche e pistacchi", ingredients:["ing_yogurt","ing_pesche","ing_pistacchi","ing_miele"],
       porzioni:{uomo:"200g yogurt · 1 pesca · 20g pistacchi · 1 cucchiaino miele",donna:"150g yogurt · 1 pesca · 15g pistacchi",bimbo:"80g yogurt · ½ pesca · 8g pistacchi"},
       uomo:{kcal:385,p:26,c:32,g:14},donna:{kcal:280,p:20,c:25,g:10},bimbo:{kcal:155,p:7,c:16,g:6}},
-    { id:"col_17", prep:10, nome:"Pancakes di avena con albicocche", ingredients:["ing_avena","ing_uova","ing_albicocche","ing_miele"],
-      porzioni:{uomo:"60g avena · 2 uova · 3 albicocche · 1 cucchiaino miele",donna:"45g avena · 1 uovo · 2 albicocche",bimbo:"25g avena · 1 uovo · 1 albicocca"},
+    { id:"col_17", prep:15, nome:"Pancakes di avena con albicocche caramellate", ingredients:["ing_avena","ing_uova","ing_albicocche","ing_miele"],
+      porzioni:{uomo:"60g avena · 2 uova · pizzico bicarbonato · sale → pastella. In padella a parte: 3 albicocche a metà con 1 cucchiaino miele, 2 min per lato. Impila pancakes e appoggia le albicocche sopra",donna:"45g avena · 1 uovo · 2 albicocche caramellate",bimbo:"25g avena · 1 uovo · 1 albicocca a fettine fresche (non caramellate)"},
       uomo:{kcal:430,p:24,c:52,g:12},donna:{kcal:300,p:16,c:38,g:8},bimbo:{kcal:185,p:8,c:26,g:5}},
     { id:"col_18", prep:5,  nome:"Pane integrale con burro di mandorle e banana", ingredients:["ing_pane","ing_bm","ing_banana"],
       porzioni:{uomo:"80g pane · 20g burro mandorle · 1 banana",donna:"60g pane · 15g burro mandorle · ½ banana",bimbo:"30g pane · 8g burro mandorle · ½ banana"},
@@ -408,9 +507,9 @@ const DB = {
     { id:"col_22", prep:5,  nome:"Smoothie proteico con fragole e avena", ingredients:["ing_yogurt","ing_fragole","ing_avena","ing_latte","ing_miele"],
       porzioni:{uomo:"150g yogurt · 100g fragole · 40g avena · 150ml latte · 1 cucchiaino miele",donna:"120g yogurt · 80g fragole · 30g avena · 100ml latte",bimbo:"70g yogurt · 50g fragole · 20g avena · 80ml latte"},
       uomo:{kcal:415,p:26,c:54,g:8},donna:{kcal:295,p:20,c:38,g:6},bimbo:{kcal:175,p:8,c:26,g:3}},
-    { id:"col_23", prep:15, nome:"Muffin d'avena con mirtilli (no forno)", ingredients:["ing_avena","ing_uova","ing_mirtilli","ing_miele","ing_latte"],
-      porzioni:{uomo:"3 muffin (80g avena · 2 uova · 80g mirtilli)",donna:"2 muffin (60g avena · 1 uovo · 60g mirtilli)",bimbo:"1 muffin piccolo"},
-      uomo:{kcal:430,p:22,c:54,g:12},donna:{kcal:295,p:15,c:38,g:8},bimbo:{kcal:165,p:7,c:24,g:5}},
+    { id:"col_23", prep:5,  nome:"Overnight oats caldi con mirtilli e miele", ingredients:["ing_avena","ing_latte","ing_mirtilli","ing_miele","ing_yogurt"],
+      porzioni:{uomo:"La sera: 80g avena in 200ml latte, copri e metti in frigo. Mattina: scalda 2 min in padella o microonde, aggiungi 80g mirtilli e 1 cucchiaino miele · topping 50g yogurt greco",donna:"La sera: 60g avena in 160ml latte. Mattina: scalda, aggiungi 60g mirtilli · 30g yogurt",bimbo:"La sera: 30g avena in 100ml latte. Mattina: scalda, aggiungi 40g mirtilli schiacciati"},
+      uomo:{kcal:415,p:22,c:58,g:8},donna:{kcal:295,p:16,c:42,g:6},bimbo:{kcal:170,p:7,c:28,g:4}},
     { id:"col_24", prep:5,  nome:"Pane integrale con ricotta e uva", ingredients:["ing_pane","ing_ricotta","ing_uva","ing_miele"],
       porzioni:{uomo:"80g pane · 80g ricotta · 80g uva · 1 cucchiaino miele",donna:"60g pane · 60g ricotta · 60g uva",bimbo:"30g pane · 30g ricotta · 40g uva"},
       uomo:{kcal:415,p:22,c:56,g:10},donna:{kcal:295,p:16,c:40,g:7},bimbo:{kcal:170,p:7,c:26,g:4}},
@@ -534,14 +633,14 @@ const DB = {
     { id:"pra_14", prep:25, nome:"Bulgur con pollo e verdure arrosto", ingredients:["ing_bulgur","ing_pollo","ing_peperone","ing_cipolla","ing_evo","ing_spezie"],
       porzioni:{uomo:"90g bulgur · 180g pollo · 150g verdure · 1 cucchiaio EVO",donna:"65g bulgur · 130g pollo · 150g verdure · 1 cucchiaino EVO",bimbo:"35g bulgur · 70g pollo · 80g verdure"},
       uomo:{kcal:590,p:50,c:56,g:14},donna:{kcal:415,p:38,c:38,g:10},bimbo:{kcal:230,p:14,c:26,g:6}},
-    { id:"pra_15", prep:30, nome:"Vellutata di zucca con crostini e semi di zucca", ingredients:["ing_zucca","ing_brodo","ing_cipolla","ing_pane","ing_evo","ing_spezie"],
-      porzioni:{uomo:"400ml vellutata · 60g crostini · 1 cucchiaio EVO",donna:"300ml vellutata · 40g crostini · 1 cucchiaino EVO",bimbo:"180ml vellutata · 25g crostini"},
-      uomo:{kcal:520,p:14,c:68,g:16},donna:{kcal:365,p:10,c:48,g:12},bimbo:{kcal:210,p:5,c:34,g:7}},
+    { id:"pra_15", prep:30, nome:"Vellutata di zucca con ricotta e crostini", ingredients:["ing_zucca","ing_brodo","ing_cipolla","ing_ricotta","ing_pane","ing_evo","ing_spezie"],
+      porzioni:{uomo:"Soffriggi cipolla in EVO, aggiungi 350g zucca a cubetti + 350ml brodo, cuoci 20 min, frulla. Fuori dal fuoco aggiungi 80g ricotta e mescola. Servi con 60g crostini tostati e noce moscata",donna:"300ml vellutata · 50g ricotta · 40g crostini · EVO",bimbo:"180ml vellutata · 25g ricotta · 25g pane a dadini"},
+      uomo:{kcal:530,p:24,c:56,g:18},donna:{kcal:375,p:17,c:40,g:14},bimbo:{kcal:215,p:8,c:30,g:8}},
     { id:"pra_16", prep:20, nome:"Insalata di orzo con feta, cetrioli e pomodorini", ingredients:["ing_orzo","ing_feta","ing_cetrioli","ing_datterini","ing_olive","ing_evo"],
       porzioni:{uomo:"100g orzo · 40g feta · 100g cetrioli · 120g datterini · 20g olive · EVO",donna:"70g orzo · 25g feta · 100g cetrioli · 100g datterini · EVO",bimbo:"40g orzo · 15g feta · cetrioli · pomodorini"},
       uomo:{kcal:560,p:22,c:70,g:18},donna:{kcal:385,p:15,c:50,g:13},bimbo:{kcal:210,p:7,c:32,g:7}},
-    { id:"pra_17", prep:15, nome:"Polpo con patate e prezzemolo", ingredients:["ing_polpo","ing_patate","ing_prezzemolo","ing_limone","ing_evo"],
-      porzioni:{uomo:"220g polpo · 200g patate · prezzemolo · limone · 1 cucchiaio EVO",donna:"160g polpo · 150g patate · 1 cucchiaino EVO",bimbo:"80g polpo · 100g patate"},
+    { id:"pra_17", prep:60, nome:"Insalata di polpo con patate e prezzemolo", ingredients:["ing_polpo","ing_patate","ing_prezzemolo","ing_limone","ing_evo"],
+      porzioni:{uomo:"Porta a bollore acqua salata con alloro. Immergi il polpo tenendo il tentacolo e rilascialo 3 volte (si arriccia). Cuoci 45 min a fuoco basso, spegni e lascia raffreddare nell'acqua 15 min. Taglia a pezzi. Servi con 200g patate lessate a dadini, prezzemolo tritato, limone e EVO",donna:"160g polpo cotto · 150g patate · prezzemolo abbondante · EVO",bimbo:"80g polpo cotto · 100g patate · limone leggero"},
       uomo:{kcal:540,p:46,c:46,g:12},donna:{kcal:380,p:34,c:34,g:8},bimbo:{kcal:225,p:14,c:26,g:5}},
     { id:"pra_18", prep:25, nome:"Pasta fresca con ragù di verdure e parmigiano", ingredients:["ing_pasta_fresca","ing_zucchine","ing_carote","ing_cipolla","ing_passata","ing_parmigiano","ing_evo"],
       porzioni:{uomo:"120g pasta · verdure · passata · 15g parmigiano · EVO",donna:"90g pasta · verdure · 10g parmigiano · EVO",bimbo:"60g pasta · verdure · parmigiano"},
@@ -552,9 +651,9 @@ const DB = {
     { id:"pra_20", prep:30, nome:"Zuppa di cavolo nero e fagioli cannellini", ingredients:["ing_cavolo","ing_fagioli","ing_cipolla","ing_aglio","ing_brodo","ing_evo","ing_pane"],
       porzioni:{uomo:"400ml zuppa · 80g pane · 1 cucchiaio EVO",donna:"300ml zuppa · 50g pane · 1 cucchiaino EVO",bimbo:"180ml zuppa · 25g pane"},
       uomo:{kcal:545,p:30,c:70,g:14},donna:{kcal:380,p:22,c:50,g:10},bimbo:{kcal:215,p:9,c:34,g:6}},
-    { id:"pra_21", prep:20, nome:"Insalata di finocchio, arance e gamberi", ingredients:["ing_finocchio","ing_arancia","ing_gamberi","ing_insalata","ing_evo","ing_limone"],
-      porzioni:{uomo:"180g gamberi · 1 finocchio · 1 arancia · insalata · EVO",donna:"130g gamberi · 1 finocchio · 1 arancia · EVO",bimbo:"80g gamberi · ½ finocchio · spicchi arancia"},
-      uomo:{kcal:490,p:38,c:30,g:14},donna:{kcal:345,p:28,c:22,g:10},bimbo:{kcal:200,p:12,c:14,g:5}},
+    { id:"pra_21", prep:20, nome:"Insalata di finocchio, arance e gamberi", ingredients:["ing_finocchio","ing_arancia","ing_gamberi","ing_insalata","ing_olive","ing_evo","ing_limone"],
+      porzioni:{uomo:"180g gamberi sgusciati saltati in padella 3 min · 1 finocchio affettato sottile · 1 arancia a vivo · manciata rucola · 20g olive · limone · EVO",donna:"130g gamberi · 1 finocchio · 1 arancia · rucola · 15g olive · EVO",bimbo:"80g gamberi · ½ finocchio · spicchi arancia · 8g olive"},
+      uomo:{kcal:390,p:36,c:28,g:14},donna:{kcal:280,p:26,c:20,g:10},bimbo:{kcal:175,p:12,c:12,g:5}},
     { id:"pra_22", prep:25, nome:"Grano saraceno con funghi, spinaci e noci", ingredients:["ing_grano_sarac","ing_funghi","ing_spinaci","ing_noci","ing_aglio","ing_evo"],
       porzioni:{uomo:"90g grano sarac. · 200g funghi · 80g spinaci · 20g noci · EVO",donna:"65g grano sarac. · 150g funghi · 80g spinaci · 15g noci",bimbo:"35g grano sarac. · 80g funghi · spinaci"},
       uomo:{kcal:555,p:22,c:58,g:22},donna:{kcal:390,p:16,c:42,g:16},bimbo:{kcal:220,p:7,c:28,g:8}},
@@ -568,7 +667,7 @@ const DB = {
       porzioni:{uomo:"180g pollo · radicchio · 20g noci · 1 arancia · EVO",donna:"130g pollo · radicchio · 15g noci · 1 arancia",bimbo:"70g pollo · radicchio · 8g noci"},
       uomo:{kcal:520,p:46,c:22,g:24},donna:{kcal:365,p:34,c:16,g:18},bimbo:{kcal:215,p:14,c:10,g:10}},
     { id:"pra_26", prep:25, nome:"Pasta integrale con baccalà e broccoli", ingredients:["ing_pasta","ing_baccala","ing_broccoli","ing_aglio","ing_peperoncino","ing_evo"],
-      porzioni:{uomo:"100g pasta · 180g baccalà · 200g broccoli · aglio · EVO",donna:"70g pasta · 130g baccalà · 200g broccoli · EVO",bimbo:"50g pasta · 70g baccalà · 120g broccoli"},
+      porzioni:{uomo:"⚠️ Prep il giorno prima: tieni il baccalà in ammollo in acqua fredda 24-48h cambiando l'acqua ogni 8h. Al momento: 100g pasta · 180g baccalà dissalato a pezzi · 200g broccoli · aglio · peperoncino · EVO",donna:"70g pasta · 130g baccalà dissalato · 200g broccoli · EVO",bimbo:"50g pasta · 70g baccalà · 120g broccoli (senza peperoncino)"},
       uomo:{kcal:560,p:48,c:58,g:12},donna:{kcal:390,p:36,c:40,g:8},bimbo:{kcal:235,p:16,c:30,g:5}},
     { id:"pra_27", prep:20, nome:"Riso basmati con tofu alla curcuma e piselli", ingredients:["ing_riso","ing_tofu","ing_piselli","ing_cipolla","ing_cannella","ing_evo"],
       porzioni:{uomo:"90g riso · 180g tofu · 80g piselli · cipolla · curcuma · EVO",donna:"65g riso · 130g tofu · 60g piselli · EVO",bimbo:"35g riso · 80g tofu · 40g piselli"},
@@ -637,7 +736,7 @@ const DB = {
       porzioni:{uomo:"100g pasta · 200g melanzane · 150g pomodori · 80g mozzarella · basilico · EVO",donna:"70g pasta · 180g melanzane · 120g pomodori · 50g mozzarella · EVO",bimbo:"50g pasta · 100g melanzane · pomodori · 30g mozzarella"},
       uomo:{kcal:650,p:32,c:74,g:22},donna:{kcal:465,p:24,c:54,g:16},bimbo:{kcal:300,p:12,c:38,g:9}},
     { id:"cen_20", prep:30, nome:"Baccalà con ceci, pomodorini e capperi", ingredients:["ing_baccala","ing_ceci","ing_datterini","ing_capperi","ing_aglio","ing_evo"],
-      porzioni:{uomo:"220g baccalà · 150g ceci · 120g pomodorini · capperi · aglio · EVO",donna:"160g baccalà · 100g ceci · 100g pomodorini · EVO",bimbo:"80g baccalà · 70g ceci · pomodorini"},
+      porzioni:{uomo:"⚠️ Prep il giorno prima: baccalà in ammollo 24-48h in acqua fredda, cambia l'acqua ogni 8h. Al momento: 220g baccalà a pezzi rosolato in EVO con aglio · aggiungi 150g ceci, 120g datterini, capperi · cuoci 10 min",donna:"160g baccalà · 100g ceci · pomodorini · capperi · EVO",bimbo:"80g baccalà · 70g ceci · pomodorini (senza capperi)"},
       uomo:{kcal:565,p:52,c:44,g:14},donna:{kcal:395,p:38,c:32,g:10},bimbo:{kcal:250,p:16,c:26,g:6}},
     { id:"cen_21", prep:25, nome:"Salsiccia con lenticchie e cavolo nero", ingredients:["ing_salsiccia","ing_lenticchie","ing_cavolo","ing_cipolla","ing_brodo","ing_evo"],
       porzioni:{uomo:"160g salsiccia · 120g lenticchie · 150g cavolo · cipolla · brodo · EVO",donna:"120g salsiccia · 90g lenticchie · 120g cavolo · EVO",bimbo:"70g salsiccia · 60g lenticchie · cavolo"},
@@ -648,8 +747,8 @@ const DB = {
     { id:"cen_23", prep:45, nome:"Risotto zucca, porri e parmigiano", ingredients:["ing_riso","ing_zucca","ing_porri","ing_brodo","ing_parmigiano","ing_evo"],
       porzioni:{uomo:"90g riso · 200g zucca · 1 porro · brodo · 15g parmigiano · EVO",donna:"65g riso · 160g zucca · porro · 10g parmigiano · EVO",bimbo:"40g riso · 100g zucca · parmigiano"},
       uomo:{kcal:600,p:20,c:78,g:18},donna:{kcal:425,p:15,c:58,g:13},bimbo:{kcal:270,p:7,c:40,g:7}},
-    { id:"cen_24", prep:30, nome:"Polpo alla piastra con patate novelle e prezzemolo", ingredients:["ing_polpo","ing_patate","ing_prezzemolo","ing_limone","ing_evo"],
-      porzioni:{uomo:"250g polpo · 200g patate · prezzemolo · limone · EVO",donna:"180g polpo · 150g patate · 1 cucchiaino EVO",bimbo:"90g polpo · 100g patate"},
+    { id:"cen_24", prep:65, nome:"Polpo alla piastra con patate novelle e prezzemolo", ingredients:["ing_polpo","ing_patate","ing_prezzemolo","ing_limone","ing_evo"],
+      porzioni:{uomo:"Bolli il polpo 45 min in acqua con alloro, lascia intiepidire 10 min nell'acqua. Taglia i tentacoli e griglia su piastra rovente 3-4 min per lato per la crosticina. Servi con 200g patate novelle al forno (20 min), prezzemolo fresco, limone, EVO",donna:"180g polpo grigliato · 150g patate novelle · prezzemolo · EVO",bimbo:"90g polpo · 100g patate (solo bollite, niente piastra)"},
       uomo:{kcal:555,p:48,c:46,g:12},donna:{kcal:395,p:36,c:34,g:8},bimbo:{kcal:240,p:15,c:26,g:5}},
     { id:"cen_25", prep:25, nome:"Tacchino in padella con peperoni e bulgur", ingredients:["ing_tacchino","ing_peperone","ing_bulgur","ing_cipolla","ing_spezie","ing_evo"],
       porzioni:{uomo:"200g tacchino · 150g peperoni · 80g bulgur · cipolla · spezie · EVO",donna:"150g tacchino · 130g peperoni · 60g bulgur · EVO",bimbo:"80g tacchino · 80g peperoni · 30g bulgur"},
@@ -691,7 +790,7 @@ const MEAL_META = {
   cena:       { label:"🍽️ Cena",               isSnack:false },
 };
 
-const SK_SEED="pf-seed", SK_HISTORY="pf-history", SK_EXCL="pf-excluded", SK_PERSONAS="pf-personas", SK_MY_PERSONA="pf-my-persona", SK_MISURE="pf-misure", SK_OVERRIDES="pf-overrides";
+const SK_SEED="pf-seed", SK_HISTORY="pf-history", SK_EXCL="pf-excluded", SK_PERSONAS="pf-personas", SK_MY_PERSONA="pf-my-persona", SK_MISURE="pf-misure", SK_OVERRIDES="pf-overrides", SK_WATER="pf-water";
 
 // ─── Trova alternativa per tempo ────────────────────────────────────
 // Restituisce le ricette della stessa categoria ordinate per:
@@ -1484,6 +1583,125 @@ function ProgressBar({ value, max, color }) {
 }
 
 // ─── MealCard ────────────────────────────────────────────────────────
+// ─── WaterTracker ─────────────────────────────────────────────────
+const WATER_ML   = 200;   // ml per bicchiere
+const WATER_GOAL = 2000;  // ml target giornaliero
+const WATER_MAX  = 14;    // bicchieri massimi visualizzati (2800ml)
+
+function WaterTracker({ dayKey, personaColor }) {
+  // glasses: numero bicchieri bevuti per questo giorno
+  const [glasses, setGlasses] = useState(0);
+  const [loaded,  setLoaded]  = useState(false);
+  const [bounce,  setBounce]  = useState(null); // indice bicchiere animato
+
+  // Chiave storage per questo giorno
+  const storageKey = `${SK_WATER}:${dayKey}`;
+
+  useEffect(() => {
+    window.storage.get(storageKey)
+      .then(r => setGlasses(Math.min(WATER_MAX, parseInt(r.value) || 0)))
+      .catch(() => setGlasses(0))
+      .finally(() => setLoaded(true));
+  }, [storageKey]);
+
+  const setAndSave = async (n) => {
+    const clamped = Math.max(0, Math.min(WATER_MAX, n));
+    setGlasses(clamped);
+    await window.storage.set(storageKey, String(clamped)).catch(() => {});
+  };
+
+  const handleGlassClick = (idx) => {
+    // Se clicco il bicchiere già pieno più alto → rimuovi (deseleziona)
+    // Se clicco un bicchiere → porta il contatore a idx+1
+    const next = idx + 1 === glasses ? idx : idx + 1;
+    setBounce(idx);
+    setTimeout(() => setBounce(null), 300);
+    setAndSave(next);
+  };
+
+  const ml       = glasses * WATER_ML;
+  const pct      = Math.min(100, Math.round((ml / WATER_GOAL) * 100));
+  const goal_ok  = ml >= WATER_GOAL;
+  const color    = goal_ok ? "#16a34a" : ml >= 1400 ? "#0891b2" : ml >= 800 ? "#d97706" : "#94a3b8";
+  const bgBar    = goal_ok ? "#f0fdf4" : ml >= 1400 ? "#f0f9ff" : ml >= 800 ? "#fffbeb" : "#f8fafc";
+  const label    = goal_ok ? "🎉 Obiettivo raggiunto!" : `${WATER_GOAL - ml} ml al traguardo`;
+
+  if (!loaded) return null;
+
+  return (
+    <div style={{background:"#fff",borderRadius:12,border:`1.5px solid ${goal_ok?"#bbf7d0":"#e2e8f0"}`,padding:"14px 16px",marginTop:10,transition:"border-color 0.3s"}}>
+      {/* Header */}
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+        <div style={{display:"flex",alignItems:"center",gap:7}}>
+          <span style={{fontSize:18}}>💧</span>
+          <div>
+            <div style={{fontSize:12,fontWeight:800,color:"#1e293b"}}>Idratazione</div>
+            <div style={{fontSize:10,color:"#64748b"}}>Obiettivo: {WATER_GOAL/1000}L · {WATER_ML}ml per bicchiere</div>
+          </div>
+        </div>
+        <div style={{textAlign:"right"}}>
+          <div style={{fontSize:18,fontWeight:800,color,fontFamily:"monospace"}}>{(ml/1000).toFixed(1)}<span style={{fontSize:11,fontWeight:400,color:"#94a3b8"}}> L</span></div>
+          <div style={{fontSize:9,color,fontWeight:700}}>{label}</div>
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div style={{background:"#f1f5f9",borderRadius:99,height:8,overflow:"hidden",marginBottom:12}}>
+        <div style={{
+          width:`${pct}%`, height:"100%", borderRadius:99,
+          background: goal_ok
+            ? "linear-gradient(90deg,#16a34a,#22c55e)"
+            : ml>=1400 ? "linear-gradient(90deg,#0891b2,#38bdf8)"
+            : ml>=800  ? "linear-gradient(90deg,#d97706,#fbbf24)"
+            : "#cbd5e1",
+          transition:"width 0.4s cubic-bezier(.4,0,.2,1)"
+        }}/>
+      </div>
+
+      {/* Griglia bicchieri */}
+      <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+        {Array.from({length: WATER_MAX}).map((_, i) => {
+          const filled  = i < glasses;
+          const isNext  = i === glasses; // il prossimo da riempire
+          const anim    = bounce === i;
+          return (
+            <button
+              key={i}
+              onClick={() => handleGlassClick(i)}
+              style={{
+                width:36, height:44,
+                borderRadius:8,
+                border:`2px solid ${filled ? color+"80" : "#e2e8f0"}`,
+                background: filled ? bgBar : "#f8fafc",
+                cursor:"pointer",
+                display:"flex", flexDirection:"column",
+                alignItems:"center", justifyContent:"center",
+                gap:1,
+                transform: anim ? "scale(1.25)" : isNext ? "scale(1.05)" : "scale(1)",
+                transition:"transform 0.15s, background 0.2s, border-color 0.2s",
+                outline:"none",
+                padding:0,
+              }}
+            >
+              <span style={{fontSize:18,lineHeight:1,filter:filled?"none":"grayscale(1) opacity(0.35)"}}>
+                🥛
+              </span>
+              <span style={{fontSize:7,fontFamily:"monospace",fontWeight:700,color:filled?color:"#cbd5e1"}}>
+                {WATER_ML}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Hint */}
+      <div style={{marginTop:8,fontSize:10,color:"#94a3b8",textAlign:"center"}}>
+        Tocca un bicchiere per segnarlo · toccalo di nuovo per rimuoverlo
+      </div>
+    </div>
+  );
+}
+
 // Soglie tempo per i pulsanti del selettore
 const PREP_SLOTS = [
   { label:"≤10'",  max:10,  color:"#16a34a", bg:"#f0fdf4" },
@@ -2073,6 +2291,88 @@ function FamigliaPage({ personas, onUpdate, onAdd, onDelete, currentSeed, overri
   );
 }
 
+// ─── LoginScreen ─────────────────────────────────────────────────────
+function LoginScreen({ onContinueOffline }) {
+  const [loading, setLoading] = useState(false);
+
+  const handleGoogle = async () => {
+    setLoading(true);
+    await window.signInWithGoogle();
+    // Il redirect torna su questa pagina — la sessione viene rilevata da App
+  };
+
+  return (
+    <div style={{minHeight:"100vh",background:"linear-gradient(135deg,#1e293b 0%,#334155 100%)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"32px 24px"}}>
+      {/* Logo */}
+      <div style={{fontSize:64,marginBottom:16}}>🥗</div>
+      <div style={{fontSize:26,fontWeight:800,color:"#f8fafc",marginBottom:6,letterSpacing:-0.5}}>Piano Alimentare</div>
+      <div style={{fontSize:13,color:"#94a3b8",marginBottom:48,textAlign:"center",maxWidth:280}}>
+        Piani settimanali · Ricette stagionali · Tracciamento misure
+      </div>
+
+      {/* Google login */}
+      <button onClick={handleGoogle} disabled={loading}
+        style={{width:"100%",maxWidth:320,padding:"14px 24px",borderRadius:12,border:"none",background:"#fff",color:"#1e293b",fontWeight:700,fontSize:15,cursor:loading?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:12,boxShadow:"0 4px 24px #00000040",marginBottom:16,opacity:loading?0.7:1,transition:"opacity 0.2s"}}>
+        {loading ? (
+          <span style={{animation:"spin 0.7s linear infinite",display:"inline-block",fontSize:18}}>⏳</span>
+        ) : (
+          <svg width="20" height="20" viewBox="0 0 48 48">
+            <path fill="#EA4335" d="M24 9.5c3.1 0 5.8 1.1 8 2.9l6-6C34.1 3 29.4 1 24 1 14.8 1 7 6.9 3.8 15l7 5.4C12.5 13.6 17.8 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.4c-.5 2.8-2.1 5.2-4.5 6.8l7 5.4c4.1-3.8 6.5-9.4 6.5-16.2z"/>
+            <path fill="#FBBC05" d="M10.8 28.6A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.6l-7-5.4A23 23 0 0 0 1 24c0 3.7.9 7.2 2.4 10.3l7.4-5.7z"/>
+            <path fill="#34A853" d="M24 47c5.4 0 9.9-1.8 13.2-4.8l-7-5.4c-1.8 1.2-4.1 1.9-6.6 1.9-6.1 0-11.3-4.1-13.2-9.6l-7.4 5.7C7.1 41.2 15 47 24 47z"/>
+          </svg>
+        )}
+        {loading ? "Accesso in corso..." : "Continua con Google"}
+      </button>
+
+      {/* Continua offline */}
+      <button onClick={onContinueOffline}
+        style={{background:"none",border:"1.5px solid #475569",color:"#94a3b8",borderRadius:10,padding:"10px 24px",fontSize:13,fontWeight:600,cursor:"pointer",width:"100%",maxWidth:320}}>
+        Continua senza account
+      </button>
+
+      <div style={{marginTop:32,fontSize:11,color:"#475569",textAlign:"center",maxWidth:280,lineHeight:1.6}}>
+        Accedendo accetti i termini di utilizzo. I dati sono cifrati e mai venduti a terzi.
+      </div>
+    </div>
+  );
+}
+
+// ─── UserMenu ─────────────────────────────────────────────────────────
+function UserMenu({ profile, onSignOut }) {
+  const [open, setOpen] = useState(false);
+
+  if (!profile) return null;
+
+  const initials = (profile.display_name || "?").slice(0,2).toUpperCase();
+  const avatarUrl = profile.avatar_url;
+
+  return (
+    <div style={{position:"relative"}}>
+      <button onClick={()=>setOpen(o=>!o)}
+        style={{width:32,height:32,borderRadius:"50%",border:"2px solid #ffffff40",background:"#334155",overflow:"hidden",cursor:"pointer",padding:0,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+        {avatarUrl
+          ? <img src={avatarUrl} style={{width:"100%",height:"100%",objectFit:"cover"}} alt="avatar"/>
+          : <span style={{color:"#f8fafc",fontSize:12,fontWeight:800}}>{initials}</span>}
+      </button>
+      {open && (
+        <div style={{position:"absolute",top:40,right:0,background:"#fff",borderRadius:12,border:"1.5px solid #e2e8f0",boxShadow:"0 8px 32px #0000001a",minWidth:200,zIndex:200,overflow:"hidden"}}>
+          <div style={{padding:"12px 14px",borderBottom:"1px solid #f1f5f9"}}>
+            <div style={{fontSize:13,fontWeight:700,color:"#1e293b"}}>{profile.display_name}</div>
+            <div style={{fontSize:10,color:"#94a3b8",marginTop:2,fontFamily:"monospace"}}>🔑 {profile.invite_code}</div>
+          </div>
+          <button onClick={()=>{setOpen(false); onSignOut();}}
+            style={{width:"100%",padding:"11px 14px",background:"none",border:"none",textAlign:"left",fontSize:13,color:"#dc2626",fontWeight:600,cursor:"pointer"}}>
+            🚪 Esci
+          </button>
+        </div>
+      )}
+      {open && <div onClick={()=>setOpen(false)} style={{position:"fixed",inset:0,zIndex:199}}/>}
+    </div>
+  );
+}
+
 // ─── Main App ─────────────────────────────────────────────────────────
 function App() {
   const [page, setPage]               = useState("piano");
@@ -2088,7 +2388,56 @@ function App() {
   const [showHistory, setShowHistory] = useState(false);
   const [regenNeeded, setRegenNeeded] = useState(false);
   const [misureApp, setMisureApp]     = useState({});
-  const [overrides, setOverrides]     = useState({}); // { "dayIdx-mealKey": ricettaObj }
+  const [overrides, setOverrides]     = useState({});
+
+  // ── Auth state ──────────────────────────────────────────────────
+  const [authUser,    setAuthUser]    = useState(null);   // supabase user
+  const [authProfile, setAuthProfile] = useState(null);   // profiles row
+  const [authLoading, setAuthLoading] = useState(true);   // primo check
+  const [offlineMode, setOfflineMode] = useState(false);  // scelto "senza account"
+
+  // Ascolta cambiamenti sessione Supabase
+  useEffect(() => {
+    // Controlla sessione esistente (es. dopo redirect OAuth)
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        await handleAuthUser(session.user);
+      } else {
+        setAuthLoading(false);
+      }
+    });
+
+    // Listener per login/logout in real-time
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_IN" && session?.user) {
+        await handleAuthUser(session.user);
+      } else if (event === "SIGNED_OUT") {
+        setAuthUser(null);
+        setAuthProfile(null);
+        window.storage._userId = null;
+        setAuthLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleAuthUser = async (user) => {
+    setAuthUser(user);
+    window.storage._userId = user.id;
+
+    // Recupera profilo
+    const profile = await window.getProfile(user.id);
+    setAuthProfile(profile);
+
+    // Migra dati localStorage se non ancora fatto
+    if (!localStorage.getItem("pa__migrated")) {
+      await window.storage.migrateFromLocal(user.id);
+    }
+
+    setAuthLoading(false);
+    setOfflineMode(false);
+  }; // { "dayIdx-mealKey": ricettaObj }
 
   useEffect(()=>{
     async function load(){
@@ -2196,6 +2545,21 @@ function App() {
     setRegenNeeded(true);
   },[]);
 
+  // ── Auth loading ───────────────────────────────────────────────
+  if (authLoading) return (
+    <div style={{minHeight:"100vh",background:"linear-gradient(135deg,#1e293b 0%,#334155 100%)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+      <div style={{textAlign:"center"}}>
+        <div style={{fontSize:48,marginBottom:12}}>🥗</div>
+        <div style={{color:"#94a3b8",fontSize:13}}>Caricamento...</div>
+      </div>
+    </div>
+  );
+
+  // ── Login screen (se non loggato e non scelto offline) ─────────
+  if (!authUser && !offlineMode) return (
+    <LoginScreen onContinueOffline={() => setOfflineMode(true)}/>
+  );
+
   if (!plan||!personas.length) return (
     <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",color:"#64748b"}}>
       <div style={{textAlign:"center"}}><div style={{fontSize:32,marginBottom:12}}>🥗</div><div>Caricamento...</div></div>
@@ -2217,7 +2581,14 @@ function App() {
       {/* HEADER */}
       <div style={{background:"linear-gradient(90deg,#1e293b 0%,#334155 100%)",padding:"20px 20px 16px",paddingTop:"calc(20px + env(safe-area-inset-top,0px))"}}>
         <div style={{maxWidth:680,margin:"0 auto"}}>
-          <div style={{fontSize:9,color:"#94a3b8",letterSpacing:2,textTransform:"uppercase",marginBottom:2}}>Piano Alimentare Familiare</div>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:2}}>
+            <div style={{fontSize:9,color:"#94a3b8",letterSpacing:2,textTransform:"uppercase"}}>Piano Alimentare Familiare</div>
+            <div style={{display:"flex",alignItems:"center",gap:8}}>
+              {!authUser && <span style={{fontSize:9,color:"#f59e0b",background:"#78350f40",borderRadius:4,padding:"2px 7px",fontWeight:700}}>OFFLINE</span>}
+              {authUser && <UserMenu profile={authProfile} onSignOut={window.signOut}/>}
+              {!authUser && <button onClick={window.signInWithGoogle} style={{fontSize:10,color:"#93c5fd",background:"none",border:"1px solid #3b82f640",borderRadius:6,padding:"3px 8px",cursor:"pointer",fontWeight:600}}>Accedi</button>}
+            </div>
+          </div>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:14}}>
             <div style={{fontSize:19,fontWeight:800,color:"#f8fafc",letterSpacing:-0.5}}>
               {personas.length} {personas.length===1?"persona":"persone"} · 7 giorni
@@ -2335,6 +2706,12 @@ function App() {
                         );
                       })}
                       <TotaleBar dayData={effectiveDay} personaKey={personaSlot} color={persona.color} target={personaTarget}/>
+                      {/* ── Tracker idratazione ── */}
+                      {(()=>{
+                        // dayKey = "seedBase-dayIndex" → univoco per piano+giorno
+                        const dayKey = `${seed}-${selDay}`;
+                        return <WaterTracker key={dayKey} dayKey={dayKey} personaColor={persona.color}/>;
+                      })()}
                     </>
                   );
                 })()}
