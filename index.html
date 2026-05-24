@@ -2,14 +2,16 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
   <meta name="theme-color" content="#1e293b"/>
   <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <meta name="apple-mobile-web-app-title" content="Piano Alimentare"/>
   <title>Piano Alimentare Familiare</title>
+  <meta name="description" content="Pianifica i pasti settimanali della famiglia: ricette stagionali, lista della spesa automatica, monitoraggio misure e idratazione."/>
   <link rel="manifest" href="./manifest.json"/>
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='%231e293b'/><text x='256' y='340' font-size='300' text-anchor='middle'>🥗</text></svg>"/>
   <style>
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     body{margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif;background:#f8fafc;overscroll-behavior:none}
@@ -20,37 +22,106 @@
   </style>
 </head>
 <body>
-<div id="root"></div>
+<div id="root">
+  <div id="boot-loader" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f8fafc;font-family:'Segoe UI',system-ui,sans-serif">
+    <div style="text-align:center;color:#64748b">
+      <div style="font-size:40px;margin-bottom:14px">🥗</div>
+      <div style="font-size:14px;font-weight:600">Caricamento del piano alimentare…</div>
+      <div style="width:36px;height:36px;margin:18px auto 0;border:3px solid #e2e8f0;border-top-color:#2563eb;border-radius:50%;animation:spin 0.8s linear infinite"></div>
+    </div>
+  </div>
+</div>
 
 <script>
 // ─── localStorage storage shim (sostituisce window.storage della Claude artifact API) ───
-window.storage = {
-  get: async (key) => {
-    const v = localStorage.getItem("pa__" + key);
-    if (v === null) throw new Error("Key not found: " + key);
-    return { key, value: v };
-  },
-  set: async (key, value) => {
-    localStorage.setItem("pa__" + key, value);
-    return { key, value };
-  },
-  delete: async (key) => {
-    localStorage.removeItem("pa__" + key);
-    return { key, deleted: true };
-  },
-  list: async (prefix = "") => {
-    const keys = Object.keys(localStorage)
-      .filter(k => k.startsWith("pa__" + prefix))
-      .map(k => k.slice(4));
-    return { keys };
+// Gestisce: localStorage non disponibile (Safari modalità privata),
+// quota piena, e dati corrotti. Mai blocca l'app.
+(function () {
+  // Verifica che localStorage sia effettivamente usabile
+  let lsOk = false;
+  try {
+    const t = "__pa_test__";
+    localStorage.setItem(t, "1");
+    localStorage.removeItem(t);
+    lsOk = true;
+  } catch (e) {
+    lsOk = false;
   }
-};
+
+  // Fallback in memoria se localStorage non è disponibile
+  const memStore = {};
+  let quotaWarned = false;
+
+  window.storage = {
+    get: async (key) => {
+      const v = lsOk ? localStorage.getItem("pa__" + key) : (memStore[key] ?? null);
+      if (v === null || v === undefined) throw new Error("Key not found: " + key);
+      return { key, value: v };
+    },
+    set: async (key, value) => {
+      if (lsOk) {
+        try {
+          localStorage.setItem("pa__" + key, value);
+        } catch (e) {
+          // Quota superata o storage bloccato: salva in memoria e avvisa una volta
+          memStore[key] = value;
+          if (!quotaWarned) {
+            quotaWarned = true;
+            console.warn("Storage pieno o non disponibile: i dati di questa sessione non verranno salvati.");
+          }
+        }
+      } else {
+        memStore[key] = value;
+      }
+      return { key, value };
+    },
+    delete: async (key) => {
+      if (lsOk) localStorage.removeItem("pa__" + key);
+      delete memStore[key];
+      return { key, deleted: true };
+    },
+    list: async (prefix = "") => {
+      let keys = [];
+      if (lsOk) {
+        keys = Object.keys(localStorage)
+          .filter(k => k.startsWith("pa__" + prefix))
+          .map(k => k.slice(4));
+      }
+      Object.keys(memStore)
+        .filter(k => k.startsWith(prefix) && !keys.includes(k))
+        .forEach(k => keys.push(k));
+      return { keys };
+    },
+    // espone lo stato per eventuali avvisi UI
+    _available: lsOk,
+  };
+})();
 </script>
 
 <!-- React + Babel -->
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script>
+// Verifica che le librerie esterne siano state caricate.
+// Se i CDN falliscono e l'app non è ancora in cache, mostra un messaggio utile.
+window.addEventListener("load", function () {
+  setTimeout(function () {
+    var ok = window.React && window.ReactDOM && window.Babel;
+    var loader = document.getElementById("boot-loader");
+    if (!ok && loader) {
+      loader.innerHTML =
+        '<div style="text-align:center;color:#64748b;padding:24px;max-width:340px">' +
+        '<div style="font-size:40px;margin-bottom:14px">📡</div>' +
+        '<div style="font-size:15px;font-weight:700;color:#1e293b;margin-bottom:8px">Connessione richiesta al primo avvio</div>' +
+        '<div style="font-size:13px;line-height:1.6">Per usare l\'app offline, aprila almeno una volta con una connessione internet attiva. Dopo il primo caricamento funzionerà anche senza rete.</div>' +
+        '<button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;border:none;border-radius:9px;background:#2563eb;color:#fff;font-weight:700;font-size:13px;cursor:pointer">↻ Riprova</button>' +
+        '</div>';
+    }
+  }, 1200);
+});
+</script>
 
 <script type="text/babel">
 const { useState, useEffect, useCallback } = React;
@@ -1415,6 +1486,17 @@ function emojiBySesso(p) {
   return p.sesso==="M" ? "👨" : "👩";
 }
 
+// ─── Slot ricetta per persona ───────────────────────────────────────
+// Le ricette hanno solo 3 profili di porzione: uomo / donna / bimbo.
+// Qualsiasi persona del nucleo (anche la 4ª, 5ª…) va mappata su uno
+// di questi profili in base a età e sesso — NON in base alla posizione
+// nell'array, che cambia quando si aggiungono o rimuovono persone.
+function slotForPersona(p) {
+  if (!p) return "donna";
+  if (p.eta < 12) return "bimbo";
+  return p.sesso === "M" ? "uomo" : "donna";
+}
+
 // ─── Shopping engine ────────────────────────────────────────────────
 function formatQty(total, unit) {
   if (unit==="pz") return Math.ceil(total)+" pz";
@@ -1434,17 +1516,25 @@ function buildShoppingForDays(plan, selectedDays) {
   const acc = {};
   const addQty = (recipeId, ingId) => {
     const qtyMap = ING_QTY[recipeId];
-    if (!qtyMap || !qtyMap[ingId]) return;
-    const q = qtyMap[ingId];
-    if (!acc[ingId]) acc[ingId] = { total:0, unit:q.unit };
-    const sum = PERSONAS_KEYS.reduce((s,pk) => s+(q[pk]||0), 0);
-    acc[ingId].total += sum; acc[ingId].unit = q.unit;
+    const q = qtyMap && qtyMap[ingId];
+    if (q) {
+      // Quantità nota: somma le porzioni di tutti i profili
+      if (!acc[ingId]) acc[ingId] = { total:0, unit:q.unit };
+      // Se in precedenza l'ingrediente era "q.b." (total null) lo promuoviamo
+      if (acc[ingId].total === null) acc[ingId].total = 0;
+      const sum = PERSONAS_KEYS.reduce((s,pk) => s+(q[pk]||0), 0);
+      acc[ingId].total += sum;
+      acc[ingId].unit = q.unit;
+    } else {
+      // Quantità non specificata (spezie, erbe, ecc.): entra comunque
+      // nella lista come "q.b." così non sparisce dalla spesa.
+      if (!acc[ingId]) acc[ingId] = { total:null, unit:"qb" };
+    }
   };
   selectedDays.forEach(di => {
     const day = plan[di];
     MEAL_KEYS.forEach(mk => { const meal = day[mk]; meal.ingredients.forEach(ingId => addQty(meal.id, ingId)); });
   });
-  ["ing_evo","ing_spezie","ing_brodo"].forEach(id => { if (!acc[id]) acc[id] = { total:null, unit:"qb" }; });
   const grouped = {};
   const catOrder = ["🥩 Proteine","🥛 Latticini","🍎 Frutta","🥦 Verdure","🫘 Legumi","🌾 Cereali","🥜 Frutta secca","🧂 Dispensa"];
   Object.entries(acc).forEach(([ingId,{total,unit}]) => {
@@ -2217,13 +2307,25 @@ function App() {
           window.storage.get(SK_PERSONAS), window.storage.get(SK_MY_PERSONA), window.storage.get(SK_MISURE),
           window.storage.get(SK_OVERRIDES),
         ]);
-        const loadedSeed = sS.status==="fulfilled"&&sS.value ? parseInt(sS.value.value) : Date.now();
-        const loadedHist = hS.status==="fulfilled"&&hS.value ? JSON.parse(hS.value.value) : [];
-        const loadedExcl = eS.status==="fulfilled"&&eS.value ? JSON.parse(eS.value.value) : [];
-        const loadedPers = pS.status==="fulfilled"&&pS.value ? JSON.parse(pS.value.value) : DEFAULT_PERSONAS;
+        const parsedSeed = sS.status==="fulfilled"&&sS.value ? parseInt(sS.value.value, 10) : NaN;
+        const loadedSeed = (!isNaN(parsedSeed) && parsedSeed > 0) ? parsedSeed : Date.now();
+        const safeParse = (res, fallback) => {
+          try {
+            if (res.status==="fulfilled" && res.value) {
+              const v = JSON.parse(res.value.value);
+              return v;
+            }
+          } catch {}
+          return fallback;
+        };
+        const loadedHist = (() => { const v = safeParse(hS, []); return Array.isArray(v) ? v : []; })();
+        const loadedExcl = (() => { const v = safeParse(eS, []); return Array.isArray(v) ? v : []; })();
+        const loadedPersRaw = safeParse(pS, DEFAULT_PERSONAS);
+        const loadedPers = (Array.isArray(loadedPersRaw) && loadedPersRaw.length > 0)
+          ? loadedPersRaw : DEFAULT_PERSONAS;
         const loadedMyP  = mS.status==="fulfilled"&&mS.value ? mS.value.value : loadedPers[0].id;
-        const loadedMisu = miS.status==="fulfilled"&&miS.value ? JSON.parse(miS.value.value) : {};
-        const loadedOvrd = ovS.status==="fulfilled"&&ovS.value ? JSON.parse(ovS.value.value) : {};
+        const loadedMisu = (() => { const v = safeParse(miS, {}); return (v && typeof v==="object" && !Array.isArray(v)) ? v : {}; })();
+        const loadedOvrd = (() => { const v = safeParse(ovS, {}); return (v && typeof v==="object" && !Array.isArray(v)) ? v : {}; })();
         const validMyP   = loadedPers.find(p=>p.id===loadedMyP) ? loadedMyP : loadedPers[0].id;
         setSeed(loadedSeed); setHistory(loadedHist); setExcluded(loadedExcl);
         setPersonas(loadedPers); setSelPersonaId(loadedPers[0].id); setMyPersonaId(validMyP);
@@ -2306,7 +2408,11 @@ function App() {
   const loadHistory = useCallback(async(oldSeed)=>{
     setSpinning(true); await new Promise(r=>setTimeout(r,300));
     setSeed(oldSeed); setPlan(generateWeekPlan(oldSeed,excluded)); setSelDay(0); setShowHistory(false);
-    try { await window.storage.set(SK_SEED,String(oldSeed)); } catch{}
+    setOverrides({});
+    try {
+      await window.storage.set(SK_SEED,String(oldSeed));
+      await window.storage.set(SK_OVERRIDES,"{}");
+    } catch{}
     setSpinning(false);
   },[excluded]);
 
@@ -2324,8 +2430,7 @@ function App() {
   const persona = personas.find(p=>p.id===selPersonaId)||personas.find(p=>p.id===myPersonaId)||personas[0];
   const personaTarget = calcTargetAdattivo(persona, misureApp[persona?.id]);
   const dayData = plan[selDay];
-  const SLOT_KEYS = ["uomo","donna","bimbo"];
-  const personaSlot = SLOT_KEYS[Math.min(personas.indexOf(persona),2)];
+  const personaSlot = slotForPersona(persona);
 
   const TABS = [{key:"piano",label:"📋 Piano"},{key:"spesa",label:"🛒 Spesa"},{key:"ingredienti",label:"🥦 Ingredienti"},{key:"misure",label:"📏 Misure"},{key:"famiglia",label:"👥 Famiglia"}];
   const TAB_ICONS = { piano:"📋", spesa:"🛒", ingredienti:"🥦", misure:"📏", famiglia:"👥" };
@@ -2549,12 +2654,34 @@ ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
 
 <script>
-// Register service worker for offline support
+// Registrazione service worker per il supporto offline.
+// Gestisce anche gli aggiornamenti: quando esce una nuova versione
+// del SW, viene attivata e la pagina si ricarica una sola volta.
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./sw.js")
-      .then(reg => console.log("SW registered:", reg.scope))
-      .catch(err => console.log("SW error:", err));
+      .then(reg => {
+        // Controlla periodicamente la presenza di aggiornamenti
+        reg.addEventListener("updatefound", () => {
+          const sw = reg.installing;
+          if (!sw) return;
+          sw.addEventListener("statechange", () => {
+            if (sw.state === "installed" && navigator.serviceWorker.controller) {
+              // Nuova versione pronta: la attiviamo subito
+              sw.postMessage && sw.postMessage("skipWaiting");
+            }
+          });
+        });
+      })
+      .catch(err => console.log("SW non registrato:", err));
+
+    // Ricarica una sola volta quando il nuovo SW prende il controllo
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (refreshing) return;
+      refreshing = true;
+      window.location.reload();
+    });
   });
 }
 </script>
