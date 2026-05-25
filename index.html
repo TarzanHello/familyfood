@@ -138,8 +138,10 @@ const INGREDIENTS = [
   { id: "ing_merluzzo",   nome: "Merluzzo",                cat: "🥩 Proteine",      deperibile: 2,   stagioni: null, tags: ["merluzzo"] },
   { id: "ing_sgombro",    nome: "Sgombro al naturale",     cat: "🥩 Proteine",      deperibile: 365, stagioni: null, tags: ["sgombro"] },
   { id: "ing_pollo",      nome: "Petto di pollo",          cat: "🥩 Proteine",      deperibile: 3,   stagioni: null, tags: ["pollo"] },
-  { id: "ing_tacchino",   nome: "Tacchino macinato",       cat: "🥩 Proteine",      deperibile: 2,   stagioni: null, tags: ["tacchino"] },
+  { id: "ing_tacchino",   nome: "Tacchino macinato",       cat: "🥩 Proteine",      deperibile: 2,   stagioni: null, tags: ["tacchino","macinato"] },
+  { id: "ing_tacchino_fettine", nome: "Fettine di tacchino", cat: "🥩 Proteine",    deperibile: 2,   stagioni: null, tags: ["tacchino","fettine"] },
   { id: "ing_manzo",      nome: "Manzo per spezzatino",    cat: "🥩 Proteine",      deperibile: 3,   stagioni: null, tags: ["manzo","spezzatino"] },
+  { id: "ing_manzo_tagliata", nome: "Manzo per tagliata",  cat: "🥩 Proteine",      deperibile: 3,   stagioni: null, tags: ["manzo","tagliata","bistecca"] },
   { id: "ing_maiale",     nome: "Lonza di maiale",         cat: "🥩 Proteine",      deperibile: 3,   stagioni: null, tags: ["maiale","lonza"] },
   { id: "ing_uova",       nome: "Uova",                    cat: "🥩 Proteine",      deperibile: 21,  stagioni: null, tags: ["uova","uovo","frittata","strapazzat","tegamino","sode","camicia","coque","pancakes"] },
   { id: "ing_tonno",      nome: "Tonno al naturale",       cat: "🥩 Proteine",      deperibile: 365, stagioni: null, tags: ["tonno"] },
@@ -404,10 +406,10 @@ const ING_QTY = {
   cen_22: { ing_tofu:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_broccoli:{uomo:250,donna:220,bimbo:120,unit:"g"}, ing_grano_sarac:{uomo:80,donna:60,bimbo:30,unit:"g"}, ing_salsa_soia:{uomo:12,donna:8,bimbo:0,unit:"ml"}, ing_sesamo:{uomo:8,donna:5,bimbo:0,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   cen_23: { ing_riso:{uomo:90,donna:65,bimbo:40,unit:"g"}, ing_zucca:{uomo:200,donna:160,bimbo:100,unit:"g"}, ing_porri:{uomo:1,donna:1,bimbo:0.5,unit:"pz"}, ing_brodo:{uomo:350,donna:300,bimbo:180,unit:"ml"}, ing_parmigiano:{uomo:15,donna:10,bimbo:8,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   cen_24: { ing_polpo:{uomo:250,donna:180,bimbo:90,unit:"g"}, ing_patate:{uomo:200,donna:150,bimbo:100,unit:"g"}, ing_limone:{uomo:0.5,donna:0.5,bimbo:0,unit:"pz"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
-  cen_25: { ing_tacchino:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_peperone:{uomo:150,donna:130,bimbo:80,unit:"g"}, ing_bulgur:{uomo:80,donna:60,bimbo:30,unit:"g"}, ing_cipolla:{uomo:60,donna:50,bimbo:30,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
+  cen_25: { ing_tacchino_fettine:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_peperone:{uomo:150,donna:130,bimbo:80,unit:"g"}, ing_bulgur:{uomo:80,donna:60,bimbo:30,unit:"g"}, ing_cipolla:{uomo:60,donna:50,bimbo:30,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   cen_26: { ing_sgombro:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_finocchio:{uomo:200,donna:180,bimbo:100,unit:"g"}, ing_arancia:{uomo:1,donna:0.5,bimbo:0.5,unit:"pz"}, ing_limone:{uomo:0.5,donna:0.5,bimbo:0,unit:"pz"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   cen_27: { ing_tacchino:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_patate:{uomo:200,donna:150,bimbo:100,unit:"g"}, ing_insalata:{uomo:60,donna:60,bimbo:40,unit:"g"}, ing_cipolla:{uomo:60,donna:50,bimbo:30,unit:"g"}, ing_senape:{uomo:10,donna:8,bimbo:0,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
-  cen_28: { ing_manzo:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_insalata:{uomo:60,donna:60,bimbo:40,unit:"g"}, ing_parmigiano:{uomo:15,donna:10,bimbo:8,unit:"g"}, ing_aceto:{uomo:15,donna:10,bimbo:0,unit:"ml"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
+  cen_28: { ing_manzo_tagliata:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_insalata:{uomo:60,donna:60,bimbo:40,unit:"g"}, ing_parmigiano:{uomo:15,donna:10,bimbo:8,unit:"g"}, ing_aceto:{uomo:15,donna:10,bimbo:0,unit:"ml"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
 };
 
 const DB = {
@@ -722,7 +724,7 @@ const DB = {
     { id:"cen_24", prep:65, nome:"Polpo alla piastra con patate novelle e prezzemolo", ingredients:["ing_polpo","ing_patate","ing_prezzemolo","ing_limone","ing_evo"],
       porzioni:{uomo:"Bolli il polpo 45 min in acqua con alloro, lascia intiepidire 10 min nell'acqua. Taglia i tentacoli e griglia su piastra rovente 3-4 min per lato per la crosticina. Servi con 200g patate novelle al forno (20 min), prezzemolo fresco, limone, EVO",donna:"180g polpo grigliato · 150g patate novelle · prezzemolo · EVO",bimbo:"90g polpo · 100g patate (solo bollite, niente piastra)"},
       uomo:{kcal:555,p:48,c:46,g:12},donna:{kcal:395,p:36,c:34,g:8},bimbo:{kcal:240,p:15,c:26,g:5}},
-    { id:"cen_25", prep:25, nome:"Tacchino in padella con peperoni e bulgur", ingredients:["ing_tacchino","ing_peperone","ing_bulgur","ing_cipolla","ing_spezie","ing_evo"],
+    { id:"cen_25", prep:25, nome:"Tacchino in padella con peperoni e bulgur", ingredients:["ing_tacchino_fettine","ing_peperone","ing_bulgur","ing_cipolla","ing_spezie","ing_evo"],
       porzioni:{uomo:"200g tacchino · 150g peperoni · 80g bulgur · cipolla · spezie · EVO",donna:"150g tacchino · 130g peperoni · 60g bulgur · EVO",bimbo:"80g tacchino · 80g peperoni · 30g bulgur"},
       uomo:{kcal:580,p:48,c:50,g:16},donna:{kcal:415,p:36,c:36,g:11},bimbo:{kcal:260,p:14,c:26,g:6}},
     { id:"cen_26", prep:20, nome:"Sgombro al forno con finocchio e arance", ingredients:["ing_sgombro","ing_finocchio","ing_arancia","ing_limone","ing_evo"],
@@ -731,7 +733,7 @@ const DB = {
     { id:"cen_27", prep:30, nome:"Hamburger di tacchino con patate al forno e insalata", ingredients:["ing_tacchino","ing_patate","ing_insalata","ing_cipolla","ing_senape","ing_evo"],
       porzioni:{uomo:"200g tacchino · 200g patate · insalata · cipolla · senape · EVO",donna:"150g tacchino · 150g patate · insalata · EVO",bimbo:"80g tacchino · 100g patate · insalata"},
       uomo:{kcal:575,p:46,c:50,g:18},donna:{kcal:410,p:34,c:36,g:13},bimbo:{kcal:260,p:14,c:28,g:7}},
-    { id:"cen_28", prep:35, nome:"Tagliata di manzo con rucola, grana e aceto balsamico", ingredients:["ing_manzo","ing_insalata","ing_parmigiano","ing_aceto","ing_evo"],
+    { id:"cen_28", prep:35, nome:"Tagliata di manzo con rucola, grana e aceto balsamico", ingredients:["ing_manzo_tagliata","ing_insalata","ing_parmigiano","ing_aceto","ing_evo"],
       porzioni:{uomo:"200g manzo · rucola · 15g grana · aceto balsamico · EVO",donna:"150g manzo · rucola · 10g grana · EVO",bimbo:"80g manzo · rucola · grana"},
       uomo:{kcal:570,p:50,c:6,g:34},donna:{kcal:405,p:38,c:4,g:24},bimbo:{kcal:255,p:16,c:2,g:14}},
   ],
@@ -1601,6 +1603,26 @@ function formatQty(total, unit) {
   if (total<=500)  return (Math.ceil(total/50)*50)+"g";
   if (total<=1000) return (Math.ceil(total/100)*100)+"g";
   return (Math.ceil(total/500)*500/1000).toFixed(1).replace(".0","")+" kg";
+}
+
+// ─── Piano effettivo ────────────────────────────────────────────────
+// Fonde il piano grezzo (da seed) con gli override (sostituzioni utente).
+// È la FONTE UNICA da cui devono leggere sia la scheda Piano sia la
+// scheda Spesa: così le due viste non possono divergere.
+// overrides ha chiavi "<dayIdx>-<mealKey>".
+function applyOverrides(plan, overrides) {
+  if (!overrides || Object.keys(overrides).length === 0) return plan;
+  return plan.map((day, di) => {
+    let dayCopy = null;
+    MEAL_KEYS.forEach(mk => {
+      const ov = overrides[`${di}-${mk}`];
+      if (ov) {
+        if (!dayCopy) dayCopy = { ...day };
+        dayCopy[mk] = ov;
+      }
+    });
+    return dayCopy || day;
+  });
 }
 
 function buildShoppingForDays(plan, selectedDays) {
@@ -2766,7 +2788,6 @@ function App() {
 
   const persona = personas.find(p=>p.id===selPersonaId)||personas.find(p=>p.id===myPersonaId)||personas[0];
   const personaTarget = calcTargetAdattivo(persona, misureApp[persona?.id]);
-  const dayData = plan[selDay];
   const personaSlot = slotForPersona(persona);
 
   const TABS = [{key:"piano",label:"📋 Piano"},{key:"spesa",label:"🛒 Spesa"},{key:"ingredienti",label:"🥦 Ingredienti"},{key:"gusti",label:"❤️ Gusti"},{key:"misure",label:"📏 Misure"},{key:"famiglia",label:"👥 Famiglia"}];
@@ -2865,16 +2886,15 @@ function App() {
             {spinning ? <div style={{textAlign:"center",padding:"40px 0",color:"#64748b"}}>🔄 Generando...</div> : (
               <>
                 {(()=>{
-                  // Set di tutti gli id ricette già presenti nel piano questa settimana
+                  // Piano effettivo: stessa fonte usata dalla scheda Spesa.
+                  const effectivePlan = applyOverrides(plan, overrides);
+                  // Set di tutti gli id ricette presenti nel piano questa
+                  // settimana (override inclusi): evita di riproporre piatti
+                  // già in calendario tra le alternative.
                   const weekMealIds = new Set(
-                    plan.flatMap(d => MEAL_KEYS.map(mk => d[mk]?.id)).filter(Boolean)
+                    effectivePlan.flatMap(d => MEAL_KEYS.map(mk => d[mk]?.id)).filter(Boolean)
                   );
-                  // dayData con overrides applicati
-                  const effectiveDay = {...dayData};
-                  MEAL_KEYS.forEach(mk => {
-                    const key = `${selDay}-${mk}`;
-                    if (overrides[key]) effectiveDay[mk] = overrides[key];
-                  });
+                  const effectiveDay = effectivePlan[selDay];
                   return (
                     <>
                       {MEAL_KEYS.map(mk => {
@@ -2960,7 +2980,7 @@ function App() {
           </>
         )}
 
-        {!showHistory&&page==="spesa"&&<ShoppingPage plan={plan}/>}
+        {!showHistory&&page==="spesa"&&<ShoppingPage plan={applyOverrides(plan, overrides)}/>}
         {!showHistory&&page==="ingredienti"&&<IngredientiPage excluded={excluded} onToggle={toggleExcluded}/>}
         {!showHistory&&page==="gusti"&&<GustiPage prefs={prefs} onToggleLike={handleToggleLike} onResetPrefs={handleResetPrefs}/>}
         {!showHistory&&page==="misure"&&<MisurePage personas={personas} myPersonaId={myPersonaId} onMisureChange={setMisureApp}/>}
