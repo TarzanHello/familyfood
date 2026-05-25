@@ -133,170 +133,170 @@ const { useState, useEffect, useCallback } = React;
 // ═══════════════════════════════════════════════════════════════════
 const INGREDIENTS = [
   // ── Proteine (sempre disponibili) ────────────────────────────────
-  { id: "ing_salmone",    nome: "Salmone fresco",          cat: "🥩 Proteine",      deperibile: 2,   stagioni: null, tags: ["salmone"] },
-  { id: "ing_orata",      nome: "Orata fresca",            cat: "🥩 Proteine",      deperibile: 2,   stagioni: null, tags: ["orata"] },
-  { id: "ing_merluzzo",   nome: "Merluzzo",                cat: "🥩 Proteine",      deperibile: 2,   stagioni: null, tags: ["merluzzo"] },
-  { id: "ing_sgombro",    nome: "Sgombro al naturale",     cat: "🥩 Proteine",      deperibile: 365, stagioni: null, tags: ["sgombro"] },
-  { id: "ing_pollo",      nome: "Petto di pollo",          cat: "🥩 Proteine",      deperibile: 3,   stagioni: null, tags: ["pollo"] },
-  { id: "ing_tacchino",   nome: "Tacchino macinato",       cat: "🥩 Proteine",      deperibile: 2,   stagioni: null, tags: ["tacchino","macinato"] },
-  { id: "ing_tacchino_fettine", nome: "Fettine di tacchino", cat: "🥩 Proteine",    deperibile: 2,   stagioni: null, tags: ["tacchino","fettine"] },
-  { id: "ing_manzo",      nome: "Manzo per spezzatino",    cat: "🥩 Proteine",      deperibile: 3,   stagioni: null, tags: ["manzo","spezzatino"] },
-  { id: "ing_manzo_tagliata", nome: "Manzo per tagliata",  cat: "🥩 Proteine",      deperibile: 3,   stagioni: null, tags: ["manzo","tagliata","bistecca"] },
-  { id: "ing_maiale",     nome: "Lonza di maiale",         cat: "🥩 Proteine",      deperibile: 3,   stagioni: null, tags: ["maiale","lonza"] },
-  { id: "ing_uova",       nome: "Uova",                    cat: "🥩 Proteine",      deperibile: 21,  stagioni: null, tags: ["uova","uovo","frittata","strapazzat","tegamino","sode","camicia","coque","pancakes"] },
-  { id: "ing_tonno",      nome: "Tonno al naturale",       cat: "🥩 Proteine",      deperibile: 365, stagioni: null, tags: ["tonno"] },
+  { id: "ing_salmone",    nome: "Salmone fresco",          cat: "🥩 Proteine",      deperibile: 2,   stagioni: null, nutriPer100:{kcal:185,p:18.4,c:1.0,g:12.0}, tags: ["salmone"] },
+  { id: "ing_orata",      nome: "Orata fresca",            cat: "🥩 Proteine",      deperibile: 2,   stagioni: null, nutriPer100:{kcal:121,p:20.7,c:1.0,g:3.8}, tags: ["orata"] },
+  { id: "ing_merluzzo",   nome: "Merluzzo",                cat: "🥩 Proteine",      deperibile: 2,   stagioni: null, nutriPer100:{kcal:71,p:17.0,c:0.0,g:0.3}, tags: ["merluzzo"] },
+  { id: "ing_sgombro",    nome: "Sgombro al naturale",     cat: "🥩 Proteine",      deperibile: 365, stagioni: null, nutriPer100:{kcal:170,p:17.0,c:0.5,g:11.1}, tags: ["sgombro"] },
+  { id: "ing_pollo",      nome: "Petto di pollo",          cat: "🥩 Proteine",      deperibile: 3,   stagioni: null, nutriPer100:{kcal:100,p:23.3,c:0.0,g:0.8}, tags: ["pollo"] },
+  { id: "ing_tacchino",   nome: "Tacchino macinato",       cat: "🥩 Proteine",      deperibile: 2,   stagioni: null, nutriPer100:{kcal:120,p:18.5,c:0.0,g:5.1}, tags: ["tacchino","macinato"] },
+  { id: "ing_tacchino_fettine", nome: "Fettine di tacchino", cat: "🥩 Proteine",    deperibile: 2,   stagioni: null, nutriPer100:{kcal:107,p:24.0,c:0.0,g:1.2}, tags: ["tacchino","fettine"] },
+  { id: "ing_manzo",      nome: "Manzo per spezzatino",    cat: "🥩 Proteine",      deperibile: 3,   stagioni: null, nutriPer100:{kcal:108,p:21.5,c:0.0,g:2.4}, tags: ["manzo","spezzatino"] },
+  { id: "ing_manzo_tagliata", nome: "Manzo per tagliata",  cat: "🥩 Proteine",      deperibile: 3,   stagioni: null, nutriPer100:{kcal:103,p:21.8,c:0.0,g:1.8}, tags: ["manzo","tagliata","bistecca"] },
+  { id: "ing_maiale",     nome: "Lonza di maiale",         cat: "🥩 Proteine",      deperibile: 3,   stagioni: null, nutriPer100:{kcal:146,p:20.7,c:0.0,g:7.0}, tags: ["maiale","lonza"] },
+  { id: "ing_uova",       nome: "Uova",                    cat: "🥩 Proteine",      deperibile: 21,  stagioni: null, nutriPer100:{kcal:128,p:12.4,c:0.0,g:8.7}, pesoUnita:61, tags: ["uova","uovo","frittata","strapazzat","tegamino","sode","camicia","coque","pancakes"] },
+  { id: "ing_tonno",      nome: "Tonno al naturale",       cat: "🥩 Proteine",      deperibile: 365, stagioni: null, nutriPer100:{kcal:103,p:25.1,c:0.0,g:0.3}, tags: ["tonno"] },
   // ── Latticini (sempre disponibili) ───────────────────────────────
-  { id: "ing_yogurt",     nome: "Yogurt greco",            cat: "🥛 Latticini",     deperibile: 7,   stagioni: null, tags: ["yogurt"] },
-  { id: "ing_ricotta",    nome: "Ricotta fresca",          cat: "🥛 Latticini",     deperibile: 4,   stagioni: null, tags: ["ricotta"] },
-  { id: "ing_mozzarella", nome: "Mozzarella",              cat: "🥛 Latticini",     deperibile: 3,   stagioni: null, tags: ["mozzarella"] },
-  { id: "ing_feta",       nome: "Feta",                    cat: "🥛 Latticini",     deperibile: 14,  stagioni: null, tags: ["feta"] },
-  { id: "ing_parmigiano", nome: "Parmigiano",              cat: "🥛 Latticini",     deperibile: 30,  stagioni: null, tags: ["parmigiano"] },
-  { id: "ing_latte",      nome: "Latte p.s.",              cat: "🥛 Latticini",     deperibile: 5,   stagioni: null, tags: ["latte"] },
-  { id: "ing_fiocchi_latte", nome: "Fiocchi di latte",     cat: "🥛 Latticini",     deperibile: 7,   stagioni: null, tags: ["fiocchi di latte"] },
+  { id: "ing_yogurt",     nome: "Yogurt greco",            cat: "🥛 Latticini",     deperibile: 7,   stagioni: null, nutriPer100:{kcal:115,p:6.4,c:2.0,g:9.1}, tags: ["yogurt"] },
+  { id: "ing_ricotta",    nome: "Ricotta fresca",          cat: "🥛 Latticini",     deperibile: 4,   stagioni: null, nutriPer100:{kcal:146,p:8.8,c:3.5,g:10.9}, tags: ["ricotta"] },
+  { id: "ing_mozzarella", nome: "Mozzarella",              cat: "🥛 Latticini",     deperibile: 3,   stagioni: null, nutriPer100:{kcal:253,p:18.7,c:0.7,g:19.5}, tags: ["mozzarella"] },
+  { id: "ing_feta",       nome: "Feta",                    cat: "🥛 Latticini",     deperibile: 14,  stagioni: null, nutriPer100:{kcal:250,p:15.6,c:1.5,g:20.2}, tags: ["feta"] },
+  { id: "ing_parmigiano", nome: "Parmigiano",              cat: "🥛 Latticini",     deperibile: 30,  stagioni: null, nutriPer100:{kcal:387,p:33.5,c:0.0,g:28.1}, tags: ["parmigiano"] },
+  { id: "ing_latte",      nome: "Latte p.s.",              cat: "🥛 Latticini",     deperibile: 5,   stagioni: null, nutriPer100:{kcal:46,p:3.5,c:5.0,g:1.5}, tags: ["latte"] },
+  { id: "ing_fiocchi_latte", nome: "Fiocchi di latte",     cat: "🥛 Latticini",     deperibile: 7,   stagioni: null, nutriPer100:{kcal:115,p:9.7,c:3.2,g:7.1}, tags: ["fiocchi di latte"] },
   // ── Cereali (sempre disponibili) ─────────────────────────────────
-  { id: "ing_avena",      nome: "Fiocchi d'avena",         cat: "🌾 Cereali",       deperibile: 180, stagioni: null, tags: ["avena","porridge","pancakes","smoothie"] },
-  { id: "ing_pasta",      nome: "Pasta integrale",         cat: "🌾 Cereali",       deperibile: 365, stagioni: null, tags: ["pasta"] },
-  { id: "ing_riso",       nome: "Riso basmati/integrale",  cat: "🌾 Cereali",       deperibile: 365, stagioni: null, tags: ["riso"] },
-  { id: "ing_farro",      nome: "Farro perlato",           cat: "🌾 Cereali",       deperibile: 365, stagioni: null, tags: ["farro"] },
-  { id: "ing_quinoa",     nome: "Quinoa",                  cat: "🌾 Cereali",       deperibile: 365, stagioni: null, tags: ["quinoa"] },
-  { id: "ing_orzo",       nome: "Orzo perlato",            cat: "🌾 Cereali",       deperibile: 365, stagioni: null, tags: ["orzo"] },
-  { id: "ing_pane",       nome: "Pane integrale",          cat: "🌾 Cereali",       deperibile: 4,   stagioni: null, tags: ["pane","crostini","wrap"] },
-  { id: "ing_farina",     nome: "Farina integrale",        cat: "🌾 Cereali",       deperibile: 180, stagioni: null, tags: ["pizza"] },
-  { id: "ing_crackers",   nome: "Crackers integrali",      cat: "🌾 Cereali",       deperibile: 90,  stagioni: null, tags: ["crackers"] },
+  { id: "ing_avena",      nome: "Fiocchi d'avena",         cat: "🌾 Cereali",       deperibile: 180, stagioni: null, nutriPer100:{kcal:373,p:8.0,c:72.8,g:7.5}, tags: ["avena","porridge","pancakes","smoothie"] },
+  { id: "ing_pasta",      nome: "Pasta integrale",         cat: "🌾 Cereali",       deperibile: 365, stagioni: null, nutriPer100:{kcal:353,p:10.9,c:79.1,g:1.4}, tags: ["pasta"] },
+  { id: "ing_riso",       nome: "Riso basmati/integrale",  cat: "🌾 Cereali",       deperibile: 365, stagioni: null, nutriPer100:{kcal:337,p:7.5,c:77.4,g:1.9}, tags: ["riso"] },
+  { id: "ing_farro",      nome: "Farro perlato",           cat: "🌾 Cereali",       deperibile: 365, stagioni: null, nutriPer100:{kcal:335,p:15.1,c:67.1,g:2.5}, tags: ["farro"] },
+  { id: "ing_quinoa",     nome: "Quinoa",                  cat: "🌾 Cereali",       deperibile: 365, stagioni: null, nutriPer100:{kcal:368,p:14.0,c:64.0,g:6.0}, tags: ["quinoa"] },
+  { id: "ing_orzo",       nome: "Orzo perlato",            cat: "🌾 Cereali",       deperibile: 365, stagioni: null, nutriPer100:{kcal:319,p:10.4,c:70.5,g:1.4}, tags: ["orzo"] },
+  { id: "ing_pane",       nome: "Pane integrale",          cat: "🌾 Cereali",       deperibile: 4,   stagioni: null, nutriPer100:{kcal:224,p:7.5,c:48.5,g:1.3}, tags: ["pane","crostini","wrap"] },
+  { id: "ing_farina",     nome: "Farina integrale",        cat: "🌾 Cereali",       deperibile: 180, stagioni: null, nutriPer100:{kcal:319,p:11.9,c:67.8,g:1.9}, tags: ["pizza"] },
+  { id: "ing_crackers",   nome: "Crackers integrali",      cat: "🌾 Cereali",       deperibile: 90,  stagioni: null, nutriPer100:{kcal:428,p:9.4,c:80.1,g:10.0}, pesoUnita:6, tags: ["crackers"] },
   // ── Legumi (sempre disponibili secchi/in scatola) ─────────────────
-  { id: "ing_lenticchie", nome: "Lenticchie",              cat: "🫘 Legumi",        deperibile: 365, stagioni: null, tags: ["lenticchie"] },
-  { id: "ing_ceci",       nome: "Ceci",                    cat: "🫘 Legumi",        deperibile: 365, stagioni: null, tags: ["ceci","hummus"] },
-  { id: "ing_legumi",     nome: "Mix legumi",              cat: "🫘 Legumi",        deperibile: 365, stagioni: null, tags: ["legumi","zuppa","fagioli"] },
-  { id: "ing_fagioli",    nome: "Fagioli cannellini",      cat: "🫘 Legumi",        deperibile: 365, stagioni: null, tags: ["fagioli cannellini"] },
-  { id: "ing_edamame",    nome: "Edamame",                 cat: "🫘 Legumi",        deperibile: 180, stagioni: null, tags: ["edamame"] },
-  { id: "ing_piselli",    nome: "Piselli (surgelati)",     cat: "🫘 Legumi",        deperibile: 180, stagioni: null, tags: ["piselli"] },
+  { id: "ing_lenticchie", nome: "Lenticchie",              cat: "🫘 Legumi",        deperibile: 365, stagioni: null, nutriPer100:{kcal:82,p:5.0,c:15.4,g:0.5}, tags: ["lenticchie"] },
+  { id: "ing_ceci",       nome: "Ceci",                    cat: "🫘 Legumi",        deperibile: 365, stagioni: null, nutriPer100:{kcal:100,p:6.7,c:13.9,g:2.3}, tags: ["ceci","hummus"] },
+  { id: "ing_legumi",     nome: "Mix legumi",              cat: "🫘 Legumi",        deperibile: 365, stagioni: null, nutriPer100:{kcal:90,p:6.5,c:14.5,g:1.0}, tags: ["legumi","zuppa","fagioli"] },
+  { id: "ing_fagioli",    nome: "Fagioli cannellini",      cat: "🫘 Legumi",        deperibile: 365, stagioni: null, nutriPer100:{kcal:76,p:6.0,c:12.5,g:0.6}, tags: ["fagioli cannellini"] },
+  { id: "ing_edamame",    nome: "Edamame",                 cat: "🫘 Legumi",        deperibile: 180, stagioni: null, nutriPer100:{kcal:122,p:11.0,c:9.0,g:5.0}, tags: ["edamame"] },
+  { id: "ing_piselli",    nome: "Piselli (surgelati)",     cat: "🫘 Legumi",        deperibile: 180, stagioni: null, nutriPer100:{kcal:48,p:5.4,c:6.4,g:0.3}, tags: ["piselli"] },
   // ── Verdure stagionali ────────────────────────────────────────────
   // Tutto l'anno
-  { id: "ing_carote",     nome: "Carote",                  cat: "🥦 Verdure",       deperibile: 14,  stagioni: null, tags: ["carote","carota"] },
-  { id: "ing_patate",     nome: "Patate",                  cat: "🥦 Verdure",       deperibile: 14,  stagioni: null, tags: ["patate al forno"] },
-  { id: "ing_patatedolci",nome: "Patate dolci",            cat: "🥦 Verdure",       deperibile: 14,  stagioni: null, tags: ["patate dolci","purè di patate dolci"] },
-  { id: "ing_insalata",   nome: "Insalata mista / rucola", cat: "🥦 Verdure",       deperibile: 3,   stagioni: null, tags: ["rucola","insalata","verdure miste"] },
-  { id: "ing_avocado",    nome: "Avocado",                 cat: "🥦 Verdure",       deperibile: 3,   stagioni: null, tags: ["avocado"] },
+  { id: "ing_carote",     nome: "Carote",                  cat: "🥦 Verdure",       deperibile: 14,  stagioni: null, nutriPer100:{kcal:35,p:1.1,c:7.6,g:0.2}, tags: ["carote","carota"] },
+  { id: "ing_patate",     nome: "Patate",                  cat: "🥦 Verdure",       deperibile: 14,  stagioni: null, nutriPer100:{kcal:85,p:2.1,c:17.9,g:1.0}, tags: ["patate al forno"] },
+  { id: "ing_patatedolci",nome: "Patate dolci",            cat: "🥦 Verdure",       deperibile: 14,  stagioni: null, nutriPer100:{kcal:86,p:1.6,c:20.0,g:0.1}, tags: ["patate dolci","purè di patate dolci"] },
+  { id: "ing_insalata",   nome: "Insalata mista / rucola", cat: "🥦 Verdure",       deperibile: 3,   stagioni: null, nutriPer100:{kcal:28,p:2.6,c:3.9,g:0.3}, tags: ["rucola","insalata","verdure miste"] },
+  { id: "ing_avocado",    nome: "Avocado",                 cat: "🥦 Verdure",       deperibile: 3,   stagioni: null, nutriPer100:{kcal:231,p:4.4,c:1.8,g:23.0}, tags: ["avocado"] },
   // Primavera–estate (apr–set)
-  { id: "ing_zucchine",   nome: "Zucchine",                cat: "🥦 Verdure",       deperibile: 5,   stagioni: [4,5,6,7,8,9],     tags: ["zucchine"] },
-  { id: "ing_pomodori",   nome: "Pomodori / pomodorini",   cat: "🥦 Verdure",       deperibile: 5,   stagioni: [5,6,7,8,9,10],    tags: ["pomodori","pomodorini","pomodoro"] },
-  { id: "ing_peperone",   nome: "Peperoni",                cat: "🥦 Verdure",       deperibile: 7,   stagioni: [6,7,8,9,10],      tags: ["peperone","verdure crude"] },
-  { id: "ing_melanzane",  nome: "Melanzane",               cat: "🥦 Verdure",       deperibile: 5,   stagioni: [6,7,8,9],         tags: ["melanzane","melanzana","parmigiana"] },
-  { id: "ing_fagiolini",  nome: "Fagiolini",               cat: "🥦 Verdure",       deperibile: 4,   stagioni: [5,6,7,8,9],       tags: ["fagiolini"] },
-  { id: "ing_cetrioli",   nome: "Cetrioli",                cat: "🥦 Verdure",       deperibile: 5,   stagioni: [5,6,7,8,9],       tags: ["cetrioli","cetriolo"] },
-  { id: "ing_mais",       nome: "Mais (fresco/surgelato)", cat: "🥦 Verdure",       deperibile: 180, stagioni: [6,7,8,9],         tags: ["mais"] },
-  { id: "ing_asparagi",   nome: "Asparagi",                cat: "🥦 Verdure",       deperibile: 3,   stagioni: [3,4,5],           tags: ["asparagi"] },
+  { id: "ing_zucchine",   nome: "Zucchine",                cat: "🥦 Verdure",       deperibile: 5,   stagioni: [4,5,6,7,8,9], nutriPer100:{kcal:11,p:1.3,c:1.4,g:0.1}, tags: ["zucchine"] },
+  { id: "ing_pomodori",   nome: "Pomodori / pomodorini",   cat: "🥦 Verdure",       deperibile: 5,   stagioni: [5,6,7,8,9,10], nutriPer100:{kcal:19,p:1.0,c:3.5,g:0.2}, tags: ["pomodori","pomodorini","pomodoro"] },
+  { id: "ing_peperone",   nome: "Peperoni",                cat: "🥦 Verdure",       deperibile: 7,   stagioni: [6,7,8,9,10], nutriPer100:{kcal:22,p:0.9,c:4.2,g:0.3}, tags: ["peperone","verdure crude"] },
+  { id: "ing_melanzane",  nome: "Melanzane",               cat: "🥦 Verdure",       deperibile: 5,   stagioni: [6,7,8,9], nutriPer100:{kcal:18,p:1.1,c:2.6,g:0.4}, tags: ["melanzane","melanzana","parmigiana"] },
+  { id: "ing_fagiolini",  nome: "Fagiolini",               cat: "🥦 Verdure",       deperibile: 4,   stagioni: [5,6,7,8,9], nutriPer100:{kcal:18,p:2.1,c:2.4,g:0.1}, tags: ["fagiolini"] },
+  { id: "ing_cetrioli",   nome: "Cetrioli",                cat: "🥦 Verdure",       deperibile: 5,   stagioni: [5,6,7,8,9], nutriPer100:{kcal:14,p:0.7,c:1.8,g:0.5}, tags: ["cetrioli","cetriolo"] },
+  { id: "ing_mais",       nome: "Mais (fresco/surgelato)", cat: "🥦 Verdure",       deperibile: 180, stagioni: [6,7,8,9], nutriPer100:{kcal:98,p:3.4,c:19.5,g:1.3}, tags: ["mais"] },
+  { id: "ing_asparagi",   nome: "Asparagi",                cat: "🥦 Verdure",       deperibile: 3,   stagioni: [3,4,5], nutriPer100:{kcal:29,p:3.6,c:3.3,g:0.2}, tags: ["asparagi"] },
   // Autunno–inverno (ott–mar)
-  { id: "ing_spinaci",    nome: "Spinaci freschi",         cat: "🥦 Verdure",       deperibile: 3,   stagioni: [1,2,3,10,11,12],  tags: ["spinaci"] },
-  { id: "ing_broccoli",   nome: "Broccoli",                cat: "🥦 Verdure",       deperibile: 4,   stagioni: [10,11,12,1,2,3],  tags: ["broccoli"] },
-  { id: "ing_zucca",      nome: "Zucca",                   cat: "🥦 Verdure",       deperibile: 30,  stagioni: [9,10,11,12],      tags: ["zucca"] },
-  { id: "ing_cavolo",     nome: "Cavolo / Verza",          cat: "🥦 Verdure",       deperibile: 7,   stagioni: [10,11,12,1,2,3],  tags: ["cavolo","verza","cavolo nero"] },
-  { id: "ing_finocchio",  nome: "Finocchi",                cat: "🥦 Verdure",       deperibile: 7,   stagioni: [10,11,12,1,2,3],  tags: ["finocchi","finocchio"] },
-  { id: "ing_porri",      nome: "Porri",                   cat: "🥦 Verdure",       deperibile: 7,   stagioni: [10,11,12,1,2,3],  tags: ["porri","porro"] },
-  { id: "ing_radicchio",  nome: "Radicchio",               cat: "🥦 Verdure",       deperibile: 5,   stagioni: [10,11,12,1,2,3],  tags: ["radicchio"] },
-  { id: "ing_carciofi",   nome: "Carciofi",                cat: "🥦 Verdure",       deperibile: 4,   stagioni: [3,4,5,10,11,12],  tags: ["carciofi","carciofo"] },
-  { id: "ing_funghi",     nome: "Funghi champignon",       cat: "🥦 Verdure",       deperibile: 4,   stagioni: [9,10,11,12,1,2],  tags: ["funghi","champignon"] },
+  { id: "ing_spinaci",    nome: "Spinaci freschi",         cat: "🥦 Verdure",       deperibile: 3,   stagioni: [1,2,3,10,11,12], nutriPer100:{kcal:31,p:3.4,c:2.9,g:0.7}, tags: ["spinaci"] },
+  { id: "ing_broccoli",   nome: "Broccoli",                cat: "🥦 Verdure",       deperibile: 4,   stagioni: [10,11,12,1,2,3], nutriPer100:{kcal:27,p:3.0,c:3.1,g:0.4}, tags: ["broccoli"] },
+  { id: "ing_zucca",      nome: "Zucca",                   cat: "🥦 Verdure",       deperibile: 30,  stagioni: [9,10,11,12], nutriPer100:{kcal:18,p:1.1,c:3.5,g:0.1}, tags: ["zucca"] },
+  { id: "ing_cavolo",     nome: "Cavolo / Verza",          cat: "🥦 Verdure",       deperibile: 7,   stagioni: [10,11,12,1,2,3], nutriPer100:{kcal:19,p:2.1,c:2.5,g:0.1}, tags: ["cavolo","verza","cavolo nero"] },
+  { id: "ing_finocchio",  nome: "Finocchi",                cat: "🥦 Verdure",       deperibile: 7,   stagioni: [10,11,12,1,2,3], nutriPer100:{kcal:9,p:1.2,c:1.0,g:0.0}, tags: ["finocchi","finocchio"] },
+  { id: "ing_porri",      nome: "Porri",                   cat: "🥦 Verdure",       deperibile: 7,   stagioni: [10,11,12,1,2,3], nutriPer100:{kcal:29,p:2.1,c:5.2,g:0.1}, tags: ["porri","porro"] },
+  { id: "ing_radicchio",  nome: "Radicchio",               cat: "🥦 Verdure",       deperibile: 5,   stagioni: [10,11,12,1,2,3], nutriPer100:{kcal:13,p:1.4,c:1.6,g:0.1}, tags: ["radicchio"] },
+  { id: "ing_carciofi",   nome: "Carciofi",                cat: "🥦 Verdure",       deperibile: 4,   stagioni: [3,4,5,10,11,12], nutriPer100:{kcal:22,p:2.7,c:2.5,g:0.2}, tags: ["carciofi","carciofo"] },
+  { id: "ing_funghi",     nome: "Funghi champignon",       cat: "🥦 Verdure",       deperibile: 4,   stagioni: [9,10,11,12,1,2], nutriPer100:{kcal:20,p:3.7,c:0.8,g:0.2}, tags: ["funghi","champignon"] },
   // ── Frutta stagionale ─────────────────────────────────────────────
   // Tutto l'anno
-  { id: "ing_banana",     nome: "Banane",                  cat: "🍎 Frutta",        deperibile: 5,   stagioni: null,              tags: ["banana"] },
+  { id: "ing_banana",     nome: "Banane",                  cat: "🍎 Frutta",        deperibile: 5,   stagioni: null, nutriPer100:{kcal:65,p:1.2,c:15.4,g:0.3}, pesoUnita:120, tags: ["banana"] },
   // Autunno–inverno
-  { id: "ing_mela",       nome: "Mele",                    cat: "🍎 Frutta",        deperibile: 14,  stagioni: [9,10,11,12,1,2],  tags: ["mela"] },
-  { id: "ing_pera",       nome: "Pere",                    cat: "🍎 Frutta",        deperibile: 7,   stagioni: [8,9,10,11,12],    tags: ["pera"] },
-  { id: "ing_arancia",    nome: "Arance",                  cat: "🍎 Frutta",        deperibile: 14,  stagioni: [11,12,1,2,3,4],   tags: ["arancia","frutto"] },
-  { id: "ing_mandarino",  nome: "Mandarini",               cat: "🍎 Frutta",        deperibile: 10,  stagioni: [10,11,12,1,2],    tags: ["mandarini","mandarino"] },
-  { id: "ing_kiwi",       nome: "Kiwi",                    cat: "🍎 Frutta",        deperibile: 7,   stagioni: [10,11,12,1,2,3],  tags: ["kiwi"] },
-  { id: "ing_melograno",  nome: "Melograno",               cat: "🍎 Frutta",        deperibile: 14,  stagioni: [10,11,12],        tags: ["melograno"] },
-  { id: "ing_castagne",   nome: "Castagne",                cat: "🍎 Frutta",        deperibile: 7,   stagioni: [9,10,11],         tags: ["castagne"] },
+  { id: "ing_mela",       nome: "Mele",                    cat: "🍎 Frutta",        deperibile: 14,  stagioni: null, nutriPer100:{kcal:38,p:0.2,c:10.0,g:0.0}, pesoUnita:150, tags: ["mela"] },
+  { id: "ing_pera",       nome: "Pere",                    cat: "🍎 Frutta",        deperibile: 7,   stagioni: [8,9,10,11,12], nutriPer100:{kcal:35,p:0.3,c:8.8,g:0.1}, pesoUnita:150, tags: ["pera"] },
+  { id: "ing_arancia",    nome: "Arance",                  cat: "🍎 Frutta",        deperibile: 14,  stagioni: [11,12,1,2,3,4], nutriPer100:{kcal:34,p:0.7,c:7.8,g:0.2}, pesoUnita:180, tags: ["arancia","frutto"] },
+  { id: "ing_mandarino",  nome: "Mandarini",               cat: "🍎 Frutta",        deperibile: 10,  stagioni: [10,11,12,1,2], nutriPer100:{kcal:72,p:0.9,c:17.6,g:0.3}, pesoUnita:75, tags: ["mandarini","mandarino"] },
+  { id: "ing_kiwi",       nome: "Kiwi",                    cat: "🍎 Frutta",        deperibile: 7,   stagioni: [10,11,12,1,2,3], nutriPer100:{kcal:44,p:1.2,c:9.0,g:0.6}, pesoUnita:80, tags: ["kiwi"] },
+  { id: "ing_melograno",  nome: "Melograno",               cat: "🍎 Frutta",        deperibile: 14,  stagioni: [10,11,12], nutriPer100:{kcal:63,p:0.5,c:15.9,g:0.2}, tags: ["melograno"] },
+  { id: "ing_castagne",   nome: "Castagne",                cat: "🍎 Frutta",        deperibile: 7,   stagioni: [9,10,11], nutriPer100:{kcal:165,p:2.9,c:36.7,g:1.7}, tags: ["castagne"] },
   // Primavera–estate
-  { id: "ing_fragole",    nome: "Fragole",                 cat: "🍎 Frutta",        deperibile: 3,   stagioni: [4,5,6],           tags: ["fragole"] },
-  { id: "ing_pesche",     nome: "Pesche / Nettarine",      cat: "🍎 Frutta",        deperibile: 4,   stagioni: [6,7,8,9],         tags: ["pesche","pesca","nettarine"] },
-  { id: "ing_albicocche", nome: "Albicocche",              cat: "🍎 Frutta",        deperibile: 3,   stagioni: [6,7],             tags: ["albicocche"] },
-  { id: "ing_anguria",    nome: "Anguria",                 cat: "🍎 Frutta",        deperibile: 5,   stagioni: [6,7,8,9],         tags: ["anguria"] },
-  { id: "ing_melone",     nome: "Melone",                  cat: "🍎 Frutta",        deperibile: 4,   stagioni: [6,7,8,9],         tags: ["melone"] },
-  { id: "ing_ciliegie",   nome: "Ciliegie",                cat: "🍎 Frutta",        deperibile: 3,   stagioni: [5,6,7],           tags: ["ciliegie"] },
-  { id: "ing_mirtilli",   nome: "Mirtilli",                cat: "🍎 Frutta",        deperibile: 5,   stagioni: [6,7,8,9],         tags: ["mirtilli"] },
-  { id: "ing_bosco",      nome: "Frutti di bosco",         cat: "🍎 Frutta",        deperibile: 3,   stagioni: [5,6,7,8,9],       tags: ["frutti di bosco"] },
-  { id: "ing_uva",        nome: "Uva",                     cat: "🍎 Frutta",        deperibile: 5,   stagioni: [8,9,10],          tags: ["uva"] },
+  { id: "ing_fragole",    nome: "Fragole",                 cat: "🍎 Frutta",        deperibile: 3,   stagioni: [4,5,6], nutriPer100:{kcal:27,p:0.9,c:5.3,g:0.4}, tags: ["fragole"] },
+  { id: "ing_pesche",     nome: "Pesche / Nettarine",      cat: "🍎 Frutta",        deperibile: 4,   stagioni: [6,7,8,9], nutriPer100:{kcal:27,p:0.8,c:6.1,g:0.1}, pesoUnita:150, tags: ["pesche","pesca","nettarine"] },
+  { id: "ing_albicocche", nome: "Albicocche",              cat: "🍎 Frutta",        deperibile: 3,   stagioni: [6,7], nutriPer100:{kcal:28,p:0.4,c:6.8,g:0.1}, pesoUnita:40, tags: ["albicocche"] },
+  { id: "ing_anguria",    nome: "Anguria",                 cat: "🍎 Frutta",        deperibile: 5,   stagioni: [6,7,8,9], nutriPer100:{kcal:16,p:0.4,c:3.7,g:0.0}, tags: ["anguria"] },
+  { id: "ing_melone",     nome: "Melone",                  cat: "🍎 Frutta",        deperibile: 4,   stagioni: [6,7,8,9], nutriPer100:{kcal:33,p:0.8,c:7.4,g:0.2}, tags: ["melone"] },
+  { id: "ing_ciliegie",   nome: "Ciliegie",                cat: "🍎 Frutta",        deperibile: 3,   stagioni: [5,6,7], nutriPer100:{kcal:38,p:0.8,c:9.0,g:0.1}, tags: ["ciliegie"] },
+  { id: "ing_mirtilli",   nome: "Mirtilli",                cat: "🍎 Frutta",        deperibile: 5,   stagioni: [6,7,8,9], nutriPer100:{kcal:25,p:0.9,c:5.1,g:0.2}, tags: ["mirtilli"] },
+  { id: "ing_bosco",      nome: "Frutti di bosco",         cat: "🍎 Frutta",        deperibile: 3,   stagioni: [5,6,7,8,9], nutriPer100:{kcal:36,p:1.3,c:8.1,g:0.0}, tags: ["frutti di bosco"] },
+  { id: "ing_uva",        nome: "Uva",                     cat: "🍎 Frutta",        deperibile: 5,   stagioni: [8,9,10], nutriPer100:{kcal:61,p:0.5,c:15.6,g:0.1}, tags: ["uva"] },
   // ── Frutta secca (sempre disponibile) ────────────────────────────
-  { id: "ing_mandorle",   nome: "Mandorle",                cat: "🥜 Frutta secca",  deperibile: 180, stagioni: null, tags: ["mandorle"] },
-  { id: "ing_noci",       nome: "Noci",                    cat: "🥜 Frutta secca",  deperibile: 90,  stagioni: null, tags: ["noci"] },
-  { id: "ing_pistacchi",  nome: "Pistacchi sgusciati",     cat: "🥜 Frutta secca",  deperibile: 90,  stagioni: null, tags: ["pistacchi","pistacchio"] },
-  { id: "ing_bm",         nome: "Burro di mandorle",       cat: "🥜 Frutta secca",  deperibile: 180, stagioni: null, tags: ["burro di mandorle"] },
-  { id: "ing_mista",      nome: "Mix frutta secca",        cat: "🥜 Frutta secca",  deperibile: 90,  stagioni: null, tags: ["frutta secca mista"] },
+  { id: "ing_mandorle",   nome: "Mandorle",                cat: "🥜 Frutta secca",  deperibile: 180, stagioni: null, nutriPer100:{kcal:603,p:22.0,c:4.6,g:55.3}, tags: ["mandorle"] },
+  { id: "ing_noci",       nome: "Noci",                    cat: "🥜 Frutta secca",  deperibile: 90,  stagioni: null, nutriPer100:{kcal:582,p:10.5,c:5.5,g:57.7}, tags: ["noci"] },
+  { id: "ing_pistacchi",  nome: "Pistacchi sgusciati",     cat: "🥜 Frutta secca",  deperibile: 90,  stagioni: null, nutriPer100:{kcal:608,p:18.1,c:8.1,g:56.1}, tags: ["pistacchi","pistacchio"] },
+  { id: "ing_bm",         nome: "Burro di mandorle",       cat: "🥜 Frutta secca",  deperibile: 180, stagioni: null, nutriPer100:{kcal:614,p:21.0,c:19.0,g:56.0}, tags: ["burro di mandorle"] },
+  { id: "ing_mista",      nome: "Mix frutta secca",        cat: "🥜 Frutta secca",  deperibile: 90,  stagioni: null, nutriPer100:{kcal:600,p:17.0,c:8.0,g:56.0}, tags: ["frutta secca mista"] },
   // ── Dispensa (sempre disponibile) ────────────────────────────────
-  { id: "ing_evo",        nome: "Olio EVO",                cat: "🧂 Dispensa",      deperibile: 365, stagioni: null, tags: ["evo","olio"] },
-  { id: "ing_miele",      nome: "Miele",                   cat: "🧂 Dispensa",      deperibile: 365, tags: ["miele"] },
-  { id: "ing_passata",    nome: "Passata di pomodoro",     cat: "🧂 Dispensa",      deperibile: 365, tags: ["passata"] },
-  { id: "ing_spezie",     nome: "Spezie varie",            cat: "🧂 Dispensa",      deperibile: 365, tags: ["spezie","cannella","curcuma","origano"] },
-  { id: "ing_brodo",      nome: "Brodo / dado vegetale",   cat: "🧂 Dispensa",      deperibile: 365, tags: ["brodo","minestrone"] },
-  { id: "ing_lievito",    nome: "Lievito di birra",        cat: "🧂 Dispensa",      deperibile: 14,  stagioni: null, kcal_per_kg: 150,  tags: ["pizza","lievito"] },
-  { id: "ing_olive",           nome: "Olive",                   cat: "🧂 Dispensa",      deperibile: 30,  stagioni: null, kcal_per_kg: 2680, tags: ["olive"] },
-  { id: "ing_pomodori_secchi", nome: "Pomodori secchi",         cat: "🧂 Dispensa",      deperibile: 180, stagioni: null, kcal_per_kg: 2570, tags: ["pomodori secchi"] },
+  { id: "ing_evo",        nome: "Olio EVO",                cat: "🧂 Dispensa",      deperibile: 365, stagioni: null, nutriPer100:{kcal:899,p:0.0,c:0.0,g:99.9}, tags: ["evo","olio"] },
+  { id: "ing_miele",      nome: "Miele",                   cat: "🧂 Dispensa",      deperibile: 365, stagioni: null, nutriPer100:{kcal:304,p:0.6,c:80.3,g:0.0}, tags: ["miele"] },
+  { id: "ing_passata",    nome: "Passata di pomodoro",     cat: "🧂 Dispensa",      deperibile: 365, stagioni: null, nutriPer100:{kcal:18,p:1.3,c:3.0,g:0.2}, tags: ["passata"] },
+  { id: "ing_spezie",     nome: "Spezie varie",            cat: "🧂 Dispensa",      deperibile: 365, stagioni: null, nutriPer100:{kcal:250,p:10.0,c:45.0,g:8.0}, tags: ["spezie","cannella","curcuma","origano"] },
+  { id: "ing_brodo",      nome: "Brodo / dado vegetale",   cat: "🧂 Dispensa",      deperibile: 365, stagioni: null, nutriPer100:{kcal:5,p:0.3,c:0.5,g:0.2}, tags: ["brodo","minestrone"] },
+  { id: "ing_lievito",    nome: "Lievito di birra",        cat: "🧂 Dispensa",      deperibile: 14,  stagioni: null, nutriPer100:{kcal:56,p:12.1,c:1.1,g:0.4}, tags: ["pizza","lievito"] },
+  { id: "ing_olive",           nome: "Olive",                   cat: "🧂 Dispensa",      deperibile: 30,  stagioni: null, nutriPer100:{kcal:235,p:1.6,c:0.8,g:25.1}, tags: ["olive"] },
+  { id: "ing_pomodori_secchi", nome: "Pomodori secchi",         cat: "🧂 Dispensa",      deperibile: 180, stagioni: null, nutriPer100:{kcal:258,p:14.0,c:44.0,g:3.0}, tags: ["pomodori secchi"] },
   // ── Nuovi ingredienti da lista calorie ────────────────────────────
   // 🥩 Proteine – pesce e mare
-  { id: "ing_gamberi",      nome: "Gamberi",                      cat: "🥩 Proteine",     deperibile: 6,   stagioni: null,              kcal_per_kg: 600,  tags: ["gamberi","mazzancolle"] },
-  { id: "ing_polpo",        nome: "Polpo",                        cat: "🥩 Proteine",     deperibile: 2,   stagioni: null,              kcal_per_kg: 600,  tags: ["polpo"] },
-  { id: "ing_calamari",     nome: "Calamari",                     cat: "🥩 Proteine",     deperibile: 2,   stagioni: null,              kcal_per_kg: 700,  tags: ["calamari"] },
-  { id: "ing_baccala",      nome: "Baccalà (bagnato/surgelato)",  cat: "🥩 Proteine",     deperibile: 3,   stagioni: null,              kcal_per_kg: 1030, tags: ["baccala"] },
-  { id: "ing_ombrina",      nome: "Ombrina",                      cat: "🥩 Proteine",     deperibile: 2,   stagioni: null,              kcal_per_kg: 1000, tags: ["ombrina"] },
-  { id: "ing_tonno_olio",   nome: "Tonno sott'olio",              cat: "🥩 Proteine",     deperibile: 365, stagioni: null,              kcal_per_kg: 2580, tags: ["tonno sottolio","tonno olio"] },
-  { id: "ing_alici",        nome: "Alici / Acciughe",             cat: "🥩 Proteine",     deperibile: 14,  stagioni: null,              kcal_per_kg: 2040, tags: ["alici","acciughe"] },
-  { id: "ing_salmone_aff",  nome: "Salmone affumicato",           cat: "🥩 Proteine",     deperibile: 7,   stagioni: null,              kcal_per_kg: 1800, tags: ["salmone affumicato"] },
+  { id: "ing_gamberi",      nome: "Gamberi",                      cat: "🥩 Proteine",     deperibile: 6,   stagioni: null,              nutriPer100:{kcal:71,p:13.6,c:2.9,g:0.6}, tags: ["gamberi","mazzancolle"] },
+  { id: "ing_polpo",        nome: "Polpo",                        cat: "🥩 Proteine",     deperibile: 2,   stagioni: null,              nutriPer100:{kcal:57,p:10.6,c:1.4,g:1.0}, tags: ["polpo"] },
+  { id: "ing_calamari",     nome: "Calamari",                     cat: "🥩 Proteine",     deperibile: 2,   stagioni: null,              nutriPer100:{kcal:68,p:12.6,c:0.6,g:1.7}, tags: ["calamari"] },
+  { id: "ing_baccala",      nome: "Baccalà (bagnato/surgelato)",  cat: "🥩 Proteine",     deperibile: 3,   stagioni: null,              nutriPer100:{kcal:95,p:21.6,c:0.0,g:1.0}, tags: ["baccala"] },
+  { id: "ing_ombrina",      nome: "Ombrina",                      cat: "🥩 Proteine",     deperibile: 2,   stagioni: null,              nutriPer100:{kcal:110,p:19.0,c:0.7,g:3.5}, tags: ["ombrina"] },
+  { id: "ing_tonno_olio",   nome: "Tonno sott'olio",              cat: "🥩 Proteine",     deperibile: 365, stagioni: null,              nutriPer100:{kcal:192,p:25.2,c:0.0,g:10.1}, tags: ["tonno sottolio","tonno olio"] },
+  { id: "ing_alici",        nome: "Alici / Acciughe",             cat: "🥩 Proteine",     deperibile: 14,  stagioni: null,              nutriPer100:{kcal:96,p:16.8,c:1.5,g:2.6}, tags: ["alici","acciughe"] },
+  { id: "ing_salmone_aff",  nome: "Salmone affumicato",           cat: "🥩 Proteine",     deperibile: 7,   stagioni: null,              nutriPer100:{kcal:147,p:25.4,c:1.2,g:4.5}, tags: ["salmone affumicato"] },
   // 🥩 Proteine – carne
-  { id: "ing_anatra",       nome: "Petto d'anatra",               cat: "🥩 Proteine",     deperibile: 3,   stagioni: null,              kcal_per_kg: 1590, tags: ["anatra"] },
-  { id: "ing_agnello",      nome: "Agnello",                      cat: "🥩 Proteine",     deperibile: 3,   stagioni: null,              kcal_per_kg: 1500, tags: ["agnello"] },
-  { id: "ing_salsiccia",    nome: "Salsiccia",                    cat: "🥩 Proteine",     deperibile: 3,   stagioni: null,              kcal_per_kg: 1500, tags: ["salsiccia"] },
-  { id: "ing_prosciutto",   nome: "Prosciutto crudo",             cat: "🥩 Proteine",     deperibile: 14,  stagioni: null,              kcal_per_kg: 2240, tags: ["prosciutto"] },
-  { id: "ing_tofu",         nome: "Tofu",                         cat: "🥩 Proteine",     deperibile: 5,   stagioni: null,              kcal_per_kg: 990,  tags: ["tofu"] },
+  { id: "ing_anatra",       nome: "Petto d'anatra",               cat: "🥩 Proteine",     deperibile: 3,   stagioni: null,              nutriPer100:{kcal:159,p:21.4,c:0.0,g:8.2}, tags: ["anatra"] },
+  { id: "ing_agnello",      nome: "Agnello",                      cat: "🥩 Proteine",     deperibile: 3,   stagioni: null,              nutriPer100:{kcal:159,p:20.0,c:0.0,g:8.8}, tags: ["agnello"] },
+  { id: "ing_salsiccia",    nome: "Salsiccia",                    cat: "🥩 Proteine",     deperibile: 3,   stagioni: null,              nutriPer100:{kcal:304,p:15.4,c:0.6,g:26.7}, tags: ["salsiccia"] },
+  { id: "ing_prosciutto",   nome: "Prosciutto crudo",             cat: "🥩 Proteine",     deperibile: 14,  stagioni: null,              nutriPer100:{kcal:224,p:26.9,c:0.0,g:12.9}, tags: ["prosciutto"] },
+  { id: "ing_tofu",         nome: "Tofu",                         cat: "🥩 Proteine",     deperibile: 5,   stagioni: null,              nutriPer100:{kcal:76,p:8.0,c:1.9,g:4.8}, tags: ["tofu"] },
   // 🥛 Latticini
-  { id: "ing_burro",        nome: "Burro",                        cat: "🥛 Latticini",    deperibile: 14,  stagioni: null,              kcal_per_kg: 7500, tags: ["burro"] },
-  { id: "ing_panna",        nome: "Panna fresca",                 cat: "🥛 Latticini",    deperibile: 5,   stagioni: null,              kcal_per_kg: 3000, tags: ["panna"] },
-  { id: "ing_mascarpone",   nome: "Mascarpone",                   cat: "🥛 Latticini",    deperibile: 7,   stagioni: null,              kcal_per_kg: 4120, tags: ["mascarpone"] },
-  { id: "ing_philadelphia", nome: "Philadelphia / Caprino",       cat: "🥛 Latticini",    deperibile: 7,   stagioni: null,              kcal_per_kg: 2800, tags: ["philadelphia","caprino"] },
-  { id: "ing_burrata",      nome: "Burrata / Stracciatella",      cat: "🥛 Latticini",    deperibile: 3,   stagioni: null,              kcal_per_kg: 4500, tags: ["burrata","stracciatella"] },
-  { id: "ing_pecorino",     nome: "Pecorino",                     cat: "🥛 Latticini",    deperibile: 30,  stagioni: null,              kcal_per_kg: 4020, tags: ["pecorino"] },
+  { id: "ing_burro",        nome: "Burro",                        cat: "🥛 Latticini",    deperibile: 14,  stagioni: null,              nutriPer100:{kcal:758,p:0.8,c:1.1,g:83.4}, tags: ["burro"] },
+  { id: "ing_panna",        nome: "Panna fresca",                 cat: "🥛 Latticini",    deperibile: 5,   stagioni: null,              nutriPer100:{kcal:337,p:2.3,c:3.4,g:35.0}, tags: ["panna"] },
+  { id: "ing_mascarpone",   nome: "Mascarpone",                   cat: "🥛 Latticini",    deperibile: 7,   stagioni: null,              nutriPer100:{kcal:455,p:7.6,c:0.3,g:47.0}, tags: ["mascarpone"] },
+  { id: "ing_philadelphia", nome: "Philadelphia / Caprino",       cat: "🥛 Latticini",    deperibile: 7,   stagioni: null,              nutriPer100:{kcal:313,p:8.6,c:0.0,g:31.0}, tags: ["philadelphia","caprino"] },
+  { id: "ing_burrata",      nome: "Burrata / Stracciatella",      cat: "🥛 Latticini",    deperibile: 3,   stagioni: null,              nutriPer100:{kcal:253,p:18.7,c:0.7,g:19.5}, tags: ["burrata","stracciatella"] },
+  { id: "ing_pecorino",     nome: "Pecorino",                     cat: "🥛 Latticini",    deperibile: 30,  stagioni: null,              nutriPer100:{kcal:392,p:25.8,c:0.2,g:32.0}, tags: ["pecorino"] },
   // 🌾 Cereali
-  { id: "ing_bulgur",       nome: "Bulgur",                       cat: "🌾 Cereali",      deperibile: 365, stagioni: null,              kcal_per_kg: 3560, tags: ["bulgur"] },
-  { id: "ing_couscous",     nome: "Cous cous",                    cat: "🌾 Cereali",      deperibile: 365, stagioni: null,              kcal_per_kg: 3650, tags: ["cous cous","couscous"] },
-  { id: "ing_grano_sarac",  nome: "Grano saraceno",               cat: "🌾 Cereali",      deperibile: 365, stagioni: null,              kcal_per_kg: 2370, tags: ["grano saraceno"] },
-  { id: "ing_riso_venere",  nome: "Riso venere",                  cat: "🌾 Cereali",      deperibile: 365, stagioni: null,              kcal_per_kg: 3770, tags: ["riso venere"] },
-  { id: "ing_pasta_fresca", nome: "Pasta fresca",                 cat: "🌾 Cereali",      deperibile: 2,   stagioni: null,              kcal_per_kg: 2650, tags: ["pasta fresca","spaghettoni freschi","fettuccine"] },
-  { id: "ing_panko",        nome: "Panko / Pangrattato",          cat: "🌾 Cereali",      deperibile: 180, stagioni: null,              kcal_per_kg: 3500, tags: ["panko","pangrattato"] },
-  { id: "ing_farina_00",    nome: "Farina 00 / Semolino",         cat: "🌾 Cereali",      deperibile: 365, stagioni: null,              kcal_per_kg: 3450, tags: ["farina 00","semolino","maizena"] },
+  { id: "ing_bulgur",       nome: "Bulgur",                       cat: "🌾 Cereali",      deperibile: 365, stagioni: null,              nutriPer100:{kcal:342,p:12.0,c:69.0,g:1.3}, tags: ["bulgur"] },
+  { id: "ing_couscous",     nome: "Cous cous",                    cat: "🌾 Cereali",      deperibile: 365, stagioni: null,              nutriPer100:{kcal:376,p:13.0,c:72.0,g:1.9}, tags: ["cous cous","couscous"] },
+  { id: "ing_grano_sarac",  nome: "Grano saraceno",               cat: "🌾 Cereali",      deperibile: 365, stagioni: null,              nutriPer100:{kcal:314,p:12.4,c:62.5,g:3.3}, tags: ["grano saraceno"] },
+  { id: "ing_riso_venere",  nome: "Riso venere",                  cat: "🌾 Cereali",      deperibile: 365, stagioni: null,              nutriPer100:{kcal:337,p:7.5,c:77.4,g:1.9}, tags: ["riso venere"] },
+  { id: "ing_pasta_fresca", nome: "Pasta fresca",                 cat: "🌾 Cereali",      deperibile: 2,   stagioni: null,              nutriPer100:{kcal:288,p:11.0,c:53.0,g:3.5}, tags: ["pasta fresca","spaghettoni freschi","fettuccine"] },
+  { id: "ing_panko",        nome: "Panko / Pangrattato",          cat: "🌾 Cereali",      deperibile: 180, stagioni: null,              nutriPer100:{kcal:351,p:10.1,c:77.8,g:2.1}, tags: ["panko","pangrattato"] },
+  { id: "ing_farina_00",    nome: "Farina 00 / Semolino",         cat: "🌾 Cereali",      deperibile: 365, stagioni: null,              nutriPer100:{kcal:340,p:11.0,c:77.3,g:0.7}, tags: ["farina 00","semolino","maizena"] },
   // 🫘 Legumi
-  { id: "ing_fag_azuki",    nome: "Fagioli azuki",                cat: "🫘 Legumi",       deperibile: 365, stagioni: null,              kcal_per_kg: 3300, tags: ["azuki","fagioli azuki"] },
+  { id: "ing_fag_azuki",    nome: "Fagioli azuki",                cat: "🫘 Legumi",       deperibile: 365, stagioni: null,              nutriPer100:{kcal:128,p:8.0,c:25.0,g:0.5}, tags: ["azuki","fagioli azuki"] },
   // 🥦 Verdure
-  { id: "ing_cipolla",      nome: "Cipolla",                      cat: "🥦 Verdure",      deperibile: 14,  stagioni: null,              kcal_per_kg: 250,  tags: ["cipolla","cipolla rossa","cipollotto","scalogno"] },
-  { id: "ing_aglio",        nome: "Aglio",                        cat: "🥦 Verdure",      deperibile: 30,  stagioni: null,              kcal_per_kg: 900,  tags: ["aglio"] },
-  { id: "ing_sedano",       nome: "Sedano",                       cat: "🥦 Verdure",      deperibile: 7,   stagioni: null,              kcal_per_kg: 150,  tags: ["sedano"] },
-  { id: "ing_lattuga",      nome: "Lattuga / Songino / Iceberg",  cat: "🥦 Verdure",      deperibile: 3,   stagioni: null,              kcal_per_kg: 150,  tags: ["lattuga","songino","iceberg","lattughino","lollo"] },
-  { id: "ing_cavolfiore",   nome: "Cavolfiore",                   cat: "🥦 Verdure",      deperibile: 5,   stagioni: [10,11,12,1,2,3],  kcal_per_kg: 250,  tags: ["cavolfiore"] },
-  { id: "ing_datterini",    nome: "Datterini / Pomodoro ramato",  cat: "🥦 Verdure",      deperibile: 4,   stagioni: [5,6,7,8,9,10],    kcal_per_kg: 200,  tags: ["datterini","pomodoro ramato","pachino"] },
-  { id: "ing_barbabietole", nome: "Barbabietole",                 cat: "🥦 Verdure",      deperibile: 7,   stagioni: [9,10,11,12,1],    kcal_per_kg: 430,  tags: ["barbabietole"] },
-  { id: "ing_germogli",     nome: "Germogli di soia",             cat: "🥦 Verdure",      deperibile: 5,   stagioni: null,              kcal_per_kg: 350,  tags: ["germogli"] },
+  { id: "ing_cipolla",      nome: "Cipolla",                      cat: "🥦 Verdure",      deperibile: 14,  stagioni: null,              nutriPer100:{kcal:26,p:1.0,c:5.7,g:0.1}, tags: ["cipolla","cipolla rossa","cipollotto","scalogno"] },
+  { id: "ing_aglio",        nome: "Aglio",                        cat: "🥦 Verdure",      deperibile: 30,  stagioni: null,              nutriPer100:{kcal:41,p:0.9,c:8.4,g:0.6}, pesoUnita:5, tags: ["aglio"] },
+  { id: "ing_sedano",       nome: "Sedano",                       cat: "🥦 Verdure",      deperibile: 7,   stagioni: null,              nutriPer100:{kcal:20,p:2.3,c:2.4,g:0.2}, tags: ["sedano"] },
+  { id: "ing_lattuga",      nome: "Lattuga / Songino / Iceberg",  cat: "🥦 Verdure",      deperibile: 3,   stagioni: null,              nutriPer100:{kcal:19,p:1.8,c:2.2,g:0.4}, tags: ["lattuga","songino","iceberg","lattughino","lollo"] },
+  { id: "ing_cavolfiore",   nome: "Cavolfiore",                   cat: "🥦 Verdure",      deperibile: 5,   stagioni: [10,11,12,1,2,3],  nutriPer100:{kcal:25,p:3.2,c:2.7,g:0.2}, tags: ["cavolfiore"] },
+  { id: "ing_datterini",    nome: "Datterini / Pomodoro ramato",  cat: "🥦 Verdure",      deperibile: 4,   stagioni: [5,6,7,8,9,10],    nutriPer100:{kcal:17,p:1.2,c:2.8,g:0.2}, tags: ["datterini","pomodoro ramato","pachino"] },
+  { id: "ing_barbabietole", nome: "Barbabietole",                 cat: "🥦 Verdure",      deperibile: 7,   stagioni: [9,10,11,12,1],    nutriPer100:{kcal:19,p:1.1,c:4.0,g:0.0}, tags: ["barbabietole"] },
+  { id: "ing_germogli",     nome: "Germogli di soia",             cat: "🥦 Verdure",      deperibile: 5,   stagioni: null,              nutriPer100:{kcal:49,p:6.2,c:3.0,g:1.4}, tags: ["germogli"] },
   // 🍎 Frutta
-  { id: "ing_mango",        nome: "Mango",                        cat: "🍎 Frutta",       deperibile: 4,   stagioni: [4,5,6,7,8,9,10],  kcal_per_kg: 2000, tags: ["mango"] },
-  { id: "ing_ananas",       nome: "Ananas",                       cat: "🍎 Frutta",       deperibile: 5,   stagioni: null,              kcal_per_kg: 400,  tags: ["ananas"] },
-  { id: "ing_limone",       nome: "Limone / Lime",                cat: "🍎 Frutta",       deperibile: 14,  stagioni: null,              kcal_per_kg: 140,  tags: ["limone","lime","succo di lime","succo di limone"] },
+  { id: "ing_mango",        nome: "Mango",                        cat: "🍎 Frutta",       deperibile: 4,   stagioni: [4,5,6,7,8,9,10],  nutriPer100:{kcal:53,p:1.0,c:12.6,g:0.2}, tags: ["mango"] },
+  { id: "ing_ananas",       nome: "Ananas",                       cat: "🍎 Frutta",       deperibile: 5,   stagioni: null,              nutriPer100:{kcal:40,p:0.5,c:10.0,g:0.0}, tags: ["ananas"] },
+  { id: "ing_limone",       nome: "Limone / Lime",                cat: "🍎 Frutta",       deperibile: 14,  stagioni: null,              nutriPer100:{kcal:11,p:0.6,c:2.3,g:0.0}, tags: ["limone","lime","succo di lime","succo di limone"] },
   // 🧂 Dispensa
-  { id: "ing_aceto",        nome: "Aceto (vino/mele/balsamico)",  cat: "🧂 Dispensa",     deperibile: 365, stagioni: null,              kcal_per_kg: 40,   tags: ["aceto"] },
-  { id: "ing_salsa_soia",   nome: "Salsa di soia",                cat: "🧂 Dispensa",     deperibile: 365, stagioni: null,              kcal_per_kg: 150,  tags: ["salsa di soia","salsa soia","tamari"] },
-  { id: "ing_concentrato",  nome: "Concentrato di pomodoro",      cat: "🧂 Dispensa",     deperibile: 30,  stagioni: null,              kcal_per_kg: 500,  tags: ["concentrato di pomodoro"] },
-  { id: "ing_senape",       nome: "Senape",                       cat: "🧂 Dispensa",     deperibile: 90,  stagioni: null,              kcal_per_kg: 650,  tags: ["senape"] },
-  { id: "ing_capperi",      nome: "Capperi",                      cat: "🧂 Dispensa",     deperibile: 90,  stagioni: null,              kcal_per_kg: 250,  tags: ["capperi"] },
-  { id: "ing_basilico",     nome: "Basilico fresco",              cat: "🧂 Dispensa",     deperibile: 5,   stagioni: [5,6,7,8,9],       kcal_per_kg: 150,  tags: ["basilico"] },
-  { id: "ing_prezzemolo",   nome: "Prezzemolo",                   cat: "🧂 Dispensa",     deperibile: 5,   stagioni: null,              kcal_per_kg: 150,  tags: ["prezzemolo"] },
-  { id: "ing_zenzero",      nome: "Zenzero",                      cat: "🧂 Dispensa",     deperibile: 7,   stagioni: null,              kcal_per_kg: 180,  tags: ["zenzero"] },
-  { id: "ing_cannella",     nome: "Cannella / Spezie dolci",      cat: "🧂 Dispensa",     deperibile: 365, stagioni: null,              kcal_per_kg: 40,   tags: ["cannella","curcuma","cumino","noce moscata","anice stellato","paprika"] },
-  { id: "ing_rosmarino",    nome: "Rosmarino / Erbe aromatiche",  cat: "🧂 Dispensa",     deperibile: 10,  stagioni: null,              kcal_per_kg: 40,   tags: ["rosmarino","erbe","timo","origano","salvia"] },
-  { id: "ing_peperoncino",  nome: "Peperoncino",                  cat: "🧂 Dispensa",     deperibile: 30,  stagioni: null,              kcal_per_kg: 40,   tags: ["peperoncino"] },
-  { id: "ing_olio_semi",    nome: "Olio di semi",                 cat: "🧂 Dispensa",     deperibile: 365, stagioni: null,              kcal_per_kg: 8990, tags: ["olio semi","olio sesamo"] },
-  { id: "ing_cacao",        nome: "Cacao amaro in polvere",       cat: "🧂 Dispensa",     deperibile: 365, stagioni: null,              kcal_per_kg: 3200, tags: ["cacao"] },
-  { id: "ing_sesamo",       nome: "Semi di sesamo / Canapa",      cat: "🧂 Dispensa",     deperibile: 180, stagioni: null,              kcal_per_kg: 5740, tags: ["sesamo","semi di canapa"] },
+  { id: "ing_aceto",        nome: "Aceto (vino/mele/balsamico)",  cat: "🧂 Dispensa",     deperibile: 365, stagioni: null,              nutriPer100:{kcal:19,p:0.0,c:0.9,g:0.0}, tags: ["aceto"] },
+  { id: "ing_salsa_soia",   nome: "Salsa di soia",                cat: "🧂 Dispensa",     deperibile: 365, stagioni: null,              nutriPer100:{kcal:66,p:8.7,c:8.3,g:0.0}, tags: ["salsa di soia","salsa soia","tamari"] },
+  { id: "ing_concentrato",  nome: "Concentrato di pomodoro",      cat: "🧂 Dispensa",     deperibile: 30,  stagioni: null,              nutriPer100:{kcal:96,p:3.9,c:20.4,g:0.4}, tags: ["concentrato di pomodoro"] },
+  { id: "ing_senape",       nome: "Senape",                       cat: "🧂 Dispensa",     deperibile: 90,  stagioni: null,              nutriPer100:{kcal:66,p:4.0,c:6.0,g:3.0}, tags: ["senape"] },
+  { id: "ing_capperi",      nome: "Capperi",                      cat: "🧂 Dispensa",     deperibile: 90,  stagioni: null,              nutriPer100:{kcal:23,p:2.4,c:5.0,g:0.9}, tags: ["capperi"] },
+  { id: "ing_basilico",     nome: "Basilico fresco",              cat: "🧂 Dispensa",     deperibile: 5,   stagioni: [5,6,7,8,9],       nutriPer100:{kcal:39,p:3.1,c:5.1,g:0.8}, tags: ["basilico"] },
+  { id: "ing_prezzemolo",   nome: "Prezzemolo",                   cat: "🧂 Dispensa",     deperibile: 5,   stagioni: null,              nutriPer100:{kcal:20,p:3.7,c:0.0,g:0.6}, tags: ["prezzemolo"] },
+  { id: "ing_zenzero",      nome: "Zenzero",                      cat: "🧂 Dispensa",     deperibile: 7,   stagioni: null,              nutriPer100:{kcal:80,p:1.8,c:18.0,g:0.8}, tags: ["zenzero"] },
+  { id: "ing_cannella",     nome: "Cannella / Spezie dolci",      cat: "🧂 Dispensa",     deperibile: 365, stagioni: null,              nutriPer100:{kcal:247,p:4.0,c:81.0,g:1.2}, tags: ["cannella","curcuma","cumino","noce moscata","anice stellato","paprika"] },
+  { id: "ing_rosmarino",    nome: "Rosmarino / Erbe aromatiche",  cat: "🧂 Dispensa",     deperibile: 10,  stagioni: null,              nutriPer100:{kcal:96,p:1.4,c:13.5,g:4.4}, tags: ["rosmarino","erbe","timo","origano","salvia"] },
+  { id: "ing_peperoncino",  nome: "Peperoncino",                  cat: "🧂 Dispensa",     deperibile: 30,  stagioni: null,              nutriPer100:{kcal:26,p:1.8,c:3.8,g:0.5}, tags: ["peperoncino"] },
+  { id: "ing_olio_semi",    nome: "Olio di semi",                 cat: "🧂 Dispensa",     deperibile: 365, stagioni: null,              nutriPer100:{kcal:899,p:0.0,c:0.0,g:99.9}, tags: ["olio semi","olio sesamo"] },
+  { id: "ing_cacao",        nome: "Cacao amaro in polvere",       cat: "🧂 Dispensa",     deperibile: 365, stagioni: null,              nutriPer100:{kcal:355,p:20.4,c:11.5,g:25.6}, tags: ["cacao"] },
+  { id: "ing_sesamo",       nome: "Semi di sesamo / Canapa",      cat: "🧂 Dispensa",     deperibile: 180, stagioni: null,              nutriPer100:{kcal:573,p:18.0,c:23.0,g:50.0}, tags: ["sesamo","semi di canapa"] },
   // 🥜 Frutta secca
-  { id: "ing_pinoli",       nome: "Pinoli",                       cat: "🥜 Frutta secca", deperibile: 90,  stagioni: null,              kcal_per_kg: 5950, tags: ["pinoli"] },
-  { id: "ing_anacardi",     nome: "Anacardi",                     cat: "🥜 Frutta secca", deperibile: 90,  stagioni: null,              kcal_per_kg: 5800, tags: ["anacardi"] },
-  { id: "ing_nocciole",     nome: "Nocciole",                     cat: "🥜 Frutta secca", deperibile: 90,  stagioni: null,              kcal_per_kg: 6000, tags: ["nocciole"] },
+  { id: "ing_pinoli",       nome: "Pinoli",                       cat: "🥜 Frutta secca", deperibile: 90,  stagioni: null,              nutriPer100:{kcal:595,p:31.9,c:4.0,g:50.3}, tags: ["pinoli"] },
+  { id: "ing_anacardi",     nome: "Anacardi",                     cat: "🥜 Frutta secca", deperibile: 90,  stagioni: null,              nutriPer100:{kcal:553,p:18.0,c:30.0,g:44.0}, tags: ["anacardi"] },
+  { id: "ing_nocciole",     nome: "Nocciole",                     cat: "🥜 Frutta secca", deperibile: 90,  stagioni: null,              nutriPer100:{kcal:655,p:13.8,c:6.1,g:64.1}, tags: ["nocciole"] },
 ];
 
 const ING_MAP = Object.fromEntries(INGREDIENTS.map(i => [i.id, i]));
@@ -363,6 +363,7 @@ const ING_QTY = {
   col_22: { ing_yogurt:{uomo:150,donna:120,bimbo:70,unit:"g"}, ing_fragole:{uomo:100,donna:80,bimbo:50,unit:"g"}, ing_avena:{uomo:40,donna:30,bimbo:20,unit:"g"}, ing_latte:{uomo:150,donna:100,bimbo:80,unit:"ml"}, ing_miele:{uomo:8,donna:0,bimbo:0,unit:"g"} },
   col_23: { ing_avena:{uomo:80,donna:60,bimbo:30,unit:"g"}, ing_uova:{uomo:2,donna:1,bimbo:1,unit:"pz"}, ing_mirtilli:{uomo:80,donna:60,bimbo:40,unit:"g"}, ing_latte:{uomo:100,donna:80,bimbo:60,unit:"ml"}, ing_miele:{uomo:8,donna:0,bimbo:0,unit:"g"} },
   col_24: { ing_pane:{uomo:80,donna:60,bimbo:30,unit:"g"}, ing_ricotta:{uomo:80,donna:60,bimbo:30,unit:"g"}, ing_uva:{uomo:80,donna:60,bimbo:40,unit:"g"}, ing_miele:{uomo:8,donna:0,bimbo:0,unit:"g"} },
+  col_25: { ing_avena:{uomo:80,donna:60,bimbo:30,unit:"g"}, ing_latte:{uomo:300,donna:250,bimbo:150,unit:"ml"}, ing_noci:{uomo:10,donna:8,bimbo:5,unit:"g"}, ing_mandorle:{uomo:10,donna:8,bimbo:5,unit:"g"}, ing_nocciole:{uomo:10,donna:8,bimbo:5,unit:"g"}, ing_mela:{uomo:1,donna:0.5,bimbo:0.5,unit:"pz"}, ing_miele:{uomo:8,donna:8,bimbo:0,unit:"g"} },
   // ── Nuovi spuntini ───────────────────────────────────────────────
   spu_13: { ing_mango:{uomo:150,donna:120,bimbo:80,unit:"g"}, ing_pistacchi:{uomo:20,donna:15,bimbo:8,unit:"g"} },
   spu_14: { ing_fiocchi_latte:{uomo:150,donna:100,bimbo:60,unit:"g"}, ing_ananas:{uomo:100,donna:80,bimbo:50,unit:"g"}, ing_miele:{uomo:8,donna:0,bimbo:0,unit:"g"} },
@@ -376,6 +377,7 @@ const ING_QTY = {
   spu_22: { ing_pane:{uomo:40,donna:30,bimbo:20,unit:"g"}, ing_philadelphia:{uomo:40,donna:30,bimbo:20,unit:"g"} },
   spu_23: { ing_barbabietole:{uomo:100,donna:80,bimbo:50,unit:"g"}, ing_fiocchi_latte:{uomo:80,donna:60,bimbo:40,unit:"g"} },
   spu_24: { ing_melone:{uomo:150,donna:120,bimbo:80,unit:"g"}, ing_prosciutto:{uomo:40,donna:25,bimbo:0,unit:"g"} },
+  spu_25: { ing_crackers:{uomo:4,donna:3,bimbo:2,unit:"pz"}, ing_bm:{uomo:20,donna:15,bimbo:10,unit:"g"}, ing_banana:{uomo:1,donna:0.5,bimbo:0.5,unit:"pz"} },
   // ── Nuovi pranzi ────────────────────────────────────────────────
   pra_13: { ing_couscous:{uomo:90,donna:65,bimbo:35,unit:"g"}, ing_gamberi:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_zucchine:{uomo:200,donna:180,bimbo:100,unit:"g"}, ing_limone:{uomo:0.5,donna:0.5,bimbo:0,unit:"pz"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   pra_14: { ing_bulgur:{uomo:90,donna:65,bimbo:35,unit:"g"}, ing_pollo:{uomo:180,donna:130,bimbo:70,unit:"g"}, ing_peperone:{uomo:100,donna:100,bimbo:60,unit:"g"}, ing_cipolla:{uomo:60,donna:60,bimbo:30,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
@@ -393,6 +395,7 @@ const ING_QTY = {
   pra_26: { ing_pasta:{uomo:100,donna:70,bimbo:50,unit:"g"}, ing_baccala:{uomo:180,donna:130,bimbo:70,unit:"g"}, ing_broccoli:{uomo:200,donna:200,bimbo:120,unit:"g"}, ing_aglio:{uomo:2,donna:1,bimbo:0,unit:"pz"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   pra_27: { ing_riso:{uomo:90,donna:65,bimbo:35,unit:"g"}, ing_tofu:{uomo:180,donna:130,bimbo:80,unit:"g"}, ing_piselli:{uomo:80,donna:60,bimbo:40,unit:"g"}, ing_cipolla:{uomo:60,donna:50,bimbo:30,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   pra_28: { ing_lattuga:{uomo:80,donna:80,bimbo:50,unit:"g"}, ing_tonno:{uomo:160,donna:120,bimbo:60,unit:"g"}, ing_datterini:{uomo:150,donna:120,bimbo:80,unit:"g"}, ing_capperi:{uomo:20,donna:15,bimbo:0,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
+  pra_29: { ing_farro:{uomo:90,donna:70,bimbo:40,unit:"g"}, ing_feta:{uomo:80,donna:60,bimbo:35,unit:"g"}, ing_datterini:{uomo:120,donna:100,bimbo:60,unit:"g"}, ing_olive:{uomo:30,donna:25,bimbo:10,unit:"g"}, ing_cetrioli:{uomo:60,donna:50,bimbo:30,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   // ── Nuove cene ──────────────────────────────────────────────────
   cen_13: { ing_agnello:{uomo:220,donna:160,bimbo:80,unit:"g"}, ing_patatedolci:{uomo:200,donna:150,bimbo:100,unit:"g"}, ing_aglio:{uomo:2,donna:1,bimbo:0,unit:"pz"}, ing_rosmarino:{uomo:2,donna:2,bimbo:1,unit:"pz"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   cen_14: { ing_gamberi:{uomo:220,donna:160,bimbo:80,unit:"g"}, ing_riso:{uomo:90,donna:65,bimbo:35,unit:"g"}, ing_aglio:{uomo:1,donna:1,bimbo:0,unit:"pz"}, ing_salsa_soia:{uomo:12,donna:8,bimbo:0,unit:"ml"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
@@ -410,6 +413,7 @@ const ING_QTY = {
   cen_26: { ing_sgombro:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_finocchio:{uomo:200,donna:180,bimbo:100,unit:"g"}, ing_arancia:{uomo:1,donna:0.5,bimbo:0.5,unit:"pz"}, ing_limone:{uomo:0.5,donna:0.5,bimbo:0,unit:"pz"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   cen_27: { ing_tacchino:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_patate:{uomo:200,donna:150,bimbo:100,unit:"g"}, ing_insalata:{uomo:60,donna:60,bimbo:40,unit:"g"}, ing_cipolla:{uomo:60,donna:50,bimbo:30,unit:"g"}, ing_senape:{uomo:10,donna:8,bimbo:0,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   cen_28: { ing_manzo_tagliata:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_insalata:{uomo:60,donna:60,bimbo:40,unit:"g"}, ing_parmigiano:{uomo:15,donna:10,bimbo:8,unit:"g"}, ing_aceto:{uomo:15,donna:10,bimbo:0,unit:"ml"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
+  cen_29: { ing_orata:{uomo:300,donna:250,bimbo:120,unit:"g"}, ing_patate:{uomo:250,donna:200,bimbo:120,unit:"g"}, ing_datterini:{uomo:120,donna:100,bimbo:60,unit:"g"}, ing_olive:{uomo:30,donna:25,bimbo:0,unit:"g"}, ing_aglio:{uomo:1,donna:1,bimbo:0.5,unit:"spicchio"}, ing_evo:{uomo:1.5,donna:1,bimbo:0.5,unit:"cucchiaio"} },
 };
 
 const DB = {
@@ -438,7 +442,7 @@ const DB = {
     { id:"col_08", prep:10, nome:"Pane integrale + avocado + uovo in camicia", ingredients:["ing_pane","ing_avocado","ing_uova","ing_evo"],
       porzioni:{uomo:"80g pane · ½ avocado · 2 uova",donna:"60g pane · ¼ avocado · 1 uovo",bimbo:"30g pane · ¼ avocado schiacciato"},
       uomo:{kcal:460,p:28,c:38,g:22},donna:{kcal:335,p:18,c:28,g:17},bimbo:{kcal:185,p:6,c:20,g:9}},
-    { id:"col_09", prep:8,  nome:"Porridge di avena con frutta secca e cannella", ingredients:["ing_avena","ing_latte","ing_noci","ing_mista","ing_spezie"],
+    { id:"col_09", prep:8,  nome:"Porridge di avena con frutta secca e cannella", ingredients:["ing_avena","ing_latte","ing_noci","ing_mista","ing_cannella"],
       porzioni:{uomo:"80g avena · 300ml latte · 20g noci · frutta secca",donna:"60g avena · 250ml latte · 15g noci",bimbo:"30g avena · 150ml latte intero · frutta"},
       uomo:{kcal:470,p:22,c:58,g:16},donna:{kcal:350,p:17,c:44,g:12},bimbo:{kcal:190,p:8,c:28,g:6}},
     { id:"col_10", prep:8,  nome:"Uova alla coque + pane integrale + frutta", ingredients:["ing_uova","ing_pane","ing_arancia"],
@@ -487,6 +491,9 @@ const DB = {
     { id:"col_24", prep:5,  nome:"Pane integrale con ricotta e uva", ingredients:["ing_pane","ing_ricotta","ing_uva","ing_miele"],
       porzioni:{uomo:"80g pane · 80g ricotta · 80g uva · 1 cucchiaino miele",donna:"60g pane · 60g ricotta · 60g uva",bimbo:"30g pane · 30g ricotta · 40g uva"},
       uomo:{kcal:415,p:22,c:56,g:10},donna:{kcal:295,p:16,c:40,g:7},bimbo:{kcal:170,p:7,c:26,g:4}},
+    { id:"col_25", prep:10, nome:"Porridge alle tre noci con mela e cannella", ingredients:["ing_avena","ing_latte","ing_noci","ing_mandorle","ing_nocciole","ing_mela","ing_cannella","ing_miele"],
+      porzioni:{uomo:"Scalda 80g avena in 300ml latte 5 min mescolando. Fuori dal fuoco aggiungi 1 mela a cubetti, 10g noci, 10g mandorle e 10g nocciole tritate grossolanamente, cannella e 1 cucchiaino di miele",donna:"60g avena · 250ml latte · ½ mela · 8g noci · 8g mandorle · 8g nocciole · cannella",bimbo:"30g avena · 150ml latte intero · ½ mela a cubetti piccoli · frutta secca tritata fine · cannella"},
+      uomo:{kcal:520,p:21,c:62,g:21},donna:{kcal:390,p:16,c:47,g:16},bimbo:{kcal:215,p:8,c:30,g:8}},
   ],
   spuntino: [
     { id:"spu_01", prep:2,  nome:"Frutta fresca + mandorle", ingredients:["ing_mela","ing_mandorle"],
@@ -562,6 +569,9 @@ const DB = {
     { id:"spu_24", prep:2,  nome:"Melone e prosciutto crudo", ingredients:["ing_melone","ing_prosciutto"],
       porzioni:{uomo:"150g melone · 40g prosciutto crudo",donna:"120g melone · 25g prosciutto crudo",bimbo:"80g melone"},
       uomo:{kcal:170,p:12,c:18,g:5},donna:{kcal:115,p:8,c:14,g:3},bimbo:{kcal:55,p:1,c:10,g:1}},
+    { id:"spu_25", prep:3,  nome:"Crackers integrali con burro di mandorle e banana", ingredients:["ing_crackers","ing_bm","ing_banana"],
+      porzioni:{uomo:"4 crackers integrali · 20g burro di mandorle spalmato · 1 banana a rondelle sopra",donna:"3 crackers · 15g burro di mandorle · ½ banana",bimbo:"2 crackers · 10g burro di mandorle · ½ banana a rondelle"},
+      uomo:{kcal:285,p:9,c:34,g:13},donna:{kcal:205,p:6,c:25,g:9},bimbo:{kcal:130,p:4,c:16,g:6}},
   ],
   pranzo: [
     { id:"pra_01", prep:20, nome:"Insalata di farro, tonno, pomodorini, olive, rucola", ingredients:["ing_farro","ing_tonno","ing_pomodori","ing_insalata","ing_olive","ing_evo"],
@@ -649,6 +659,9 @@ const DB = {
     { id:"pra_28", prep:15, nome:"Insalata di lattuga, tonno, datterini e capperi", ingredients:["ing_lattuga","ing_tonno","ing_datterini","ing_capperi","ing_evo","ing_limone"],
       porzioni:{uomo:"insalata · 160g tonno · 150g datterini · 20g capperi · EVO · limone",donna:"insalata · 120g tonno · 120g datterini · 15g capperi · EVO",bimbo:"insalata · 60g tonno · datterini"},
       uomo:{kcal:480,p:42,c:18,g:22},donna:{kcal:335,p:32,c:14,g:16},bimbo:{kcal:195,p:14,c:8,g:8}},
+    { id:"pra_29", prep:20, nome:"Farro freddo con feta, datterini, olive e basilico", ingredients:["ing_farro","ing_feta","ing_datterini","ing_olive","ing_cetrioli","ing_basilico","ing_evo"],
+      porzioni:{uomo:"Lessa 90g farro, scolalo e raffredda. Condisci con 80g feta a cubetti, 120g datterini a metà, 30g olive, ½ cetriolo a dadini, basilico spezzettato e EVO",donna:"70g farro · 60g feta · 100g datterini · 25g olive · cetriolo · basilico · EVO",bimbo:"40g farro · 35g feta · datterini · poche olive · cetriolo · basilico"},
+      uomo:{kcal:540,p:19,c:62,g:24},donna:{kcal:415,p:15,c:48,g:18},bimbo:{kcal:245,p:9,c:30,g:10}},
   ],
   cena: [
     { id:"cen_01", prep:30, nome:"Salmone al forno + patate dolci + insalata", ingredients:["ing_salmone","ing_patatedolci","ing_insalata","ing_evo"],
@@ -736,6 +749,9 @@ const DB = {
     { id:"cen_28", prep:35, nome:"Tagliata di manzo con rucola, grana e aceto balsamico", ingredients:["ing_manzo_tagliata","ing_insalata","ing_parmigiano","ing_aceto","ing_evo"],
       porzioni:{uomo:"200g manzo · rucola · 15g grana · aceto balsamico · EVO",donna:"150g manzo · rucola · 10g grana · EVO",bimbo:"80g manzo · rucola · grana"},
       uomo:{kcal:570,p:50,c:6,g:34},donna:{kcal:405,p:38,c:4,g:24},bimbo:{kcal:255,p:16,c:2,g:14}},
+    { id:"cen_29", prep:45, nome:"Orata al forno con patate, pomodorini e olive", ingredients:["ing_orata","ing_patate","ing_datterini","ing_olive","ing_aglio","ing_rosmarino","ing_evo","ing_limone"],
+      porzioni:{uomo:"In teglia: 300g orata, 250g patate a fette sottili, 120g datterini, 30g olive, 1 spicchio aglio, rosmarino, EVO e limone. Forno 200°C per 30-35 min",donna:"250g orata · 200g patate · 100g datterini · 25g olive · aglio · rosmarino · EVO · limone",bimbo:"120g orata diliscata · 120g patate · pomodorini · aglio · rosmarino · EVO"},
+      uomo:{kcal:560,p:44,c:42,g:22},donna:{kcal:425,p:34,c:34,g:16},bimbo:{kcal:255,p:19,c:22,g:8}},
   ],
 };
 
@@ -764,7 +780,7 @@ const MEAL_META = {
   cena:       { label:"🍽️ Cena",               isSnack:false },
 };
 
-const SK_SEED="pf-seed", SK_HISTORY="pf-history", SK_EXCL="pf-excluded", SK_PERSONAS="pf-personas", SK_MY_PERSONA="pf-my-persona", SK_MISURE="pf-misure", SK_OVERRIDES="pf-overrides", SK_WATER="pf-water", SK_PREFS="pf-prefs";
+const SK_SEED="pf-seed", SK_HISTORY="pf-history", SK_EXCL="pf-excluded", SK_PERSONAS="pf-personas", SK_MY_PERSONA="pf-my-persona", SK_MISURE="pf-misure", SK_OVERRIDES="pf-overrides", SK_WATER="pf-water", SK_PREFS="pf-prefs", SK_USER_RECIPES="pf-user-recipes";
 
 // ═══════════════════════════════════════════════════════════════════
 // SISTEMA PREFERENZE — accumulo segnali sui gusti
@@ -857,12 +873,13 @@ function getPrefEntry(prefs, recipeId) {
            : { score:0, liked:false, swapsOut:0, swapsIn:0 };
 }
 
-// ─── Trova alternativa per tempo ────────────────────────────────────
+// ─── Trova alternative per la sostituzione ─────────────────────────
 // Restituisce le ricette della stessa categoria ordinate per:
-// 1. rispettano maxPrep
-// 2. simili per kcal al pasto corrente (slot personaSlot)
-// 3. non già usate nella settimana (weekMealIds)
-function findAlternatives(mealKey, currentMeal, maxPrep, excludedIds, weekMealIds, personaSlot) {
+// 1. ricette amate (❤️) in cima
+// 2. non già usate nella settimana
+// 3. simili per kcal al pasto corrente
+// I gusti influenzano l'ORDINE ma non escludono mai una ricetta.
+function findAlternatives(mealKey, currentMeal, maxPrep, excludedIds, weekMealIds, personaSlot, prefs, userRecipes) {
   // Mappa mealKey → categoria DB
   const cat = mealKey === "spuntino_m" || mealKey === "spuntino_p" ? "spuntino"
             : mealKey === "colazione" ? "colazione"
@@ -871,25 +888,37 @@ function findAlternatives(mealKey, currentMeal, maxPrep, excludedIds, weekMealId
 
   const currentKcal = currentMeal[personaSlot]?.kcal || 500;
   const m = meseCorrente();
+  const xDB = mergedDB(userRecipes);   // include le ricette utente
 
-  return DB[cat]
+  return xDB[cat]
     .filter(r =>
       r.id !== currentMeal.id &&                                      // non la stessa
       (r.prep || 0) <= maxPrep &&                                     // entro il tempo
       !r.ingredients.some(id => excludedIds.includes(id)) &&          // no esclusi
       pesoStagionale(r, m) > 0                                        // di stagione
     )
-    .map(r => ({
-      ...r,
-      _kcalDiff: Math.abs((r[personaSlot]?.kcal || 0) - currentKcal),
-      _inWeek:   weekMealIds.has(r.id),
-    }))
-    .sort((a, b) => {
-      // prima le non già in settimana, poi per kcal più simili
-      if (a._inWeek !== b._inWeek) return a._inWeek ? 1 : -1;
-      return a._kcalDiff - b._kcalDiff;
+    .map(r => {
+      const pe = getPrefEntry(prefs, r.id);
+      return {
+        ...r,
+        _kcalDiff: Math.abs((r[personaSlot]?.kcal || 0) - currentKcal),
+        _inWeek:   weekMealIds.has(r.id),
+        _liked:    pe.liked,
+        _score:    pe.score || 0,
+      };
     })
-    .slice(0, 6); // max 6 alternative da mostrare
+    .sort((a, b) => {
+      // 1. le ricette con ❤️ vanno in cima
+      if (a._liked !== b._liked) return a._liked ? -1 : 1;
+      // 2. poi le non già presenti in settimana
+      if (a._inWeek !== b._inWeek) return a._inWeek ? 1 : -1;
+      // 3. a parità, punteggio gusti più alto prima
+      if (b._score !== a._score) return b._score - a._score;
+      // 4. infine kcal più simili
+      return a._kcalDiff - b._kcalDiff;
+    });
+  // Nessun limite: ogni categoria ha al massimo ~29 ricette e il filtro
+  // tempo già restringe. Così nessuna alternativa valida resta nascosta.
 }
 
 // ─── Giorno corrente automatico (0=Lun … 6=Dom) ───────────────────
@@ -1323,13 +1352,14 @@ function buildWeightedPool(ricette, excludedIds, mese) {
   return pool.length > 0 ? pool : ricette.filter(r => !r.ingredients.some(id => excludedIds.includes(id)));
 }
 
-function generateWeekPlan(seed, excludedIds = [], mese) {
+function generateWeekPlan(seed, excludedIds = [], mese, userRecipes = []) {
   const m = mese || meseCorrente();
   const rng = seededRng(seed);
+  const xDB = mergedDB(userRecipes);   // DB di sistema + ricette utente
 
   const pickSeven = (cat) => {
-    const pool = buildWeightedPool(DB[cat], excludedIds, m);
-    if (!pool.length) return DB[cat].slice(0, 7);
+    const pool = buildWeightedPool(xDB[cat], excludedIds, m);
+    if (!pool.length) return xDB[cat].slice(0, 7);
     const picked = [], usedIds = new Set();
     let attempts = 0;
     while (picked.length < 7 && attempts < 300) {
@@ -1348,9 +1378,9 @@ function generateWeekPlan(seed, excludedIds = [], mese) {
   const cene   = pickSeven("cena");
 
   // Spuntini: pool pesato, no due uguali consecutivi
-  const spPool = buildWeightedPool(DB.spuntino, excludedIds, m).length
-    ? buildWeightedPool(DB.spuntino, excludedIds, m)
-    : DB.spuntino;
+  const spPool = buildWeightedPool(xDB.spuntino, excludedIds, m).length
+    ? buildWeightedPool(xDB.spuntino, excludedIds, m)
+    : xDB.spuntino;
   const spuntini = [];
   for (let i = 0; i < 14; i++) {
     const excl = spuntini.slice(-2).map(s => s.id);
@@ -1572,6 +1602,138 @@ function calcTargetAdattivo(p, misurePersona) {
 
 // Wrapper retrocompatibile (senza misure → comportamento identico a prima)
 function calcTarget(p) { return calcTargetAdattivo(p, []); }
+
+// ═══════════════════════════════════════════════════════════════════
+// RICETTE UTENTE — modello dati e calcolo nutrizionale
+// ═══════════════════════════════════════════════════════════════════
+// L'utente compone una ricetta scegliendo ingredienti e quantità per
+// UNA porzione adulto standard. L'app calcola i valori nutrizionali e
+// li scala sui tre profili (uomo/donna/bimbo).
+//
+// Struttura di una ricetta utente salvata in SK_USER_RECIPES (array):
+// {
+//   id: "user_<timestamp>",          // prefisso "user_" la distingue
+//   nome: String,
+//   cat: "colazione"|"spuntino"|"pranzo"|"cena",
+//   prep: Number,                     // minuti
+//   ingredients: [ "ing_xxx", ... ],  // come le ricette di sistema
+//   comp: [ { ing:"ing_xxx", qty:Number, unit:"g"|"ml"|"pz"|... } ],
+//   nutri: { kcal,p,c,g } | null,     // valori per 1 porzione adulto
+//   nutriMode: "auto" | "manual",     // come sono stati ottenuti
+//   creata: "gg/mm/aaaa"
+// }
+//
+// Il campo `nutriPer100` sugli ingredienti è OPZIONALE: { kcal,p,c,g }
+// riferito a 100g/100ml. Se presente per tutti gli ingredienti di una
+// ricetta, l'app calcola in automatico; altrimenti l'utente inserisce
+// i valori a mano.
+
+// Calcola i valori nutrizionali di una composizione, se possibile.
+// Ritorna { ok:Bool, nutri:{kcal,p,c,g}|null, mancanti:[ing senza dati] }
+function calcNutriFromComp(comp) {
+  if (!Array.isArray(comp) || comp.length === 0) {
+    return { ok:false, nutri:null, mancanti:[] };
+  }
+  const tot = { kcal:0, p:0, c:0, g:0 };
+  const mancanti = [];
+  for (const item of comp) {
+    const ing = ING_MAP[item.ing];
+    const np = ing && ing.nutriPer100;
+    if (!np) { mancanti.push(item.ing); continue; }
+    // Le unità "pz/cucchiaio/spicchio" non sono convertibili in 100g
+    // senza un peso medio: se l'ingrediente non lo dichiara, è mancante.
+    let grammi;
+    if (item.unit === "g" || item.unit === "ml") {
+      grammi = item.qty;
+    } else if (ing.pesoUnita) {
+      grammi = item.qty * ing.pesoUnita;   // pesoUnita = grammi per 1 pezzo
+    } else {
+      mancanti.push(item.ing);
+      continue;
+    }
+    const f = grammi / 100;
+    tot.kcal += (np.kcal||0) * f;
+    tot.p    += (np.p||0)    * f;
+    tot.c    += (np.c||0)    * f;
+    tot.g    += (np.g||0)    * f;
+  }
+  if (mancanti.length > 0) return { ok:false, nutri:null, mancanti };
+  return {
+    ok:true,
+    nutri:{ kcal:Math.round(tot.kcal), p:Math.round(tot.p), c:Math.round(tot.c), g:Math.round(tot.g) },
+    mancanti:[],
+  };
+}
+
+// Scala una ricetta utente (1 porzione adulto) sui tre profili.
+// baseNutri = {kcal,p,c,g} della porzione adulto di riferimento.
+// Ritorna { uomo:{...}, donna:{...}, bimbo:{...} } come le ricette DB.
+// Le proporzioni replicano quelle medie delle ricette di sistema:
+// donna ≈ 75% dell'uomo, bimbo ≈ 50%. La porzione inserita dall'utente
+// è considerata il riferimento "uomo".
+function scalaPorzioni(baseNutri) {
+  const mk = (factor) => ({
+    kcal: Math.round(baseNutri.kcal * factor),
+    p:    Math.round(baseNutri.p    * factor),
+    c:    Math.round(baseNutri.c    * factor),
+    g:    Math.round(baseNutri.g    * factor),
+  });
+  return { uomo: mk(1), donna: mk(0.75), bimbo: mk(0.5) };
+}
+
+// Converte una ricetta utente nel formato delle ricette di sistema (DB),
+// così può essere usata da piani, drawer e lista della spesa.
+function userRecipeToDBFormat(ur) {
+  const base = ur.nutri || { kcal:0, p:0, c:0, g:0 };
+  const porz = scalaPorzioni(base);
+  // descrizione porzioni leggibile dalla composizione
+  const descr = ur.comp
+    .map(c => { const ing = ING_MAP[c.ing]; return `${c.qty}${c.unit==="pz"?"":c.unit} ${ing?ing.nome.toLowerCase():c.ing}`; })
+    .join(" · ");
+  return {
+    id: ur.id,
+    prep: ur.prep || 0,
+    nome: ur.nome,
+    ingredients: ur.ingredients,
+    porzioni: { uomo:descr, donna:descr, bimbo:descr },
+    uomo: porz.uomo, donna: porz.donna, bimbo: porz.bimbo,
+    _user: true,            // marca: ricetta creata dall'utente
+  };
+}
+
+// Restituisce il DB di sistema arricchito con le ricette utente.
+// Ogni ricetta utente viene convertita nel formato DB e aggiunta alla
+// categoria scelta dall'utente (colazione/spuntino/pranzo/cena).
+// Le ricette utente non valide (senza nutri) vengono scartate.
+// Se userRecipes è vuoto restituisce il DB originale (nessun costo).
+function mergedDB(userRecipes) {
+  if (!userRecipes || userRecipes.length === 0) return DB;
+  const out = { colazione:[...DB.colazione], spuntino:[...DB.spuntino],
+                pranzo:[...DB.pranzo], cena:[...DB.cena] };
+  for (const ur of userRecipes) {
+    if (!out[ur.cat]) continue;            // categoria non valida: salta
+    if (!ur.nutri || !(ur.nutri.kcal > 0)) continue;  // ricetta incompleta
+    out[ur.cat].push(userRecipeToDBFormat(ur));
+  }
+  return out;
+}
+
+// Valida una ricetta utente prima del salvataggio.
+// Ritorna { ok:Bool, errori:[String] }
+function validateUserRecipe(ur) {
+  const errori = [];
+  if (!ur.nome || !ur.nome.trim()) errori.push("Manca il nome della ricetta");
+  if (!["colazione","spuntino","pranzo","cena"].includes(ur.cat)) errori.push("Categoria non valida");
+  if (!Array.isArray(ur.comp) || ur.comp.length === 0) errori.push("Aggiungi almeno un ingrediente");
+  if (Array.isArray(ur.comp)) {
+    ur.comp.forEach((c,i) => {
+      if (!ING_MAP[c.ing]) errori.push(`Ingrediente ${i+1} non valido`);
+      if (!(c.qty > 0))   errori.push(`Quantità mancante per l'ingrediente ${i+1}`);
+    });
+  }
+  if (!ur.nutri || !(ur.nutri.kcal > 0)) errori.push("Valori nutrizionali mancanti");
+  return { ok: errori.length === 0, errori };
+}
 
 function emojiBySesso(p) {
   if (p.eta < 12) return p.sesso==="M" ? "👦" : "👧";
@@ -1814,10 +1976,10 @@ const PREP_SLOTS = [
   { label:"≤60'",  max:60,  color:"#dc2626", bg:"#fef2f2" },
 ];
 
-function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealIds, excludedIds, isOverride, onReset, prefEntry, onToggleLike }) {
+function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealIds, excludedIds, isOverride, onReset, prefEntry, onToggleLike, prefs, userRecipes }) {
   const [open, setOpen]         = useState(false);
   const [swapOpen, setSwapOpen] = useState(false);
-  const [maxPrep, setMaxPrep]   = useState(null);  // null = nessun filtro attivo
+  const [maxPrep, setMaxPrep]   = useState(60);  // default: mostra tutte le alternative
 
   const m = meal[personaKey];
   const { label, isSnack } = MEAL_META[mealKey];
@@ -1827,9 +1989,9 @@ function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealId
   const prepBg    = !prep ? "#f8fafc"  : prep <= 15 ? "#f0fdf4" : prep <= 30 ? "#fffbeb" : "#fef2f2";
   const prepLabel = !prep ? null : prep >= 60 ? `${prep/60}h` : `${prep}'`;
 
-  // Alternative calcolate al volo quando l'utente sceglie un filtro tempo
-  const alternatives = maxPrep !== null
-    ? findAlternatives(mealKey, meal, maxPrep, excludedIds || [], weekMealIds || new Set(), personaKey)
+  // Alternative calcolate al volo, ordinate anche per gusti
+  const alternatives = swapOpen
+    ? findAlternatives(mealKey, meal, maxPrep, excludedIds || [], weekMealIds || new Set(), personaKey, prefs, userRecipes)
     : [];
 
   return (
@@ -1856,7 +2018,10 @@ function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealId
       {/* ── Corpo principale ── */}
       <div style={{padding:"10px 14px"}}>
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:8,marginBottom:8}}>
-          <div style={{fontSize:isSnack?12:13,fontWeight:600,color:"#1e293b",lineHeight:1.4,flex:1}}>{meal.nome}</div>
+          <div style={{fontSize:isSnack?12:13,fontWeight:600,color:"#1e293b",lineHeight:1.4,flex:1}}>
+            {meal._user && <span style={{fontSize:9,fontWeight:800,color:"#7c3aed",background:"#f5f3ff",border:"1px solid #ddd6fe",borderRadius:4,padding:"1px 5px",marginRight:5,verticalAlign:"middle"}}>TUA</span>}
+            {meal.nome}
+          </div>
           <div style={{display:"flex",gap:6,flexShrink:0}}>
             {/* Bottone like */}
             <button
@@ -1868,7 +2033,7 @@ function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealId
             </button>
             {/* Bottone swap */}
             <button
-              onClick={e=>{ e.stopPropagation(); setSwapOpen(s=>!s); setOpen(false); if(!swapOpen) setMaxPrep(null); }}
+              onClick={e=>{ e.stopPropagation(); setSwapOpen(s=>!s); setOpen(false); if(!swapOpen) setMaxPrep(60); }}
               style={{flexShrink:0,padding:"5px 10px",borderRadius:7,border:`1.5px solid ${swapOpen?"#7c3aed":"#e2e8f0"}`,background:swapOpen?"#7c3aed":"#f8fafc",color:swapOpen?"#fff":"#64748b",fontWeight:700,fontSize:11,cursor:"pointer",transition:"all 0.15s",whiteSpace:"nowrap"}}>
               {swapOpen?"✕":"⇄ Cambia"}
             </button>
@@ -1921,7 +2086,7 @@ function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealId
           </div>
           <div style={{display:"flex",gap:6,marginBottom:12,flexWrap:"wrap"}}>
             {PREP_SLOTS.map(s=>(
-              <button key={s.max} onClick={()=>setMaxPrep(maxPrep===s.max?null:s.max)}
+              <button key={s.max} onClick={()=>setMaxPrep(maxPrep===s.max?60:s.max)}
                 style={{padding:"6px 12px",borderRadius:8,border:`2px solid ${maxPrep===s.max?s.color:"#e2e8f0"}`,background:maxPrep===s.max?s.bg:"#fff",color:maxPrep===s.max?s.color:"#64748b",fontWeight:700,fontSize:12,cursor:"pointer",transition:"all 0.15s"}}>
                 {s.label}
               </button>
@@ -1929,11 +2094,7 @@ function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealId
           </div>
 
           {/* Risultati */}
-          {maxPrep === null ? (
-            <div style={{textAlign:"center",padding:"12px 0",color:"#94a3b8",fontSize:12}}>
-              Seleziona il tempo disponibile per vedere le alternative
-            </div>
-          ) : alternatives.length === 0 ? (
+          {alternatives.length === 0 ? (
             <div style={{textAlign:"center",padding:"12px 0",color:"#94a3b8",fontSize:12}}>
               Nessuna ricetta disponibile in {maxPrep} minuti 😔<br/>
               <span style={{fontSize:11}}>Prova ad aumentare il tempo o riabilita qualche ingrediente</span>
@@ -1941,8 +2102,9 @@ function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealId
           ) : (
             <div>
               <div style={{fontSize:10,color:"#64748b",marginBottom:8,fontWeight:600}}>
-                {alternatives.length} alternative trovate · ordinate per calorie simili
+                {alternatives.length} alternative · preferite e calorie simili in cima
               </div>
+              <div style={{maxHeight:340,overflowY:"auto",margin:"0 -2px",padding:"0 2px"}}>
               {alternatives.map(alt=>{
                 const altM = alt[personaKey];
                 const altPrep = alt.prep || 0;
@@ -1950,12 +2112,14 @@ function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealId
                 const kcalDiff = altM?.kcal - m.kcal;
                 const diffColor = Math.abs(kcalDiff)<=50?"#16a34a":Math.abs(kcalDiff)<=100?"#d97706":"#94a3b8";
                 return (
-                  <div key={alt.id} onClick={()=>{ onSwap(alt); setSwapOpen(false); setMaxPrep(null); }}
+                  <div key={alt.id} onClick={()=>{ onSwap(alt); setSwapOpen(false); setMaxPrep(60); }}
                     style={{background:"#fff",borderRadius:10,border:"1.5px solid #e2e8f0",padding:"10px 12px",marginBottom:7,cursor:"pointer",transition:"border-color 0.15s",display:"flex",alignItems:"center",gap:10}}
                     onMouseEnter={e=>e.currentTarget.style.borderColor="#7c3aed80"}
                     onMouseLeave={e=>e.currentTarget.style.borderColor="#e2e8f0"}>
                     <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontSize:12,fontWeight:700,color:"#1e293b",lineHeight:1.3,marginBottom:5}}>{alt.nome}</div>
+                      <div style={{fontSize:12,fontWeight:700,color:"#1e293b",lineHeight:1.3,marginBottom:5}}>
+                        {alt._liked && <span style={{marginRight:4}}>❤️</span>}{alt.nome}
+                      </div>
                       <div style={{display:"flex",gap:5,flexWrap:"wrap",alignItems:"center"}}>
                         <span style={{fontSize:10,fontWeight:700,color:altPrepColor,background:altPrepColor+"18",borderRadius:5,padding:"1px 6px"}}>⏱ {altPrep}'</span>
                         <span style={{fontSize:10,fontFamily:"monospace",fontWeight:700,color:"#1e293b"}}>{altM?.kcal} kcal</span>
@@ -1969,6 +2133,7 @@ function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealId
                   </div>
                 );
               })}
+              </div>
             </div>
           )}
         </div>
@@ -2420,6 +2585,297 @@ function FamigliaPage({ personas, onUpdate, onAdd, onDelete, currentSeed, overri
   );
 }
 
+// ─── RicettePage ─────────────────────────────────────────────────────
+// Permette all'utente di creare ricette personali combinando ingredienti.
+// L'app calcola i valori nutrizionali (dati CRA-NUT) e scala le porzioni.
+function RicettePage({ userRecipes, onSave, onDelete }) {
+  const CAT_PASTO = [
+    { key:"colazione", label:"☀️ Colazione" },
+    { key:"spuntino",  label:"🍎 Spuntino" },
+    { key:"pranzo",    label:"🥗 Pranzo" },
+    { key:"cena",      label:"🍽️ Cena" },
+  ];
+  const UNITA = ["g","ml","pz"];
+
+  // Stato form: null = lista, oggetto = editor aperto (nuova o modifica)
+  const [editing, setEditing] = useState(null);
+  // Stato per la riga "aggiungi ingrediente"
+  const [pickCat, setPickCat] = useState("🥩 Proteine");
+  const [pickIng, setPickIng] = useState("");
+  const [pickQty, setPickQty] = useState("");
+  const [pickUnit, setPickUnit] = useState("g");
+
+  const catList = Array.from(new Set(INGREDIENTS.map(i=>i.cat)));
+
+  // Avvia la creazione di una nuova ricetta
+  const startNew = () => {
+    setEditing({ id:"user_"+Date.now(), nome:"", cat:"pranzo", prep:20, comp:[], nutriManuale:null });
+    setPickCat("🥩 Proteine"); setPickIng(""); setPickQty(""); setPickUnit("g");
+  };
+  // Avvia la modifica di una ricetta esistente
+  const startEdit = (r) => {
+    setEditing({ id:r.id, nome:r.nome, cat:r.cat, prep:r.prep||20, comp:[...(r.comp||[])],
+                 nutriManuale: r.nutriMode==="manual" ? r.nutri : null });
+  };
+
+  // Calcolo nutrizionale live della composizione in editing
+  const calc = editing ? calcNutriFromComp(editing.comp) : null;
+  // Valori effettivi: automatici se calcolabili, altrimenti quelli manuali
+  const nutriEff = editing
+    ? (calc.ok ? calc.nutri : editing.nutriManuale)
+    : null;
+  const nutriMode = editing && calc.ok ? "auto" : "manual";
+
+  // Aggiunge l'ingrediente selezionato alla composizione
+  const addIngrediente = () => {
+    if (!pickIng || !(parseFloat(pickQty) > 0)) return;
+    setEditing(e => ({
+      ...e,
+      comp: [...e.comp, { ing:pickIng, qty:parseFloat(pickQty), unit:pickUnit }],
+    }));
+    setPickIng(""); setPickQty("");
+  };
+  const removeIngrediente = (idx) => {
+    setEditing(e => ({ ...e, comp: e.comp.filter((_,i)=>i!==idx) }));
+  };
+
+  // Salvataggio: costruisce l'oggetto ricetta completo e valida
+  const salva = () => {
+    const ricetta = {
+      id: editing.id,
+      nome: editing.nome.trim(),
+      cat: editing.cat,
+      prep: parseInt(editing.prep,10) || 0,
+      ingredients: editing.comp.map(c=>c.ing),
+      comp: editing.comp,
+      nutri: nutriEff,
+      nutriMode: nutriMode,
+      creata: new Date().toLocaleDateString("it-IT"),
+    };
+    const check = validateUserRecipe(ricetta);
+    if (!check.ok) { alert("Controlla la ricetta:\n\n• " + check.errori.join("\n• ")); return; }
+    onSave(ricetta);
+    setEditing(null);
+  };
+
+  const ingDellaCat = INGREDIENTS.filter(i=>i.cat===pickCat);
+
+  // ══════════ VISTA EDITOR ══════════
+  if (editing) {
+    const catPastoLabel = CAT_PASTO.find(c=>c.key===editing.cat)?.label || "";
+    return (
+      <div>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
+          <button onClick={()=>setEditing(null)}
+            style={{padding:"6px 12px",borderRadius:8,border:"1.5px solid #e2e8f0",background:"#f8fafc",color:"#64748b",fontWeight:700,fontSize:12,cursor:"pointer"}}>
+            ← Annulla
+          </button>
+          <div style={{fontSize:15,fontWeight:800,color:"#1e293b"}}>
+            {userRecipes.some(r=>r.id===editing.id) ? "Modifica ricetta" : "Nuova ricetta"}
+          </div>
+        </div>
+
+        {/* Nome */}
+        <label style={{fontSize:11,fontWeight:800,color:"#64748b",textTransform:"uppercase",letterSpacing:0.5}}>Nome della ricetta</label>
+        <input value={editing.nome} onChange={e=>setEditing({...editing,nome:e.target.value})}
+          placeholder="Es. Insalata di farro e pollo"
+          style={{width:"100%",boxSizing:"border-box",marginTop:5,marginBottom:14,padding:"10px 12px",borderRadius:9,border:"1.5px solid #e2e8f0",fontSize:13}}/>
+
+        {/* Pasto + tempo */}
+        <div style={{display:"flex",gap:10,marginBottom:14}}>
+          <div style={{flex:1}}>
+            <label style={{fontSize:11,fontWeight:800,color:"#64748b",textTransform:"uppercase",letterSpacing:0.5}}>Pasto</label>
+            <select value={editing.cat} onChange={e=>setEditing({...editing,cat:e.target.value})}
+              style={{width:"100%",boxSizing:"border-box",marginTop:5,padding:"10px 8px",borderRadius:9,border:"1.5px solid #e2e8f0",fontSize:13,background:"#fff"}}>
+              {CAT_PASTO.map(c=><option key={c.key} value={c.key}>{c.label}</option>)}
+            </select>
+          </div>
+          <div style={{width:110}}>
+            <label style={{fontSize:11,fontWeight:800,color:"#64748b",textTransform:"uppercase",letterSpacing:0.5}}>Minuti</label>
+            <input type="number" min="0" value={editing.prep} onChange={e=>setEditing({...editing,prep:e.target.value})}
+              style={{width:"100%",boxSizing:"border-box",marginTop:5,padding:"10px 8px",borderRadius:9,border:"1.5px solid #e2e8f0",fontSize:13}}/>
+          </div>
+        </div>
+
+        {/* Composizione ingredienti */}
+        <div style={{fontSize:11,fontWeight:800,color:"#64748b",textTransform:"uppercase",letterSpacing:0.5,marginBottom:7}}>
+          Ingredienti · porzione per 1 adulto
+        </div>
+
+        {editing.comp.length>0 && (
+          <div style={{background:"#fff",borderRadius:10,border:"1.5px solid #e2e8f0",marginBottom:10,overflow:"hidden"}}>
+            {editing.comp.map((c,i)=>{
+              const ing = ING_MAP[c.ing];
+              return (
+                <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"9px 12px",borderBottom:i<editing.comp.length-1?"1px solid #f1f5f9":"none"}}>
+                  <div style={{flex:1,fontSize:12.5,color:"#1e293b",fontWeight:600}}>{ing?ing.nome:c.ing}</div>
+                  <div style={{fontSize:12,color:"#64748b",fontFamily:"monospace",fontWeight:700}}>{c.qty}{c.unit==="pz"?" pz":c.unit}</div>
+                  <button onClick={()=>removeIngrediente(i)}
+                    style={{width:24,height:24,borderRadius:6,border:"1.5px solid #fecaca",background:"#fef2f2",color:"#dc2626",cursor:"pointer",fontWeight:800,fontSize:13,padding:0,lineHeight:1}}>×</button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Riga aggiungi ingrediente */}
+        <div style={{background:"#f8fafc",borderRadius:10,border:"1.5px dashed #cbd5e1",padding:10,marginBottom:14}}>
+          <div style={{display:"flex",gap:6,marginBottom:6}}>
+            <select value={pickCat} onChange={e=>{setPickCat(e.target.value);setPickIng("");}}
+              style={{flex:1,padding:"8px 6px",borderRadius:8,border:"1.5px solid #e2e8f0",fontSize:12,background:"#fff"}}>
+              {catList.map(c=><option key={c} value={c}>{c}</option>)}
+            </select>
+            <select value={pickIng} onChange={e=>{
+                const id=e.target.value; setPickIng(id);
+                // suggerisce l'unità adatta: pezzi se l'ingrediente ha pesoUnita,
+                // ml per liquidi (olio, latte), altrimenti grammi
+                const ing=ING_MAP[id];
+                if(ing){
+                  if(ing.pesoUnita) setPickUnit("pz");
+                  else if(/olio|latte|brodo|passata|aceto/.test(id)) setPickUnit("ml");
+                  else setPickUnit("g");
+                }
+              }}
+              style={{flex:2,padding:"8px 6px",borderRadius:8,border:"1.5px solid #e2e8f0",fontSize:12,background:"#fff"}}>
+              <option value="">— scegli ingrediente —</option>
+              {ingDellaCat.map(i=><option key={i.id} value={i.id}>{i.nome}</option>)}
+            </select>
+          </div>
+          <div style={{display:"flex",gap:6}}>
+            <input type="number" min="0" value={pickQty} onChange={e=>setPickQty(e.target.value)} placeholder="Quantità"
+              style={{flex:2,boxSizing:"border-box",padding:"8px 10px",borderRadius:8,border:"1.5px solid #e2e8f0",fontSize:12}}/>
+            <select value={pickUnit} onChange={e=>setPickUnit(e.target.value)}
+              style={{flex:1,padding:"8px 6px",borderRadius:8,border:"1.5px solid #e2e8f0",fontSize:12,background:"#fff"}}>
+              {UNITA.map(u=><option key={u} value={u}>{u}</option>)}
+            </select>
+            <button onClick={addIngrediente}
+              style={{flex:1,padding:"8px",borderRadius:8,border:"none",background:"#2563eb",color:"#fff",fontWeight:800,fontSize:12,cursor:"pointer"}}>
+              + Aggiungi
+            </button>
+          </div>
+        </div>
+
+        {/* Riquadro nutrizionale calcolato */}
+        {editing.comp.length>0 && (
+          <div style={{background:"#fff",borderRadius:12,border:"1.5px solid #e2e8f0",overflow:"hidden",marginBottom:14}}>
+            <div style={{background:calc.ok?"#f0fdf4":"#fffbeb",borderBottom:`1px solid ${calc.ok?"#bbf7d0":"#fde68a"}`,padding:"9px 14px",fontWeight:800,fontSize:12,color:calc.ok?"#15803d":"#d97706"}}>
+              {calc.ok ? "🧮 Valori calcolati (dati CRA-NUT)" : "✏️ Inserisci i valori a mano"}
+            </div>
+
+            {calc.ok ? (
+              <div style={{padding:"12px 14px"}}>
+                <div style={{fontSize:10,color:"#94a3b8",fontWeight:700,marginBottom:8}}>PORZIONE PER 1 ADULTO</div>
+                <div style={{display:"flex",gap:8,marginBottom:12}}>
+                  {[["kcal",nutriEff.kcal,"#1e293b"],["Prot",nutriEff.p+"g","#dc2626"],["Carb",nutriEff.c+"g","#d97706"],["Gras",nutriEff.g+"g","#2563eb"]].map(([l,v,col])=>(
+                    <div key={l} style={{flex:1,textAlign:"center",background:"#f8fafc",borderRadius:8,padding:"8px 4px"}}>
+                      <div style={{fontSize:15,fontWeight:800,color:col,fontFamily:"monospace"}}>{v}</div>
+                      <div style={{fontSize:9,color:"#94a3b8",fontWeight:700,textTransform:"uppercase"}}>{l}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{fontSize:10,color:"#94a3b8",fontWeight:700,marginBottom:6}}>PORZIONI SCALATE PER PROFILO</div>
+                {(()=>{
+                  const sc = scalaPorzioni(nutriEff);
+                  return (
+                    <div style={{display:"flex",gap:8}}>
+                      {[["👨 Uomo",sc.uomo],["👩 Donna",sc.donna],["🧒 Bimbo",sc.bimbo]].map(([l,v])=>(
+                        <div key={l} style={{flex:1,textAlign:"center",border:"1px solid #f1f5f9",borderRadius:8,padding:"7px 4px"}}>
+                          <div style={{fontSize:11,fontWeight:700,color:"#64748b"}}>{l}</div>
+                          <div style={{fontSize:13,fontWeight:800,color:"#1e293b",fontFamily:"monospace",marginTop:2}}>{v.kcal}</div>
+                          <div style={{fontSize:8,color:"#94a3b8"}}>kcal</div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+            ) : (
+              <div style={{padding:"12px 14px"}}>
+                <div style={{fontSize:11,color:"#92400e",lineHeight:1.5,marginBottom:10}}>
+                  Alcuni ingredienti non hanno dati nutrizionali per questa unità di misura. Inserisci i valori della porzione per 1 adulto.
+                </div>
+                <div style={{display:"flex",gap:6}}>
+                  {[["kcal","kcal"],["p","Prot g"],["c","Carb g"],["g","Gras g"]].map(([k,l])=>(
+                    <div key={k} style={{flex:1}}>
+                      <label style={{fontSize:9,color:"#94a3b8",fontWeight:700}}>{l}</label>
+                      <input type="number" min="0"
+                        value={editing.nutriManuale?.[k] ?? ""}
+                        onChange={e=>setEditing(ed=>({...ed,nutriManuale:{...(ed.nutriManuale||{kcal:0,p:0,c:0,g:0}),[k]:parseFloat(e.target.value)||0}}))}
+                        style={{width:"100%",boxSizing:"border-box",marginTop:3,padding:"7px 6px",borderRadius:7,border:"1.5px solid #e2e8f0",fontSize:12}}/>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Salva */}
+        <button onClick={salva}
+          style={{width:"100%",padding:"12px",borderRadius:10,border:"none",background:"#16a34a",color:"#fff",fontWeight:800,fontSize:13,cursor:"pointer"}}>
+          ✓ Salva ricetta
+        </button>
+      </div>
+    );
+  }
+
+  // ══════════ VISTA LISTA ══════════
+  return (
+    <div>
+      <div style={{background:"#f0f9ff",border:"1px solid #bae6fd",borderRadius:10,padding:"10px 14px",marginBottom:14,fontSize:11,color:"#0369a1",lineHeight:1.6}}>
+        ℹ️ Crea le tue ricette combinando gli ingredienti: l'app calcola calorie e valori nutrizionali con i dati ufficiali CRA-NUT e scala le porzioni sui profili della famiglia.
+      </div>
+
+      <button onClick={startNew}
+        style={{width:"100%",padding:"12px",borderRadius:10,border:"none",background:"#2563eb",color:"#fff",fontWeight:800,fontSize:13,cursor:"pointer",marginBottom:16}}>
+        + Crea nuova ricetta
+      </button>
+
+      {userRecipes.length===0 ? (
+        <div style={{textAlign:"center",padding:"40px 20px",color:"#94a3b8"}}>
+          <div style={{fontSize:46,marginBottom:12}}>👨‍🍳</div>
+          <div style={{fontSize:14,fontWeight:700,color:"#64748b"}}>Nessuna ricetta personale</div>
+          <div style={{fontSize:12,marginTop:6,lineHeight:1.6}}>Le ricette che crei appariranno qui e potranno entrare nei piani settimanali.</div>
+        </div>
+      ) : (
+        <div>
+          <div style={{fontSize:11,fontWeight:800,color:"#64748b",textTransform:"uppercase",letterSpacing:0.5,marginBottom:8}}>
+            Le tue ricette · {userRecipes.length}
+          </div>
+          {userRecipes.map(r=>{
+            const pasto = CAT_PASTO.find(c=>c.key===r.cat);
+            return (
+              <div key={r.id} style={{background:"#fff",borderRadius:11,border:"1.5px solid #e2e8f0",padding:"11px 13px",marginBottom:9}}>
+                <div style={{display:"flex",alignItems:"flex-start",gap:8}}>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:13,fontWeight:700,color:"#1e293b",lineHeight:1.3}}>{r.nome}</div>
+                    <div style={{display:"flex",gap:6,marginTop:5,flexWrap:"wrap",alignItems:"center"}}>
+                      <span style={{fontSize:10,fontWeight:700,color:"#475569",background:"#f1f5f9",borderRadius:5,padding:"2px 7px"}}>{pasto?pasto.label:r.cat}</span>
+                      {r.prep>0 && <span style={{fontSize:10,fontWeight:700,color:"#0891b2",background:"#f0f9ff",borderRadius:5,padding:"2px 7px"}}>⏱ {r.prep}'</span>}
+                      {r.nutri && <span style={{fontSize:10,fontWeight:700,color:"#1e293b",fontFamily:"monospace"}}>{r.nutri.kcal} kcal</span>}
+                      <span style={{fontSize:9,color:"#94a3b8"}}>{(r.comp||[]).length} ingredienti</span>
+                    </div>
+                  </div>
+                  <div style={{display:"flex",gap:5,flexShrink:0}}>
+                    <button onClick={()=>startEdit(r)}
+                      style={{padding:"5px 9px",borderRadius:7,border:"1.5px solid #e2e8f0",background:"#f8fafc",color:"#64748b",fontWeight:700,fontSize:11,cursor:"pointer"}}>
+                      Modifica
+                    </button>
+                    <button onClick={()=>{ if(confirm("Eliminare la ricetta \""+r.nome+"\"?")) onDelete(r.id); }}
+                      style={{width:28,height:28,borderRadius:7,border:"1.5px solid #fecaca",background:"#fef2f2",color:"#dc2626",cursor:"pointer",fontWeight:800,fontSize:13,padding:0}}>
+                      🗑
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── GustiPage ───────────────────────────────────────────────────────
 // Mostra i dati di preferenza accumulati: ricette preferite, ricette
 // sostituite spesso, e la classifica completa per punteggio.
@@ -2594,14 +3050,16 @@ function App() {
   const [misureApp, setMisureApp]     = useState({});
   const [overrides, setOverrides]     = useState({}); // { "dayIdx-mealKey": ricettaObj }
   const [prefs, setPrefs]             = useState({ recipes:{}, contextSwaps:[] });
+  const [userRecipes, setUserRecipes] = useState([]); // ricette create dall'utente
 
   useEffect(()=>{
     async function load(){
       try {
-        const [sS,hS,eS,pS,mS,miS,ovS,prS] = await Promise.allSettled([
+        const [sS,hS,eS,pS,mS,miS,ovS,prS,urS] = await Promise.allSettled([
           window.storage.get(SK_SEED), window.storage.get(SK_HISTORY), window.storage.get(SK_EXCL),
           window.storage.get(SK_PERSONAS), window.storage.get(SK_MY_PERSONA), window.storage.get(SK_MISURE),
           window.storage.get(SK_OVERRIDES), window.storage.get(SK_PREFS),
+          window.storage.get(SK_USER_RECIPES),
         ]);
         const parsedSeed = sS.status==="fulfilled"&&sS.value ? parseInt(sS.value.value, 10) : NaN;
         const loadedSeed = (!isNaN(parsedSeed) && parsedSeed > 0) ? parsedSeed : Date.now();
@@ -2623,11 +3081,13 @@ function App() {
         const loadedMisu = (() => { const v = safeParse(miS, {}); return (v && typeof v==="object" && !Array.isArray(v)) ? v : {}; })();
         const loadedOvrd = (() => { const v = safeParse(ovS, {}); return (v && typeof v==="object" && !Array.isArray(v)) ? v : {}; })();
         const loadedPrefs = normalizePrefs(safeParse(prS, null));
+        const loadedUserRec = (() => { const v = safeParse(urS, []); return Array.isArray(v) ? v : []; })();
         const validMyP   = loadedPers.find(p=>p.id===loadedMyP) ? loadedMyP : loadedPers[0].id;
         setSeed(loadedSeed); setHistory(loadedHist); setExcluded(loadedExcl);
         setPersonas(loadedPers); setSelPersonaId(loadedPers[0].id); setMyPersonaId(validMyP);
         setMisureApp(loadedMisu); setOverrides(loadedOvrd); setPrefs(loadedPrefs);
-        setPlan(generateWeekPlan(loadedSeed, loadedExcl));
+        setUserRecipes(loadedUserRec);
+        setPlan(generateWeekPlan(loadedSeed, loadedExcl, undefined, loadedUserRec));
       } catch {
         const ns=Date.now(); setSeed(ns); setPersonas(DEFAULT_PERSONAS);
         setSelPersonaId(DEFAULT_PERSONAS[0].id); setMyPersonaId(DEFAULT_PERSONAS[0].id);
@@ -2687,6 +3147,34 @@ function App() {
     window.storage.set(SK_PREFS, JSON.stringify(empty)).catch(()=>{});
   }, []);
 
+  // ─── Ricette utente: salva (nuova o modifica) ed elimina ─────────
+  const persistUserRecipes = useCallback((list) => {
+    setUserRecipes(list);
+    window.storage.set(SK_USER_RECIPES, JSON.stringify(list)).catch(()=>{});
+  }, []);
+
+  const handleSaveUserRecipe = useCallback((recipe) => {
+    setUserRecipes(prev => {
+      const exists = prev.some(r => r.id === recipe.id);
+      const next = exists
+        ? prev.map(r => r.id === recipe.id ? recipe : r)
+        : [recipe, ...prev];
+      window.storage.set(SK_USER_RECIPES, JSON.stringify(next)).catch(()=>{});
+      return next;
+    });
+    // il piano corrente non include ancora questa ricetta: invita a rigenerare
+    setRegenNeeded(true);
+  }, []);
+
+  const handleDeleteUserRecipe = useCallback((id) => {
+    setUserRecipes(prev => {
+      const next = prev.filter(r => r.id !== id);
+      window.storage.set(SK_USER_RECIPES, JSON.stringify(next)).catch(()=>{});
+      return next;
+    });
+    setRegenNeeded(true);
+  }, []);
+
   // Registra uno swap di contesto nel registro grezzo (non tocca i gusti).
   const logContextSwap = useCallback((dayIdx, mealKey, oldMeal, newMeal, hoursAhead) => {
     setPrefs(prev => {
@@ -2739,7 +3227,7 @@ function App() {
 
   const handleApplySeed = useCallback(async(newSeed, newOverrides)=>{
     setSpinning(true); await new Promise(r=>setTimeout(r,400));
-    const np=generateWeekPlan(newSeed,excluded);
+    const np=generateWeekPlan(newSeed,excluded,undefined,userRecipes);
     const nh=[{seed,date:new Date().toLocaleDateString("it-IT"),label:`Piano del ${new Date().toLocaleDateString("it-IT")}`},...history].slice(0,5);
     const resolvedOverrides = newOverrides || {};
     setSeed(newSeed); setPlan(np); setHistory(nh); setSelDay(0); setRegenNeeded(false); setOverrides(resolvedOverrides);
@@ -2749,11 +3237,11 @@ function App() {
       await window.storage.set(SK_OVERRIDES,JSON.stringify(resolvedOverrides));
     } catch{}
     setSpinning(false);
-  },[seed,history,excluded]);
+  },[seed,history,excluded,userRecipes]);
 
   const regenerate = useCallback(async()=>{
     setSpinning(true); await new Promise(r=>setTimeout(r,500));
-    const ns=Date.now(), np=generateWeekPlan(ns,excluded);
+    const ns=Date.now(), np=generateWeekPlan(ns,excluded,undefined,userRecipes);
     const nh=[{seed,date:new Date().toLocaleDateString("it-IT"),label:`Piano del ${new Date().toLocaleDateString("it-IT")}`},...history].slice(0,5);
     setSeed(ns); setPlan(np); setHistory(nh); setSelDay(0); setRegenNeeded(false); setOverrides({});
     try {
@@ -2762,18 +3250,18 @@ function App() {
       await window.storage.set(SK_OVERRIDES,"{}");
     } catch{}
     setSpinning(false);
-  },[seed,history,excluded]);
+  },[seed,history,excluded,userRecipes]);
 
   const loadHistory = useCallback(async(oldSeed)=>{
     setSpinning(true); await new Promise(r=>setTimeout(r,300));
-    setSeed(oldSeed); setPlan(generateWeekPlan(oldSeed,excluded)); setSelDay(0); setShowHistory(false);
+    setSeed(oldSeed); setPlan(generateWeekPlan(oldSeed,excluded,undefined,userRecipes)); setSelDay(0); setShowHistory(false);
     setOverrides({});
     try {
       await window.storage.set(SK_SEED,String(oldSeed));
       await window.storage.set(SK_OVERRIDES,"{}");
     } catch{}
     setSpinning(false);
-  },[excluded]);
+  },[excluded,userRecipes]);
 
   const toggleExcluded = useCallback(async(id)=>{
     setExcluded(prev=>{ const next=prev.includes(id)?prev.filter(x=>x!==id):[...prev,id]; window.storage.set(SK_EXCL,JSON.stringify(next)).catch(()=>{}); return next; });
@@ -2790,9 +3278,9 @@ function App() {
   const personaTarget = calcTargetAdattivo(persona, misureApp[persona?.id]);
   const personaSlot = slotForPersona(persona);
 
-  const TABS = [{key:"piano",label:"📋 Piano"},{key:"spesa",label:"🛒 Spesa"},{key:"ingredienti",label:"🥦 Ingredienti"},{key:"gusti",label:"❤️ Gusti"},{key:"misure",label:"📏 Misure"},{key:"famiglia",label:"👥 Famiglia"}];
-  const TAB_ICONS = { piano:"📋", spesa:"🛒", ingredienti:"🥦", gusti:"❤️", misure:"📏", famiglia:"👥" };
-  const TAB_SHORT = { piano:"Piano", spesa:"Spesa", ingredienti:"Ingredienti", gusti:"Gusti", misure:"Misure", famiglia:"Famiglia" };
+  const TABS = [{key:"piano",label:"📋 Piano"},{key:"spesa",label:"🛒 Spesa"},{key:"ricette",label:"👨‍🍳 Ricette"},{key:"ingredienti",label:"🥦 Ingredienti"},{key:"gusti",label:"❤️ Gusti"},{key:"misure",label:"📏 Misure"},{key:"famiglia",label:"👥 Famiglia"}];
+  const TAB_ICONS = { piano:"📋", spesa:"🛒", ricette:"👨‍🍳", ingredienti:"🥦", gusti:"❤️", misure:"📏", famiglia:"👥" };
+  const TAB_SHORT = { piano:"Piano", spesa:"Spesa", ricette:"Ricette", ingredienti:"Ingredienti", gusti:"Gusti", misure:"Misure", famiglia:"Famiglia" };
 
   return (
     <div style={{minHeight:"100vh",background:"linear-gradient(135deg,#f8fafc 0%,#f1f5f9 100%)",fontFamily:"'Segoe UI',system-ui,sans-serif",paddingBottom:80}}>
@@ -2912,6 +3400,8 @@ function App() {
                             weekMealIds={weekMealIds}
                             excludedIds={excluded}
                             prefEntry={getPrefEntry(prefs, effectiveDay[mk]?.id)}
+                            prefs={prefs}
+                            userRecipes={userRecipes}
                             onToggleLike={() => handleToggleLike(effectiveDay[mk]?.id)}
                             onSwap={alt => handleSwap(selDay, mk, effectiveDay[mk], alt)}
                             onReset={() => handleResetSwap(selDay, mk)}
@@ -2982,6 +3472,7 @@ function App() {
 
         {!showHistory&&page==="spesa"&&<ShoppingPage plan={applyOverrides(plan, overrides)}/>}
         {!showHistory&&page==="ingredienti"&&<IngredientiPage excluded={excluded} onToggle={toggleExcluded}/>}
+        {!showHistory&&page==="ricette"&&<RicettePage userRecipes={userRecipes} onSave={handleSaveUserRecipe} onDelete={handleDeleteUserRecipe}/>}
         {!showHistory&&page==="gusti"&&<GustiPage prefs={prefs} onToggleLike={handleToggleLike} onResetPrefs={handleResetPrefs}/>}
         {!showHistory&&page==="misure"&&<MisurePage personas={personas} myPersonaId={myPersonaId} onMisureChange={setMisureApp}/>}
         {!showHistory&&page==="famiglia"&&(
@@ -2996,10 +3487,10 @@ function App() {
           const active=page===tab.key&&!showHistory;
           return (
             <button key={tab.key} onClick={()=>{setPage(tab.key);setShowHistory(false);}}
-              style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"8px 2px 6px",border:"none",background:"transparent",color:active?"#2563eb":"#94a3b8",cursor:"pointer",position:"relative",transition:"color 0.15s",gap:2,minWidth:0}}>
-              {active&&<div style={{position:"absolute",top:0,left:"22%",right:"22%",height:2,background:"#2563eb",borderRadius:"0 0 3px 3px"}}/>}
-              <span style={{fontSize:17,lineHeight:1}}>{TAB_ICONS[tab.key]}</span>
-              <span style={{fontSize:tab.key==="ingredienti"?7.5:9,fontWeight:active?800:600,letterSpacing:0.1,whiteSpace:"nowrap"}}>{TAB_SHORT[tab.key]}</span>
+              style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"7px 1px 5px",border:"none",background:"transparent",color:active?"#2563eb":"#94a3b8",cursor:"pointer",position:"relative",transition:"color 0.15s",gap:2,minWidth:0}}>
+              {active&&<div style={{position:"absolute",top:0,left:"18%",right:"18%",height:2,background:"#2563eb",borderRadius:"0 0 3px 3px"}}/>}
+              <span style={{fontSize:16,lineHeight:1}}>{TAB_ICONS[tab.key]}</span>
+              <span style={{fontSize:tab.key==="ingredienti"?7:8,fontWeight:active?800:600,letterSpacing:0,whiteSpace:"nowrap"}}>{TAB_SHORT[tab.key]}</span>
               {tab.key==="ingredienti"&&excluded.length>0&&(
                 <div style={{position:"absolute",top:6,left:"50%",marginLeft:4,width:14,height:14,background:"#ef4444",borderRadius:"50%",fontSize:8,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900}}>{excluded.length}</div>
               )}
