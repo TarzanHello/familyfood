@@ -297,7 +297,191 @@ const INGREDIENTS = [
   { id: "ing_pinoli",       nome: "Pinoli",                       cat: "🥜 Frutta secca", deperibile: 90,  stagioni: null,              kcal_per_kg: 5950, tags: ["pinoli"] },
   { id: "ing_anacardi",     nome: "Anacardi",                     cat: "🥜 Frutta secca", deperibile: 90,  stagioni: null,              kcal_per_kg: 5800, tags: ["anacardi"] },
   { id: "ing_nocciole",     nome: "Nocciole",                     cat: "🥜 Frutta secca", deperibile: 90,  stagioni: null,              kcal_per_kg: 6000, tags: ["nocciole"] },
+  // 🛒 Altro
+  { id: "ing_altro",        nome: "Altro",                        cat: "🛒 Altro",        deperibile: 365, stagioni: null,              kcal_per_kg: 0,    tags: ["altro"] },
 ];
+
+// ═══════════════════════════════════════════════════════════════════
+// VALORI NUTRIZIONALI PER 100 g DI PARTE EDIBILE
+// Fonte: tabelle "Composizione chimica e valore energetico degli alimenti"
+// Campi: p=proteine(g) · c=carboidrati totali(g) · z=zuccheri solubili(g)
+//        g=grassi/lipidi(g) · f=fibra totale(g) · kcal=energia(kcal)
+// "fonte" indica la voce del PDF usata; "*" = stima/voce approssimata.
+// ═══════════════════════════════════════════════════════════════════
+const NUTRI = {
+  // ── 🥩 Proteine – pesce e mare ──────────────────────────────────
+  ing_salmone:        { p:18.4, c:1,    z:0,    g:12,   f:0,    kcal:185, fonte:"Salmone fresco" },
+  ing_orata:          { p:20.7, c:1,    z:0,    g:3.8,  f:0,    kcal:121, fonte:"Orata fresca, filetti" },
+  ing_merluzzo:       { p:17,   c:0,    z:0,    g:0.3,  f:0,    kcal:71,  fonte:"Merluzzo o nasello crudo" },
+  ing_sgombro:        { p:19.3, c:0,    z:0,    g:11.1, f:0,    kcal:177, fonte:"Sgombro in salamoia (al naturale)" },
+  ing_pollo:          { p:23.3, c:0,    z:0,    g:0.8,  f:0,    kcal:100, fonte:"Pollo, petto crudo" },
+  ing_tacchino:       { p:24,   c:0,    z:0,    g:1.2,  f:0,    kcal:107, fonte:"Tacchino, fesa cruda*" },
+  ing_tacchino_fettine:{ p:24,  c:0,    z:0,    g:1.2,  f:0,    kcal:107, fonte:"Tacchino, fesa cruda" },
+  ing_manzo:          { p:21.5, c:0,    z:0,    g:2.4,  f:0,    kcal:108, fonte:"Bovino adulto - spalla/muscolo" },
+  ing_manzo_tagliata: { p:20.5, c:0,    z:0,    g:5,    f:0,    kcal:127, fonte:"Bovino adulto - filetto" },
+  ing_maiale:         { p:20.7, c:0,    z:0,    g:7,    f:0,    kcal:146, fonte:"Maiale, leggero, lombo" },
+  ing_uova:           { p:12.4, c:0,    z:0,    g:8.7,  f:0,    kcal:128, fonte:"Uova di gallina, intero" },
+  ing_tonno:          { p:25.1, c:0,    z:0,    g:0.3,  f:0,    kcal:103, fonte:"Tonno in salamoia sgocciolato" },
+  ing_gamberi:        { p:13.6, c:2.9,  z:0,    g:0.6,  f:0,    kcal:71,  fonte:"Gamberi freschi" },
+  ing_polpo:          { p:10.6, c:1.4,  z:0,    g:1,    f:0,    kcal:57,  fonte:"Polpo" },
+  ing_calamari:       { p:12.6, c:0.6,  z:0,    g:1.7,  f:0,    kcal:68,  fonte:"Calamaro fresco" },
+  ing_baccala:        { p:21.6, c:0,    z:0,    g:1,    f:0,    kcal:95,  fonte:"Baccala' ammollato" },
+  ing_ombrina:        { p:16.7, c:0.7,  z:0,    g:3.5,  f:0,    kcal:101, fonte:"Dentice fresco*" },
+  ing_tonno_olio:     { p:25.2, c:0,    z:0,    g:10.1, f:0,    kcal:192, fonte:"Tonno sott'olio sgocciolato" },
+  ing_alici:          { p:16.8, c:1.5,  z:0,    g:2.6,  f:0,    kcal:96,  fonte:"Acciuga o alice, fresca" },
+  ing_salmone_aff:    { p:25.4, c:1.2,  z:0,    g:4.5,  f:0,    kcal:147, fonte:"Salmone affumicato" },
+  // ── 🥩 Proteine – carne ─────────────────────────────────────────
+  ing_anatra:         { p:21.4, c:0,    z:0,    g:8.2,  f:0,    kcal:159, fonte:"Anatra domestica" },
+  ing_agnello:        { p:20,   c:0,    z:0,    g:8.8,  f:0,    kcal:159, fonte:"Agnello (muscolo)" },
+  ing_salsiccia:      { p:15.4, c:0.6,  z:0,    g:26.7, f:0,    kcal:304, fonte:"Salsiccia di suino, fresca cruda" },
+  ing_prosciutto:     { p:25.9, c:0.3,  z:0,    g:18.3, f:0,    kcal:269, fonte:"Prosciutto crudo di Parma DOP" },
+  ing_tofu:           { p:8,    c:1.5,  z:0,    g:4.8,  f:1,    kcal:80,  fonte:"Tofu (stima da soia)*" },
+  // ── 🥛 Latticini ────────────────────────────────────────────────
+  ing_yogurt:         { p:6.4,  c:2,    z:2,    g:9.1,  f:0,    kcal:115, fonte:"Yogurt greco da latte intero" },
+  ing_ricotta:        { p:8.8,  c:3.5,  z:3.5,  g:10.9, f:0,    kcal:146, fonte:"Ricotta di vacca" },
+  ing_mozzarella:     { p:18.7, c:0.7,  z:0.7,  g:19.5, f:0,    kcal:253, fonte:"Mozzarella di vacca" },
+  ing_feta:           { p:15.6, c:1.5,  z:1.5,  g:20.2, f:0,    kcal:250, fonte:"Feta" },
+  ing_parmigiano:     { p:33.5, c:0,    z:0,    g:28.1, f:0,    kcal:387, fonte:"Parmigiano" },
+  ing_latte:          { p:3.5,  c:5,    z:5,    g:1.5,  f:0,    kcal:46,  fonte:"Latte vacca pastor. parz. scremato" },
+  ing_fiocchi_latte:  { p:9.7,  c:3.2,  z:3.2,  g:7.1,  f:0,    kcal:115, fonte:"Fiocchi di formaggio magro" },
+  ing_burro:          { p:0.8,  c:1.1,  z:1.1,  g:83.4, f:0,    kcal:758, fonte:"Burro" },
+  ing_panna:          { p:2.3,  c:3.4,  z:3.4,  g:35,   f:0,    kcal:337, fonte:"Panna o crema di latte" },
+  ing_mascarpone:     { p:7.6,  c:0.3,  z:0.3,  g:47,   f:0,    kcal:455, fonte:"Mascarpone" },
+  ing_philadelphia:   { p:8.6,  c:0,    z:0,    g:31,   f:0,    kcal:313, fonte:"Formaggio cremoso spalmabile" },
+  ing_burrata:        { p:20.6, c:0.7,  z:0.7,  g:20.3, f:0,    kcal:268, fonte:"Fior di latte*" },
+  ing_pecorino:       { p:25.8, c:0.2,  z:0.2,  g:32,   f:0,    kcal:392, fonte:"Pecorino" },
+  // ── 🌾 Cereali ──────────────────────────────────────────────────
+  ing_avena:          { p:8,    c:72.8, z:0,    g:7.5,  f:8.29, kcal:373, fonte:"Fiocchi d'avena" },
+  ing_pasta:          { p:13,   c:66.2, z:3,    g:2.5,  f:9.8,  kcal:325, fonte:"Pasta semola integrale*" },
+  ing_riso:           { p:7.5,  c:77.4, z:1.2,  g:1.9,  f:1.92, kcal:337, fonte:"Riso integrale crudo" },
+  ing_farro:          { p:15.1, c:67.1, z:2.7,  g:2.5,  f:6.75, kcal:335, fonte:"Farro" },
+  ing_quinoa:         { p:13.1, c:62.5, z:0,    g:3.3,  f:6.04, kcal:314, fonte:"Grano saraceno (analogo)*" },
+  ing_orzo:           { p:10.4, c:70.5, z:0,    g:1.4,  f:9.24, kcal:319, fonte:"Orzo perlato" },
+  ing_pane:           { p:7.5,  c:48.5, z:0,    g:1.3,  f:6.51, kcal:224, fonte:"Pane di tipo integrale" },
+  ing_farina:         { p:11.9, c:67.8, z:2.1,  g:1.9,  f:8.43, kcal:319, fonte:"Farina di frumento integrale" },
+  ing_crackers:       { p:7.8,  c:70.8, z:28.8, g:14.3, f:6.01, kcal:425, fonte:"Biscotti integrali (analogo crackers)*" },
+  ing_bulgur:         { p:10.9, c:79.1, z:4.2,  g:1.4,  f:2.7,  kcal:353, fonte:"Pasta di semola cruda (analogo)*" },
+  ing_couscous:       { p:10.9, c:79.1, z:4.2,  g:1.4,  f:2.7,  kcal:353, fonte:"Pasta di semola cruda (analogo)*" },
+  ing_grano_sarac:    { p:13.1, c:62.5, z:0,    g:3.3,  f:6.04, kcal:314, fonte:"Grano saraceno" },
+  ing_riso_venere:    { p:7.5,  c:77.4, z:1.2,  g:1.9,  f:1.92, kcal:337, fonte:"Riso integrale crudo (analogo)*" },
+  ing_pasta_fresca:   { p:13,   c:77.9, z:2,    g:2.4,  f:3.2,  kcal:366, fonte:"Pasta all'uovo secca cruda*" },
+  ing_panko:          { p:10.1, c:77.8, z:5,    g:2.1,  f:3.5,  kcal:351, fonte:"Pangrattato" },
+  ing_farina_00:      { p:11,   c:77.3, z:1.7,  g:0.7,  f:2.25, kcal:340, fonte:"Farina di frumento tipo 00" },
+  // ── 🫘 Legumi ───────────────────────────────────────────────────
+  ing_lenticchie:     { p:5,    c:15.4, z:0.7,  g:0.5,  f:4.15, kcal:82,  fonte:"Lenticchie in scatola scolate" },
+  ing_ceci:           { p:6.7,  c:13.9, z:1,    g:2.3,  f:5.7,  kcal:100, fonte:"Ceci in scatola scolati" },
+  ing_legumi:         { p:6.5,  c:14.5, z:1,    g:1.5,  f:5.3,  kcal:90,  fonte:"Media legumi in scatola (stima)*" },
+  ing_fagioli:        { p:6,    c:12.5, z:0.3,  g:0.6,  f:4.84, kcal:76,  fonte:"Fagioli Cannellini in scatola scolati" },
+  ing_edamame:        { p:10.2, c:9.7,  z:0.5,  g:0.8,  f:4.2,  kcal:125, fonte:"Fagioli freschi bolliti (analogo)*" },
+  ing_piselli:        { p:5.4,  c:6.4,  z:0,    g:0.3,  f:6.3,  kcal:48,  fonte:"Piselli surgelati" },
+  ing_fag_azuki:      { p:6.9,  c:16.4, z:1,    g:0.4,  f:6.89, kcal:93,  fonte:"Fagioli Borlotti bolliti (analogo)*" },
+  // ── 🥦 Verdure ──────────────────────────────────────────────────
+  ing_carote:         { p:1.1,  c:7.6,  z:7.6,  g:0.2,  f:3.11, kcal:35,  fonte:"Carote crude" },
+  ing_patate:         { p:2.1,  c:17.9, z:0.4,  g:1,    f:1.56, kcal:85,  fonte:"Patate crude" },
+  ing_patatedolci:    { p:2,    c:15.7, z:0.2,  g:0.3,  f:1.4,  kcal:70,  fonte:"Patate novelle crude (analogo)*" },
+  ing_insalata:       { p:1.8,  c:2.2,  z:2.2,  g:0.4,  f:1.46, kcal:19,  fonte:"Lattuga" },
+  ing_avocado:        { p:4.4,  c:1.8,  z:1.8,  g:23,   f:3.3,  kcal:231, fonte:"Avocado" },
+  ing_zucchine:       { p:1.3,  c:1.4,  z:1.3,  g:0.1,  f:1.2,  kcal:11,  fonte:"Zucchine crude" },
+  ing_pomodori:       { p:1,    c:3.5,  z:3.5,  g:0.2,  f:2.04, kcal:19,  fonte:"Pomodori maturi" },
+  ing_peperone:       { p:0.9,  c:4.2,  z:4.2,  g:0.3,  f:1.9,  kcal:22,  fonte:"Peperoni crudi" },
+  ing_melanzane:      { p:1.1,  c:2.6,  z:2.6,  g:0.4,  f:2.6,  kcal:18,  fonte:"Melanzane crude" },
+  ing_fagiolini:      { p:2.1,  c:2.4,  z:2.4,  g:0.1,  f:2.85, kcal:18,  fonte:"Fagiolini freschi crudi" },
+  ing_cetrioli:       { p:0.7,  c:1.8,  z:1.8,  g:0.5,  f:0.75, kcal:14,  fonte:"Cetrioli" },
+  ing_mais:           { p:3.4,  c:19.5, z:4.3,  g:1.3,  f:1.4,  kcal:98,  fonte:"Mais dolce in scatola sgocciolato" },
+  ing_asparagi:       { p:3.6,  c:3.3,  z:3.3,  g:0.2,  f:2,    kcal:29,  fonte:"Asparagi di campo crudi" },
+  ing_spinaci:        { p:3.4,  c:2.9,  z:0.4,  g:0.7,  f:1.9,  kcal:31,  fonte:"Spinaci crudi" },
+  ing_broccoli:       { p:3,    c:3.1,  z:3.1,  g:0.4,  f:3.1,  kcal:27,  fonte:"Broccolo a testa crudo" },
+  ing_zucca:          { p:1.1,  c:3.5,  z:2.5,  g:0.1,  f:2,    kcal:18,  fonte:"Zucca gialla" },
+  ing_cavolo:         { p:2.1,  c:2.5,  z:2.5,  g:0.1,  f:2.56, kcal:19,  fonte:"Cavolo cappuccio verde crudo" },
+  ing_finocchio:      { p:1.2,  c:1,    z:1,    g:0.1,  f:2.22, kcal:9,   fonte:"Finocchi crudi" },
+  ing_porri:          { p:2.1,  c:5.2,  z:5.2,  g:0.1,  f:2.9,  kcal:29,  fonte:"Porri crudi" },
+  ing_radicchio:      { p:1.4,  c:1.6,  z:1.6,  g:0.1,  f:2.96, kcal:13,  fonte:"Radicchio rosso" },
+  ing_carciofi:       { p:2.7,  c:2.5,  z:1.9,  g:0.2,  f:5.5,  kcal:22,  fonte:"Carciofi crudi" },
+  ing_funghi:         { p:3.7,  c:0.8,  z:0.8,  g:0.2,  f:2.25, kcal:20,  fonte:"Funghi coltivati prataioli crudi" },
+  ing_cipolla:        { p:1,    c:5.7,  z:5.7,  g:0.1,  f:1.04, kcal:26,  fonte:"Cipolle crude" },
+  ing_aglio:          { p:0.9,  c:8.4,  z:8.4,  g:0.6,  f:3.1,  kcal:41,  fonte:"Aglio" },
+  ing_sedano:         { p:2.3,  c:2.4,  z:2.2,  g:0.2,  f:1.59, kcal:20,  fonte:"Sedano crudo" },
+  ing_lattuga:        { p:1.8,  c:2.2,  z:2.2,  g:0.4,  f:1.46, kcal:19,  fonte:"Lattuga" },
+  ing_cavolfiore:     { p:3.2,  c:2.7,  z:2.4,  g:0.2,  f:2.4,  kcal:25,  fonte:"Cavolfiore crudo" },
+  ing_datterini:      { p:1.1,  c:3.5,  z:3.5,  g:0.2,  f:2.04, kcal:19,  fonte:"Pomodori maturi (analogo)*" },
+  ing_barbabietole:   { p:1.1,  c:4,    z:4,    g:0,    f:2.6,  kcal:19,  fonte:"Barbabietole rosse crude" },
+  ing_germogli:       { p:6.2,  c:3,    z:3,    g:1.4,  f:0,    kcal:49,  fonte:"Germogli di soia" },
+  // ── 🍎 Frutta ───────────────────────────────────────────────────
+  ing_banana:         { p:1.2,  c:15.4, z:12.8, g:0.3,  f:1.81, kcal:65,  fonte:"Banane" },
+  ing_mela:           { p:0.2,  c:13.7, z:13.7, g:0.1,  f:1.99, kcal:53,  fonte:"Mele fresche senza buccia" },
+  ing_pera:           { p:0.3,  c:8.8,  z:8.8,  g:0.1,  f:3.85, kcal:35,  fonte:"Pere fresche senza buccia" },
+  ing_arancia:        { p:0.7,  c:7.8,  z:7.8,  g:0.2,  f:1.6,  kcal:34,  fonte:"Arance" },
+  ing_mandarino:      { p:0.9,  c:17.6, z:17.6, g:0.3,  f:1.7,  kcal:72,  fonte:"Mandarini" },
+  ing_kiwi:           { p:1.2,  c:9,    z:9,    g:0.6,  f:2.21, kcal:44,  fonte:"Kiwi" },
+  ing_melograno:      { p:0.5,  c:15.9, z:15.9, g:0.2,  f:2.24, kcal:63,  fonte:"Melagrane" },
+  ing_castagne:       { p:2.9,  c:36.7, z:8.9,  g:1.7,  f:4.7,  kcal:165, fonte:"Castagne" },
+  ing_fragole:        { p:0.9,  c:5.3,  z:5.3,  g:0.4,  f:1.58, kcal:27,  fonte:"Fragole" },
+  ing_pesche:         { p:0.8,  c:6.1,  z:6.1,  g:0.1,  f:1.58, kcal:27,  fonte:"Pesche senza buccia" },
+  ing_albicocche:     { p:0.4,  c:6.8,  z:6.8,  g:0.1,  f:1.54, kcal:28,  fonte:"Albicocche" },
+  ing_anguria:        { p:0.4,  c:3.7,  z:3.7,  g:0,    f:0.22, kcal:16,  fonte:"Cocomero" },
+  ing_melone:         { p:0.8,  c:7.4,  z:7.4,  g:0.2,  f:0.74, kcal:33,  fonte:"Melone d'estate" },
+  ing_ciliegie:       { p:0.8,  c:9,    z:9,    g:0.1,  f:1.29, kcal:38,  fonte:"Ciliege" },
+  ing_mirtilli:       { p:0.9,  c:5.1,  z:5.1,  g:0.2,  f:3.1,  kcal:25,  fonte:"Mirtilli" },
+  ing_bosco:          { p:1,    c:6.5,  z:6.5,  g:0.6,  f:7.4,  kcal:34,  fonte:"Lamponi (frutti di bosco)*" },
+  ing_uva:            { p:0.5,  c:15.6, z:15.6, g:0.1,  f:1.5,  kcal:61,  fonte:"Uva" },
+  ing_mango:          { p:1,    c:12.6, z:12.6, g:0.2,  f:1.6,  kcal:53,  fonte:"Mango" },
+  ing_ananas:         { p:0.5,  c:10,   z:10,   g:0,    f:0.98, kcal:40,  fonte:"Ananas" },
+  ing_limone:         { p:0.6,  c:2.3,  z:2.3,  g:0,    f:1.9,  kcal:11,  fonte:"Limoni" },
+  // ── 🥜 Frutta secca ─────────────────────────────────────────────
+  ing_mandorle:       { p:22,   c:4.6,  z:3.7,  g:55.3, f:12.67,kcal:603, fonte:"Mandorle dolci secche" },
+  ing_noci:           { p:14.3, c:5.1,  z:3.1,  g:68.1, f:6.21, kcal:689, fonte:"Noci secche" },
+  ing_pistacchi:      { p:18.1, c:8.1,  z:4.5,  g:56.1, f:10.6, kcal:608, fonte:"Pistacchi" },
+  ing_bm:             { p:22,   c:4.6,  z:3.7,  g:55.3, f:12.67,kcal:603, fonte:"Burro di mandorle ≈ Mandorle*" },
+  ing_mista:          { p:16,   c:8,    z:4,    g:55,   f:8,    kcal:610, fonte:"Media frutta secca (stima)*" },
+  ing_pinoli:         { p:31.9, c:4,    z:3.9,  g:50.3, f:4.53, kcal:595, fonte:"Pinoli" },
+  ing_anacardi:       { p:18.1, c:8.1,  z:4.5,  g:56.1, f:10.6, kcal:608, fonte:"Pistacchi (analogo)*" },
+  ing_nocciole:       { p:13.8, c:6.1,  z:4.1,  g:64.1, f:8.1,  kcal:655, fonte:"Nocciole secche" },
+  // ── 🧂 Dispensa ─────────────────────────────────────────────────
+  ing_evo:            { p:0,    c:0,    z:0,    g:99.9, f:0,    kcal:899, fonte:"Olio di oliva extra vergine" },
+  ing_miele:          { p:0.6,  c:80.3, z:80.3, g:0,    f:0,    kcal:304, fonte:"Miele" },
+  ing_passata:        { p:1.3,  c:3,    z:3,    g:0.2,  f:1.5,  kcal:18,  fonte:"Pomodori, passata" },
+  ing_spezie:         { p:3,    c:5,    z:2,    g:2,    f:10,   kcal:50,  fonte:"Spezie/erbe (stima)*" },
+  ing_brodo:          { p:0.4,  c:0.4,  z:0,    g:0.2,  f:0,    kcal:4,   fonte:"Brodo vegetale liquido pronto (stima)*" },
+  ing_lievito:        { p:12.1, c:1.1,  z:1.1,  g:0.4,  f:6.9,  kcal:56,  fonte:"Lievito di birra compresso" },
+  ing_olive:          { p:1.6,  c:0.8,  z:0.8,  g:25.1, f:3.9,  kcal:235, fonte:"Olive nere" },
+  ing_pomodori_secchi:{ p:3.9,  c:20.4, z:20.4, g:0.4,  f:2,    kcal:96,  fonte:"Pomodori, conserva*" },
+  ing_aceto:          { p:0,    c:0,    z:0,    g:0,    f:0,    kcal:4,   fonte:"Aceto (stima)*" },
+  ing_salsa_soia:     { p:8.7,  c:8.3,  z:8.3,  g:0,    f:0,    kcal:66,  fonte:"Soia, salsa" },
+  ing_concentrato:    { p:3.9,  c:20.4, z:20.4, g:0.4,  f:2,    kcal:96,  fonte:"Pomodori, conserva" },
+  ing_senape:         { p:7,    c:9,    z:3,    g:8,    f:3,    kcal:140, fonte:"Senape (stima)*" },
+  ing_capperi:        { p:2.4,  c:2.4,  z:2.2,  g:0.2,  f:3.2,  kcal:25,  fonte:"Capperi (stima da verdura)*" },
+  ing_basilico:       { p:3.1,  c:5.1,  z:5.1,  g:0.8,  f:0,    kcal:39,  fonte:"Basilico" },
+  ing_prezzemolo:     { p:3.7,  c:0,    z:0,    g:0.6,  f:5,    kcal:20,  fonte:"Prezzemolo" },
+  ing_zenzero:        { p:1.8,  c:15,   z:2,    g:0.8,  f:2,    kcal:80,  fonte:"Zenzero (stima)*" },
+  ing_cannella:       { p:3,    c:5,    z:2,    g:2,    f:10,   kcal:50,  fonte:"Spezie dolci (stima)*" },
+  ing_rosmarino:      { p:1.4,  c:13.5, z:0,    g:4.4,  f:0,    kcal:96,  fonte:"Rosmarino" },
+  ing_peperoncino:    { p:1.8,  c:3.8,  z:1.5,  g:0.5,  f:0,    kcal:26,  fonte:"Peperoncini piccanti" },
+  ing_olio_semi:      { p:0,    c:0,    z:0,    g:99.9, f:0,    kcal:899, fonte:"Olii vegetali" },
+  ing_cacao:          { p:20.4, c:11.5, z:0,    g:25.6, f:0,    kcal:355, fonte:"Cacao amaro in polvere" },
+  ing_sesamo:         { p:18.1, c:8.1,  z:4.5,  g:56.1, f:10.6, kcal:608, fonte:"Semi (analogo frutta secca)*" },
+  // ── 🛒 Altro ────────────────────────────────────────────────────
+  ing_altro:          { p:0,    c:0,    z:0,    g:0,    f:0,    kcal:0,   fonte:"Voce generica, nessun dato*" },
+};
+
+// ─── Fusione valori nutrizionali negli ingredienti ───────────────────
+// Aggiunge a ogni ingrediente il campo .nutri con i valori per 100 g
+// di parte edibile (p, c, z, g, f, kcal). Vedi NUTRI sopra per la fonte.
+INGREDIENTS.forEach(i => { i.nutri = NUTRI[i.id] || null; });
+
+// Helper: valori nutrizionali per una quantità in grammi di un ingrediente
+function nutriPerGrammi(ingId, grammi) {
+  const n = (ING_MAP[ingId] || {}).nutri;
+  if (!n || !grammi) return { p:0, c:0, z:0, g:0, f:0, kcal:0 };
+  const k = grammi / 100;
+  return {
+    p:    +(n.p    * k).toFixed(1),
+    c:    +(n.c    * k).toFixed(1),
+    z:    +(n.z    * k).toFixed(1),
+    g:    +(n.g    * k).toFixed(1),
+    f:    +(n.f    * k).toFixed(1),
+    kcal: Math.round(n.kcal * k),
+  };
+}
 
 const ING_MAP = Object.fromEntries(INGREDIENTS.map(i => [i.id, i]));
 
@@ -331,7 +515,7 @@ const ING_QTY = {
   pra_05: { ing_riso:{uomo:90,donna:65,bimbo:35,unit:"g"}, ing_salmone:{uomo:180,donna:130,bimbo:70,unit:"g"}, ing_zucchine:{uomo:200,donna:200,bimbo:100,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   pra_06: { ing_pasta:{uomo:100,donna:70,bimbo:50,unit:"g"}, ing_pomodori:{uomo:200,donna:200,bimbo:100,unit:"g"}, ing_mozzarella:{uomo:80,donna:50,bimbo:30,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   pra_07: { ing_uova:{uomo:3,donna:2,bimbo:1,unit:"pz"}, ing_zucchine:{uomo:80,donna:80,bimbo:40,unit:"g"}, ing_spinaci:{uomo:70,donna:70,bimbo:40,unit:"g"}, ing_insalata:{uomo:60,donna:60,bimbo:30,unit:"g"}, ing_pane:{uomo:40,donna:30,bimbo:20,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
-  pra_08: { ing_pollo:{uomo:180,donna:130,bimbo:70,unit:"g"}, ing_avocado:{uomo:0.5,donna:0.25,bimbo:0,unit:"pz"}, ing_pomodori:{uomo:150,donna:150,bimbo:80,unit:"g"}, ing_insalata:{uomo:50,donna:50,bimbo:30,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
+  pra_08: { ing_pollo:{uomo:180,donna:130,bimbo:70,unit:"g"}, ing_avocado:{uomo:0.5,donna:0.25,bimbo:0,unit:"pz"}, ing_pomodori:{uomo:150,donna:150,bimbo:80,unit:"g"}, ing_insalata:{uomo:50,donna:50,bimbo:30,unit:"g"}, ing_pane:{uomo:60,donna:45,bimbo:25,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   pra_09: { ing_merluzzo:{uomo:220,donna:160,bimbo:80,unit:"g"}, ing_riso:{uomo:90,donna:65,bimbo:40,unit:"g"}, ing_broccoli:{uomo:250,donna:250,bimbo:120,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   pra_10: { ing_ceci:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_spinaci:{uomo:80,donna:80,bimbo:40,unit:"g"}, ing_feta:{uomo:30,donna:20,bimbo:10,unit:"g"}, ing_pomodori_secchi:{uomo:40,donna:30,bimbo:15,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   pra_11: { ing_pane:{uomo:80,donna:60,bimbo:40,unit:"g"}, ing_pollo:{uomo:160,donna:120,bimbo:60,unit:"g"}, ing_peperone:{uomo:80,donna:80,bimbo:40,unit:"g"}, ing_zucchine:{uomo:70,donna:70,bimbo:40,unit:"g"}, ing_ceci:{uomo:50,donna:30,bimbo:0,unit:"g"} },
@@ -353,15 +537,15 @@ const ING_QTY = {
   col_12: { ing_pane:{uomo:80,donna:60,bimbo:30,unit:"g"}, ing_fiocchi_latte:{uomo:100,donna:80,bimbo:50,unit:"g"}, ing_fragole:{uomo:80,donna:80,bimbo:40,unit:"g"}, ing_miele:{uomo:8,donna:0,bimbo:0,unit:"g"} },
   col_13: { ing_mango:{uomo:150,donna:100,bimbo:80,unit:"g"}, ing_banana:{uomo:1,donna:0.5,bimbo:0.5,unit:"pz"}, ing_yogurt:{uomo:150,donna:120,bimbo:70,unit:"g"}, ing_avena:{uomo:30,donna:25,bimbo:15,unit:"g"}, ing_mista:{uomo:15,donna:10,bimbo:0,unit:"g"} },
   col_14: { ing_avena:{uomo:80,donna:60,bimbo:30,unit:"g"}, ing_latte:{uomo:250,donna:200,bimbo:150,unit:"ml"}, ing_zucca:{uomo:100,donna:80,bimbo:50,unit:"g"}, ing_miele:{uomo:8,donna:0,bimbo:0,unit:"g"} },
-  col_15: { ing_uova:{uomo:3,donna:2,bimbo:1,unit:"pz"}, ing_spinaci:{uomo:80,donna:80,bimbo:40,unit:"g"}, ing_feta:{uomo:40,donna:25,bimbo:15,unit:"g"}, ing_pomodori:{uomo:80,donna:80,bimbo:0,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
-  col_16: { ing_yogurt:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_pesche:{uomo:1,donna:1,bimbo:0.5,unit:"pz"}, ing_pistacchi:{uomo:20,donna:15,bimbo:8,unit:"g"}, ing_miele:{uomo:8,donna:0,bimbo:0,unit:"g"} },
+  col_15: { ing_uova:{uomo:3,donna:2,bimbo:1,unit:"pz"}, ing_spinaci:{uomo:80,donna:80,bimbo:40,unit:"g"}, ing_feta:{uomo:40,donna:25,bimbo:15,unit:"g"}, ing_pomodori:{uomo:80,donna:80,bimbo:0,unit:"g"}, ing_pane:{uomo:60,donna:45,bimbo:25,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
+  col_16: { ing_yogurt:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_pesche:{uomo:1,donna:1,bimbo:0.5,unit:"pz"}, ing_pistacchi:{uomo:20,donna:15,bimbo:8,unit:"g"}, ing_avena:{uomo:50,donna:35,bimbo:20,unit:"g"}, ing_miele:{uomo:8,donna:0,bimbo:0,unit:"g"} },
   col_17: { ing_avena:{uomo:60,donna:45,bimbo:25,unit:"g"}, ing_uova:{uomo:2,donna:1,bimbo:1,unit:"pz"}, ing_albicocche:{uomo:3,donna:2,bimbo:1,unit:"pz"}, ing_miele:{uomo:8,donna:0,bimbo:0,unit:"g"} },
   col_18: { ing_pane:{uomo:80,donna:60,bimbo:30,unit:"g"}, ing_bm:{uomo:20,donna:15,bimbo:8,unit:"g"}, ing_banana:{uomo:1,donna:0.5,bimbo:0.5,unit:"pz"} },
-  col_19: { ing_fiocchi_latte:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_kiwi:{uomo:2,donna:1,bimbo:1,unit:"pz"}, ing_noci:{uomo:20,donna:15,bimbo:8,unit:"g"}, ing_miele:{uomo:8,donna:0,bimbo:0,unit:"g"} },
+  col_19: { ing_fiocchi_latte:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_kiwi:{uomo:2,donna:1,bimbo:1,unit:"pz"}, ing_noci:{uomo:20,donna:15,bimbo:8,unit:"g"}, ing_avena:{uomo:50,donna:35,bimbo:20,unit:"g"}, ing_miele:{uomo:8,donna:0,bimbo:0,unit:"g"} },
   col_20: { ing_avena:{uomo:70,donna:55,bimbo:30,unit:"g"}, ing_latte:{uomo:250,donna:200,bimbo:150,unit:"ml"}, ing_castagne:{uomo:60,donna:40,bimbo:25,unit:"g"}, ing_cacao:{uomo:5,donna:5,bimbo:0,unit:"g"}, ing_miele:{uomo:8,donna:0,bimbo:0,unit:"g"} },
   col_21: { ing_uova:{uomo:3,donna:2,bimbo:1,unit:"pz"}, ing_salmone_aff:{uomo:80,donna:60,bimbo:30,unit:"g"}, ing_pane:{uomo:60,donna:40,bimbo:25,unit:"g"}, ing_evo:{uomo:0.5,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   col_22: { ing_yogurt:{uomo:150,donna:120,bimbo:70,unit:"g"}, ing_fragole:{uomo:100,donna:80,bimbo:50,unit:"g"}, ing_avena:{uomo:40,donna:30,bimbo:20,unit:"g"}, ing_latte:{uomo:150,donna:100,bimbo:80,unit:"ml"}, ing_miele:{uomo:8,donna:0,bimbo:0,unit:"g"} },
-  col_23: { ing_avena:{uomo:80,donna:60,bimbo:30,unit:"g"}, ing_uova:{uomo:2,donna:1,bimbo:1,unit:"pz"}, ing_mirtilli:{uomo:80,donna:60,bimbo:40,unit:"g"}, ing_latte:{uomo:100,donna:80,bimbo:60,unit:"ml"}, ing_miele:{uomo:8,donna:0,bimbo:0,unit:"g"} },
+  col_23: { ing_avena:{uomo:80,donna:60,bimbo:30,unit:"g"}, ing_yogurt:{uomo:120,donna:90,bimbo:50,unit:"g"}, ing_mirtilli:{uomo:80,donna:60,bimbo:40,unit:"g"}, ing_latte:{uomo:100,donna:80,bimbo:60,unit:"ml"}, ing_miele:{uomo:8,donna:0,bimbo:0,unit:"g"} },
   col_24: { ing_pane:{uomo:80,donna:60,bimbo:30,unit:"g"}, ing_ricotta:{uomo:80,donna:60,bimbo:30,unit:"g"}, ing_uva:{uomo:80,donna:60,bimbo:40,unit:"g"}, ing_miele:{uomo:8,donna:0,bimbo:0,unit:"g"} },
   // ── Nuovi spuntini ───────────────────────────────────────────────
   spu_13: { ing_mango:{uomo:150,donna:120,bimbo:80,unit:"g"}, ing_pistacchi:{uomo:20,donna:15,bimbo:8,unit:"g"} },
@@ -389,15 +573,15 @@ const ING_QTY = {
   pra_22: { ing_grano_sarac:{uomo:90,donna:65,bimbo:35,unit:"g"}, ing_funghi:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_spinaci:{uomo:80,donna:80,bimbo:40,unit:"g"}, ing_noci:{uomo:20,donna:15,bimbo:0,unit:"g"}, ing_aglio:{uomo:1,donna:1,bimbo:0,unit:"pz"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   pra_23: { ing_lenticchie:{uomo:150,donna:120,bimbo:70,unit:"g"}, ing_carote:{uomo:150,donna:120,bimbo:80,unit:"g"}, ing_cipolla:{uomo:60,donna:50,bimbo:30,unit:"g"}, ing_limone:{uomo:0.5,donna:0.5,bimbo:0,unit:"pz"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   pra_24: { ing_cavolfiore:{uomo:300,donna:250,bimbo:150,unit:"g"}, ing_ceci:{uomo:150,donna:100,bimbo:60,unit:"g"}, ing_limone:{uomo:0.5,donna:0.5,bimbo:0,unit:"pz"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
-  pra_25: { ing_pollo:{uomo:180,donna:130,bimbo:70,unit:"g"}, ing_radicchio:{uomo:100,donna:100,bimbo:60,unit:"g"}, ing_noci:{uomo:20,donna:15,bimbo:8,unit:"g"}, ing_arancia:{uomo:1,donna:1,bimbo:0.5,unit:"pz"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
+  pra_25: { ing_pollo:{uomo:180,donna:130,bimbo:70,unit:"g"}, ing_radicchio:{uomo:100,donna:100,bimbo:60,unit:"g"}, ing_noci:{uomo:20,donna:15,bimbo:8,unit:"g"}, ing_arancia:{uomo:1,donna:1,bimbo:0.5,unit:"pz"}, ing_farro:{uomo:70,donna:50,bimbo:30,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   pra_26: { ing_pasta:{uomo:100,donna:70,bimbo:50,unit:"g"}, ing_baccala:{uomo:180,donna:130,bimbo:70,unit:"g"}, ing_broccoli:{uomo:200,donna:200,bimbo:120,unit:"g"}, ing_aglio:{uomo:2,donna:1,bimbo:0,unit:"pz"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   pra_27: { ing_riso:{uomo:90,donna:65,bimbo:35,unit:"g"}, ing_tofu:{uomo:180,donna:130,bimbo:80,unit:"g"}, ing_piselli:{uomo:80,donna:60,bimbo:40,unit:"g"}, ing_cipolla:{uomo:60,donna:50,bimbo:30,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
-  pra_28: { ing_lattuga:{uomo:80,donna:80,bimbo:50,unit:"g"}, ing_tonno:{uomo:160,donna:120,bimbo:60,unit:"g"}, ing_datterini:{uomo:150,donna:120,bimbo:80,unit:"g"}, ing_capperi:{uomo:20,donna:15,bimbo:0,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
+  pra_28: { ing_lattuga:{uomo:80,donna:80,bimbo:50,unit:"g"}, ing_tonno:{uomo:160,donna:120,bimbo:60,unit:"g"}, ing_datterini:{uomo:150,donna:120,bimbo:80,unit:"g"}, ing_fagioli:{uomo:120,donna:90,bimbo:50,unit:"g"}, ing_capperi:{uomo:20,donna:15,bimbo:0,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   // ── Nuove cene ──────────────────────────────────────────────────
   cen_13: { ing_agnello:{uomo:220,donna:160,bimbo:80,unit:"g"}, ing_patatedolci:{uomo:200,donna:150,bimbo:100,unit:"g"}, ing_aglio:{uomo:2,donna:1,bimbo:0,unit:"pz"}, ing_rosmarino:{uomo:2,donna:2,bimbo:1,unit:"pz"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   cen_14: { ing_gamberi:{uomo:220,donna:160,bimbo:80,unit:"g"}, ing_riso:{uomo:90,donna:65,bimbo:35,unit:"g"}, ing_aglio:{uomo:1,donna:1,bimbo:0,unit:"pz"}, ing_salsa_soia:{uomo:12,donna:8,bimbo:0,unit:"ml"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   cen_15: { ing_anatra:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_cavolo:{uomo:200,donna:180,bimbo:100,unit:"g"}, ing_mela:{uomo:1,donna:0.5,bimbo:0,unit:"pz"}, ing_aceto:{uomo:15,donna:10,bimbo:0,unit:"ml"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
-  cen_16: { ing_salmone:{uomo:220,donna:160,bimbo:80,unit:"g"}, ing_asparagi:{uomo:250,donna:220,bimbo:120,unit:"g"}, ing_sesamo:{uomo:8,donna:5,bimbo:0,unit:"g"}, ing_limone:{uomo:0.5,donna:0.5,bimbo:0,unit:"pz"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
+  cen_16: { ing_salmone:{uomo:220,donna:160,bimbo:80,unit:"g"}, ing_asparagi:{uomo:250,donna:220,bimbo:120,unit:"g"}, ing_riso:{uomo:70,donna:50,bimbo:30,unit:"g"}, ing_sesamo:{uomo:8,donna:5,bimbo:0,unit:"g"}, ing_limone:{uomo:0.5,donna:0.5,bimbo:0,unit:"pz"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   cen_17: { ing_maiale:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_funghi:{uomo:150,donna:120,bimbo:80,unit:"g"}, ing_orzo:{uomo:80,donna:60,bimbo:35,unit:"g"}, ing_brodo:{uomo:300,donna:250,bimbo:150,unit:"ml"}, ing_cipolla:{uomo:60,donna:60,bimbo:30,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   cen_18: { ing_calamari:{uomo:250,donna:180,bimbo:90,unit:"g"}, ing_couscous:{uomo:80,donna:60,bimbo:30,unit:"g"}, ing_zucchine:{uomo:150,donna:150,bimbo:80,unit:"g"}, ing_limone:{uomo:0.5,donna:0.5,bimbo:0,unit:"pz"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   cen_19: { ing_pasta:{uomo:100,donna:70,bimbo:50,unit:"g"}, ing_melanzane:{uomo:200,donna:180,bimbo:100,unit:"g"}, ing_pomodori:{uomo:150,donna:120,bimbo:80,unit:"g"}, ing_mozzarella:{uomo:80,donna:50,bimbo:30,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
@@ -407,10 +591,287 @@ const ING_QTY = {
   cen_23: { ing_riso:{uomo:90,donna:65,bimbo:40,unit:"g"}, ing_zucca:{uomo:200,donna:160,bimbo:100,unit:"g"}, ing_porri:{uomo:1,donna:1,bimbo:0.5,unit:"pz"}, ing_brodo:{uomo:350,donna:300,bimbo:180,unit:"ml"}, ing_parmigiano:{uomo:15,donna:10,bimbo:8,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   cen_24: { ing_polpo:{uomo:250,donna:180,bimbo:90,unit:"g"}, ing_patate:{uomo:200,donna:150,bimbo:100,unit:"g"}, ing_limone:{uomo:0.5,donna:0.5,bimbo:0,unit:"pz"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   cen_25: { ing_tacchino_fettine:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_peperone:{uomo:150,donna:130,bimbo:80,unit:"g"}, ing_bulgur:{uomo:80,donna:60,bimbo:30,unit:"g"}, ing_cipolla:{uomo:60,donna:50,bimbo:30,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
-  cen_26: { ing_sgombro:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_finocchio:{uomo:200,donna:180,bimbo:100,unit:"g"}, ing_arancia:{uomo:1,donna:0.5,bimbo:0.5,unit:"pz"}, ing_limone:{uomo:0.5,donna:0.5,bimbo:0,unit:"pz"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
+  cen_26: { ing_sgombro:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_finocchio:{uomo:200,donna:180,bimbo:100,unit:"g"}, ing_arancia:{uomo:1,donna:0.5,bimbo:0.5,unit:"pz"}, ing_patate:{uomo:200,donna:150,bimbo:90,unit:"g"}, ing_limone:{uomo:0.5,donna:0.5,bimbo:0,unit:"pz"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
   cen_27: { ing_tacchino:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_patate:{uomo:200,donna:150,bimbo:100,unit:"g"}, ing_insalata:{uomo:60,donna:60,bimbo:40,unit:"g"}, ing_cipolla:{uomo:60,donna:50,bimbo:30,unit:"g"}, ing_senape:{uomo:10,donna:8,bimbo:0,unit:"g"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
-  cen_28: { ing_manzo_tagliata:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_insalata:{uomo:60,donna:60,bimbo:40,unit:"g"}, ing_parmigiano:{uomo:15,donna:10,bimbo:8,unit:"g"}, ing_aceto:{uomo:15,donna:10,bimbo:0,unit:"ml"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
+  cen_28: { ing_manzo_tagliata:{uomo:200,donna:150,bimbo:80,unit:"g"}, ing_insalata:{uomo:60,donna:60,bimbo:40,unit:"g"}, ing_parmigiano:{uomo:15,donna:10,bimbo:8,unit:"g"}, ing_pane:{uomo:60,donna:45,bimbo:30,unit:"g"}, ing_aceto:{uomo:15,donna:10,bimbo:0,unit:"ml"}, ing_evo:{uomo:1,donna:0.5,bimbo:0,unit:"cucchiaio"} },
 };
+
+// ─── Calcolo macro delle ricette dagli ingredienti ───────────────────
+// Converte le quantità di ING_QTY in grammi di parte edibile e somma
+// i valori nutrizionali via nutriPerGrammi().
+
+// Peso medio (g) della parte edibile per gli ingredienti venduti "a pezzo".
+const PESO_PEZZO = {
+  ing_uova:       50,   // un uovo medio senza guscio
+  ing_banana:     120,  // una banana media sbucciata
+  ing_mela:       150,  // una mela media edibile
+  ing_pera:       150,
+  ing_arancia:    160,
+  ing_mandarino:  70,
+  ing_kiwi:       80,
+  ing_pesche:     120,
+  ing_albicocche: 40,
+  ing_limone:     60,   // di norma se ne usa il succo/scorza: peso indicativo
+  ing_avocado:    140,  // polpa di mezzo/un avocado
+  ing_aglio:      5,    // uno spicchio
+  ing_sedano:     40,   // una costa
+  ing_porri:      100,  // un porro pulito
+  ing_rosmarino:  3,    // un rametto
+};
+
+// Fattori di conversione → grammi. "g" e "ml" ≈ 1:1; il cucchiaio è
+// usato solo per l'olio EVO (~10 g a cucchiaio).
+function quantitaInGrammi(ingId, valore, unit) {
+  if (!valore) return 0;
+  switch (unit) {
+    case "g":          return valore;
+    case "ml":         return valore;                       // densità ≈ 1
+    case "cucchiaio":  return valore * 10;                   // 1 cucchiaio ≈ 10 g
+    case "cucchiaino": return valore * 5;
+    case "pz":         return valore * (PESO_PEZZO[ingId] || 100);
+    default:           return valore;
+  }
+}
+
+// Macro di una ricetta per una persona ("uomo" | "donna" | "bimbo"),
+// calcolati sommando gli ingredienti. Restituisce null se mancano le
+// quantità per quella ricetta.
+function macroRicettaCalc(ricettaId, persona) {
+  const qty = ING_QTY[ricettaId];
+  if (!qty) return null;
+  const tot = { p:0, c:0, z:0, g:0, f:0, kcal:0 };
+  for (const [ingId, q] of Object.entries(qty)) {
+    const grammi = quantitaInGrammi(ingId, q[persona], q.unit);
+    const n = nutriPerGrammi(ingId, grammi);
+    tot.p += n.p; tot.c += n.c; tot.z += n.z;
+    tot.g += n.g; tot.f += n.f; tot.kcal += n.kcal;
+  }
+  return {
+    p:    Math.round(tot.p),
+    c:    Math.round(tot.c),
+    z:    Math.round(tot.z),
+    g:    Math.round(tot.g),
+    f:    Math.round(tot.f),
+    kcal: Math.round(tot.kcal),
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MOTORE DI SCALING DELLE PORZIONI
+// ═══════════════════════════════════════════════════════════════════
+// Dato il fabbisogno (personaTarget da calcTargetAdattivo) e i pasti
+// del giorno, ricalcola le quantità di ING_QTY perché i totali del
+// giorno aderiscano a kcal, proteine, carboidrati e grassi.
+// Ogni ingrediente ha un fattore di scala proprio, ottimizzato per
+// discesa iterativa sui 4 macro; condimenti e aromi restano quasi
+// fissi grazie a un'elasticità ridotta.
+// ═══════════════════════════════════════════════════════════════════
+
+// Elasticità (min/max sul fattore) in base alla categoria.
+function elasticitaIngrediente(ing) {
+  if (!ing) return { min: 0.9, max: 1.15 };
+  switch (ing.cat) {
+    case "🥩 Proteine":     return { min: 0.55, max: 1.8 };
+    case "🥛 Latticini":    return { min: 0.55, max: 1.8 };
+    case "🌾 Cereali":      return { min: 0.5,  max: 2.5 };
+    case "🫘 Legumi":       return { min: 0.5,  max: 2.5 };
+    case "🥦 Verdure":      return { min: 0.6,  max: 1.6 };
+    case "🍎 Frutta":       return { min: 0.6,  max: 1.6 };
+    case "🥜 Frutta secca": return { min: 0.5,  max: 1.5 };
+    case "🧂 Dispensa":     return { min: 0.85, max: 1.2 };
+    case "🛒 Altro":        return { min: 0.85, max: 1.2 };
+    default:                return { min: 0.9,  max: 1.15 };
+  }
+}
+
+// Limiti assoluti per singolo ingrediente (g di parte edibile).
+// Limiti assoluti per singolo ingrediente (g di parte edibile).
+// I massimi coprono porzioni abbondanti per fabbisogni alti (uomo
+// molto attivo); i minimi restano contenuti per i bambini. Tetti
+// troppo bassi impediscono al motore di centrare target elevati.
+const LIMITI_SCALING = {
+  ing_pasta:{min:35,max:180}, ing_riso:{min:35,max:180},
+  ing_pasta_fresca:{min:45,max:200}, ing_riso_venere:{min:35,max:180},
+  ing_farro:{min:35,max:170}, ing_orzo:{min:35,max:170},
+  ing_quinoa:{min:35,max:170}, ing_bulgur:{min:35,max:170},
+  ing_couscous:{min:35,max:170}, ing_avena:{min:20,max:150},
+  ing_pane:{min:20,max:160},
+  ing_evo:{min:4,max:30}, ing_olio_semi:{min:4,max:30},
+};
+
+function clampScale(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+// Sceglie la taglia base (uomo/donna/bimbo) più vicina al target kcal.
+function scegliTagliaBase(pastiDelGiorno, target) {
+  const kcalBase = (persona) => {
+    let k = 0;
+    for (const ricetta of pastiDelGiorno) {
+      const qty = ING_QTY[ricetta.id];
+      if (!qty) continue;
+      for (const [ingId, v] of Object.entries(qty)) {
+        k += nutriPerGrammi(ingId, quantitaInGrammi(ingId, v[persona], v.unit)).kcal;
+      }
+    }
+    return k;
+  };
+  let migliore = "donna", minDiff = Infinity;
+  for (const persona of ["uomo", "donna", "bimbo"]) {
+    const diff = Math.abs(kcalBase(persona) - target.kcal);
+    if (diff < minDiff) { minDiff = diff; migliore = persona; }
+  }
+  return migliore;
+}
+
+// scalaPastiGiorno(pastiDelGiorno, target, personaBase?)
+//   pastiDelGiorno : array di ricette (oggetti del DB) del giorno
+//   target         : { kcal, p, c, g }
+//   personaBase    : opzionale; se assente, scelta automatica
+// Ritorna { perRicetta, totali, totaliBase, tagliaBase }.
+function scalaPastiGiorno(pastiDelGiorno, target, personaBase) {
+  if (!personaBase) personaBase = scegliTagliaBase(pastiDelGiorno, target);
+
+  const items = [];
+  for (const ricetta of pastiDelGiorno) {
+    const qty = ricetta && ING_QTY[ricetta.id];
+    if (!qty) continue;
+    for (const [ingId, v] of Object.entries(qty)) {
+      const gBase = quantitaInGrammi(ingId, v[personaBase], v.unit);
+      if (gBase <= 0) continue;
+      const ing = ING_MAP[ingId];
+      const n = (ing && ing.nutri) || { p:0, c:0, g:0, kcal:0 };
+      items.push({
+        ricettaId: ricetta.id, ingId, unit: v.unit,
+        gBase, fattore: 1,
+        el: elasticitaIngrediente(ing),
+        lim: LIMITI_SCALING[ingId] || null,
+        pPg: n.p/100, cPg: n.c/100, gPg: n.g/100, kPg: n.kcal/100,
+      });
+    }
+  }
+  if (!items.length) {
+    return { perRicetta:{}, totali:{kcal:0,p:0,c:0,g:0}, totaliBase:{kcal:0,p:0,c:0,g:0}, tagliaBase:personaBase };
+  }
+
+  const grammiDi = (it) => {
+    let g = it.gBase * it.fattore;
+    g = clampScale(g, it.gBase * it.el.min, it.gBase * it.el.max);
+    if (it.lim) g = clampScale(g, it.lim.min, it.lim.max);
+    return g;
+  };
+  const totali = () => {
+    const t = { kcal:0, p:0, c:0, g:0 };
+    for (const it of items) {
+      const g = grammiDi(it);
+      t.p += it.pPg*g; t.c += it.cPg*g; t.g += it.gPg*g; t.kcal += it.kPg*g;
+    }
+    return t;
+  };
+
+  const totBase = totali();
+
+  // Ottimizzazione a gradiente sull'errore quadratico dei macro.
+  // Concettualmente: ogni ricetta è una SOMMATORIA di ingredienti, e
+  // ogni ingrediente può variare indipendentemente. Definiamo
+  //   L = wp·(p_tot/p_target - 1)² + wc·(c_tot/c_target - 1)² + wg·(g_tot/g_target - 1)²
+  // e muoviamo ogni fattore lungo -∂L/∂f. La derivata è proporzionale
+  // al contributo dell'ingrediente al macro in errore: un cibo molto
+  // proteico riceve una spinta forte quando le proteine sono in eccesso
+  // o in difetto, mentre i grassi lo influenzano solo in proporzione
+  // al suo contenuto di grassi reale.
+  // Questo permette al motore di RIBILANCIARE INTERNAMENTE una ricetta:
+  // a parità di kcal, alza il riso e abbassa il salmone se servono più
+  // carbo e meno grassi (la ricetta è la somma dei suoi ingredienti).
+  const W = { p:1.2, c:1.0, g:1.0 };       // pesi macro
+  const PASSO = 0.35, MAX_ITER = 60;
+  let prevLoss = Infinity;
+  for (let iter = 0; iter < MAX_ITER; iter++) {
+    const t = totali();
+    // errori relativi (target/attuale - 1), invertiti perché derivare in fattore
+    // crescente significa aumentare il macro
+    const eP = t.p > 0 ? (target.p - t.p) / target.p : 0;
+    const eC = t.c > 0 ? (target.c - t.c) / target.c : 0;
+    const eG = t.g > 0 ? (target.g - t.g) / target.g : 0;
+    // loss per controllo convergenza
+    const loss = W.p*eP*eP + W.c*eC*eC + W.g*eG*eG;
+    // spinta per ingrediente: somma dei contributi normalizzati × errore × peso
+    let maxDelta = 0;
+    for (const it of items) {
+      const g = grammiDi(it);
+      // contributo dell'ingrediente al macro corrente / target macro
+      const dP = (it.pPg * g) / Math.max(target.p, 1);
+      const dC = (it.cPg * g) / Math.max(target.c, 1);
+      const dG = (it.gPg * g) / Math.max(target.g, 1);
+      // gradiente: ∂L/∂f scala come (-2)·Σ(macro_target·err·dM/df)/target
+      // semplifichiamo in una spinta proporzionale all'errore pesata sul contributo
+      const spinta = W.p*eP*dP + W.c*eC*dC + W.g*eG*dG;
+      // normalizziamo per il "peso totale" dell'ingrediente nei macro
+      // così uno yogurt e un cucchiaio d'olio ricevono spinte di scala simile
+      const peso = W.p*dP + W.c*dC + W.g*dG;
+      if (peso < 1e-9) continue;
+      const delta = (spinta / peso) * PASSO;
+      const nuovoF = it.fattore * (1 + delta);
+      maxDelta = Math.max(maxDelta, Math.abs(nuovoF - it.fattore));
+      it.fattore = nuovoF;
+    }
+    // convergenza: loss che smette di scendere o passi piccolissimi
+    if (maxDelta < 0.002) break;
+    if (iter > 8 && loss > prevLoss * 0.999) break;
+    prevLoss = loss;
+  }
+
+  const perRicetta = {};
+  for (const it of items) {
+    const g = grammiDi(it);
+    if (!perRicetta[it.ricettaId]) perRicetta[it.ricettaId] = {};
+    let val;
+    if (it.unit === "g" || it.unit === "ml") {
+      val = Math.max(5, Math.round(g / 5) * 5);
+    } else {
+      const perUnit = quantitaInGrammi(it.ingId, 1, it.unit) || 1;
+      val = Math.round((g / perUnit) * 2) / 2;
+    }
+    perRicetta[it.ricettaId][it.ingId] = { valore: val, unit: it.unit };
+  }
+
+  const totFin = totali();
+  const round = (o) => ({ kcal:Math.round(o.kcal), p:Math.round(o.p), c:Math.round(o.c), g:Math.round(o.g) });
+  return { perRicetta, totali: round(totFin), totaliBase: round(totBase), tagliaBase: personaBase };
+}
+
+// Macro di UNA ricetta data una mappa di quantità {ingId:{valore,unit}}.
+function macroDaQuantita(quantitaMap) {
+  const tot = { kcal:0, p:0, c:0, g:0 };
+  for (const [ingId, q] of Object.entries(quantitaMap || {})) {
+    const grammi = quantitaInGrammi(ingId, q.valore, q.unit);
+    const n = nutriPerGrammi(ingId, grammi);
+    tot.kcal += n.kcal; tot.p += n.p; tot.c += n.c; tot.g += n.g;
+  }
+  return { kcal:Math.round(tot.kcal), p:Math.round(tot.p), c:Math.round(tot.c), g:Math.round(tot.g) };
+}
+
+// Trasforma una mappa di quantità {ingId:{valore,unit}} in testo leggibile,
+// es. "255g yogurt greco · 110g avena · 130g frutti di bosco".
+// Usata per mostrare le porzioni personalizzate nella scheda pasto.
+function formattaPorzione(quantitaMap) {
+  const pezzi = [];
+  for (const [ingId, q] of Object.entries(quantitaMap || {})) {
+    const ing = ING_MAP[ingId];
+    const nome = ing ? ing.nome.toLowerCase() : ingId;
+    let qta;
+    if (q.unit === "g" || q.unit === "ml") {
+      qta = Math.round(q.valore) + q.unit;
+    } else if (q.unit === "cucchiaio" || q.unit === "cucchiaino") {
+      const n = q.valore;
+      qta = (n === 0.5 ? "½" : n) + " " + q.unit + (n > 1 ? "i" : "");
+    } else if (q.unit === "pz") {
+      qta = (q.valore === 0.5 ? "½" : q.valore) + " pz";
+    } else {
+      qta = q.valore + " " + q.unit;
+    }
+    pezzi.push(qta + " " + nome);
+  }
+  return pezzi.join(" · ");
+}
 
 const DB = {
   colazione: [
@@ -457,11 +918,11 @@ const DB = {
     { id:"col_14", prep:8,  nome:"Porridge di avena con zucca e cannella", ingredients:["ing_avena","ing_latte","ing_zucca","ing_cannella","ing_miele"],
       porzioni:{uomo:"80g avena · 250ml latte · 100g zucca cotta · cannella · 1 cucchiaino miele",donna:"60g avena · 200ml latte · 80g zucca · cannella",bimbo:"30g avena · 150ml latte · 50g zucca"},
       uomo:{kcal:430,p:18,c:62,g:10},donna:{kcal:315,p:14,c:46,g:8},bimbo:{kcal:185,p:7,c:28,g:5}},
-    { id:"col_15", prep:12, nome:"Frittata al forno con verdure e feta", ingredients:["ing_uova","ing_spinaci","ing_feta","ing_pomodori","ing_evo"],
-      porzioni:{uomo:"3 uova · 80g spinaci · 40g feta · 80g pomodorini · 1 cucchiaio EVO",donna:"2 uova · 80g spinaci · 25g feta · 80g pomodorini",bimbo:"1 uovo · 40g spinaci · 15g feta"},
+    { id:"col_15", prep:12, nome:"Frittata al forno con verdure e feta", ingredients:["ing_uova","ing_spinaci","ing_feta","ing_pomodori","ing_pane","ing_evo"],
+      porzioni:{uomo:"3 uova · 80g spinaci · 40g feta · 80g pomodorini · 60g pane · 1 cucchiaio EVO",donna:"2 uova · 80g spinaci · 25g feta · 80g pomodorini · 45g pane",bimbo:"1 uovo · 40g spinaci · 15g feta · 25g pane"},
       uomo:{kcal:410,p:30,c:8,g:28},donna:{kcal:290,p:22,c:6,g:20},bimbo:{kcal:165,p:9,c:4,g:11}},
-    { id:"col_16", prep:5,  nome:"Yogurt greco con pesche e pistacchi", ingredients:["ing_yogurt","ing_pesche","ing_pistacchi","ing_miele"],
-      porzioni:{uomo:"200g yogurt · 1 pesca · 20g pistacchi · 1 cucchiaino miele",donna:"150g yogurt · 1 pesca · 15g pistacchi",bimbo:"80g yogurt · ½ pesca · 8g pistacchi"},
+    { id:"col_16", prep:5,  nome:"Yogurt greco con pesche e pistacchi", ingredients:["ing_yogurt","ing_pesche","ing_pistacchi","ing_avena","ing_miele"],
+      porzioni:{uomo:"200g yogurt · 1 pesca · 20g pistacchi · 50g avena · 1 cucchiaino miele",donna:"150g yogurt · 1 pesca · 15g pistacchi · 35g avena",bimbo:"80g yogurt · ½ pesca · 8g pistacchi · 20g avena"},
       uomo:{kcal:385,p:26,c:32,g:14},donna:{kcal:280,p:20,c:25,g:10},bimbo:{kcal:155,p:7,c:16,g:6}},
     { id:"col_17", prep:15, nome:"Pancakes di avena con albicocche caramellate", ingredients:["ing_avena","ing_uova","ing_albicocche","ing_miele"],
       porzioni:{uomo:"60g avena · 2 uova · pizzico bicarbonato · sale → pastella. In padella a parte: 3 albicocche a metà con 1 cucchiaino miele, 2 min per lato. Impila pancakes e appoggia le albicocche sopra",donna:"45g avena · 1 uovo · 2 albicocche caramellate",bimbo:"25g avena · 1 uovo · 1 albicocca a fettine fresche (non caramellate)"},
@@ -469,8 +930,8 @@ const DB = {
     { id:"col_18", prep:5,  nome:"Pane integrale con burro di mandorle e banana", ingredients:["ing_pane","ing_bm","ing_banana"],
       porzioni:{uomo:"80g pane · 20g burro mandorle · 1 banana",donna:"60g pane · 15g burro mandorle · ½ banana",bimbo:"30g pane · 8g burro mandorle · ½ banana"},
       uomo:{kcal:455,p:16,c:62,g:14},donna:{kcal:320,p:12,c:44,g:10},bimbo:{kcal:185,p:5,c:28,g:5}},
-    { id:"col_19", prep:5,  nome:"Bowl proteica con fiocchi di latte, kiwi e noci", ingredients:["ing_fiocchi_latte","ing_kiwi","ing_noci","ing_miele"],
-      porzioni:{uomo:"200g fiocchi latte · 2 kiwi · 20g noci · 1 cucchiaino miele",donna:"150g fiocchi latte · 1 kiwi · 15g noci",bimbo:"80g fiocchi latte · 1 kiwi · 8g noci"},
+    { id:"col_19", prep:5,  nome:"Bowl proteica con fiocchi di latte, kiwi e noci", ingredients:["ing_fiocchi_latte","ing_kiwi","ing_noci","ing_avena","ing_miele"],
+      porzioni:{uomo:"200g fiocchi latte · 2 kiwi · 20g noci · 50g avena · 1 cucchiaino miele",donna:"150g fiocchi latte · 1 kiwi · 15g noci · 35g avena",bimbo:"80g fiocchi latte · 1 kiwi · 8g noci · 20g avena"},
       uomo:{kcal:390,p:30,c:30,g:14},donna:{kcal:275,p:22,c:20,g:10},bimbo:{kcal:160,p:8,c:16,g:6}},
     { id:"col_20", prep:8,  nome:"Porridge con castagne e cacao", ingredients:["ing_avena","ing_latte","ing_castagne","ing_cacao","ing_miele"],
       porzioni:{uomo:"70g avena · 250ml latte · 60g castagne cotte · 1 cucchiaino cacao · 1 cucchiaino miele",donna:"55g avena · 200ml latte · 40g castagne",bimbo:"30g avena · 150ml latte · 25g castagne"},
@@ -585,8 +1046,8 @@ const DB = {
     { id:"pra_07", prep:15, nome:"Frittata di verdure + insalata + pane", ingredients:["ing_uova","ing_zucchine","ing_spinaci","ing_insalata","ing_pane","ing_evo"],
       porzioni:{uomo:"3 uova · 150g verdure · 40g pane · 1 cucchiaio EVO",donna:"2 uova · 150g verdure · 30g pane · 1 cucchiaino EVO",bimbo:"1 uovo · 80g verdure · 20g pane"},
       uomo:{kcal:540,p:38,c:30,g:28},donna:{kcal:380,p:30,c:20,g:22},bimbo:{kcal:210,p:11,c:18,g:9}},
-    { id:"pra_08", prep:20, nome:"Insalata di pollo + avocado + pomodorini + rucola", ingredients:["ing_pollo","ing_avocado","ing_pomodori","ing_insalata","ing_evo"],
-      porzioni:{uomo:"180g pollo · ½ avocado · 150g pomodorini · rucola · 1 cucchiaio EVO",donna:"130g pollo · ¼ avocado · 150g pomodorini · rucola",bimbo:"70g pollo · pomodorini · 1 cucchiaino EVO"},
+    { id:"pra_08", prep:20, nome:"Insalata di pollo + avocado + pomodorini + rucola", ingredients:["ing_pollo","ing_avocado","ing_pomodori","ing_insalata","ing_pane","ing_evo"],
+      porzioni:{uomo:"180g pollo · ½ avocado · 150g pomodorini · rucola · 60g pane · 1 cucchiaio EVO",donna:"130g pollo · ¼ avocado · 150g pomodorini · rucola · 45g pane",bimbo:"70g pollo · pomodorini · 25g pane · 1 cucchiaino EVO"},
       uomo:{kcal:550,p:48,c:14,g:30},donna:{kcal:385,p:36,c:10,g:22},bimbo:{kcal:200,p:14,c:5,g:10}},
     { id:"pra_09", prep:25, nome:"Merluzzo al vapore + riso basmati + broccoli", ingredients:["ing_merluzzo","ing_riso","ing_broccoli","ing_evo"],
       porzioni:{uomo:"220g merluzzo · 90g riso · 250g broccoli · 1 cucchiaio EVO",donna:"160g merluzzo · 65g riso · 250g broccoli · 1 cucchiaino EVO",bimbo:"80g merluzzo · 40g riso · 120g broccoli"},
@@ -637,8 +1098,8 @@ const DB = {
     { id:"pra_24", prep:20, nome:"Cavolfiore arrosto con ceci e tahini", ingredients:["ing_cavolfiore","ing_ceci","ing_limone","ing_spezie","ing_evo"],
       porzioni:{uomo:"300g cavolfiore · 150g ceci · limone · spezie · 1 cucchiaio EVO",donna:"250g cavolfiore · 100g ceci · 1 cucchiaino EVO",bimbo:"150g cavolfiore · 60g ceci"},
       uomo:{kcal:510,p:28,c:56,g:16},donna:{kcal:355,p:20,c:40,g:12},bimbo:{kcal:200,p:9,c:28,g:6}},
-    { id:"pra_25", prep:20, nome:"Insalata di pollo con radicchio, noci e arancia", ingredients:["ing_pollo","ing_radicchio","ing_noci","ing_arancia","ing_evo"],
-      porzioni:{uomo:"180g pollo · radicchio · 20g noci · 1 arancia · EVO",donna:"130g pollo · radicchio · 15g noci · 1 arancia",bimbo:"70g pollo · radicchio · 8g noci"},
+    { id:"pra_25", prep:20, nome:"Insalata di pollo con radicchio, noci e arancia", ingredients:["ing_pollo","ing_radicchio","ing_noci","ing_arancia","ing_farro","ing_evo"],
+      porzioni:{uomo:"180g pollo · radicchio · 20g noci · 1 arancia · 70g farro · EVO",donna:"130g pollo · radicchio · 15g noci · 1 arancia · 50g farro",bimbo:"70g pollo · radicchio · 8g noci · 30g farro"},
       uomo:{kcal:520,p:46,c:22,g:24},donna:{kcal:365,p:34,c:16,g:18},bimbo:{kcal:215,p:14,c:10,g:10}},
     { id:"pra_26", prep:25, nome:"Pasta integrale con baccalà e broccoli", ingredients:["ing_pasta","ing_baccala","ing_broccoli","ing_aglio","ing_peperoncino","ing_evo"],
       porzioni:{uomo:"⚠️ Prep il giorno prima: tieni il baccalà in ammollo in acqua fredda 24-48h cambiando l'acqua ogni 8h. Al momento: 100g pasta · 180g baccalà dissalato a pezzi · 200g broccoli · aglio · peperoncino · EVO",donna:"70g pasta · 130g baccalà dissalato · 200g broccoli · EVO",bimbo:"50g pasta · 70g baccalà · 120g broccoli (senza peperoncino)"},
@@ -646,8 +1107,8 @@ const DB = {
     { id:"pra_27", prep:20, nome:"Riso basmati con tofu alla curcuma e piselli", ingredients:["ing_riso","ing_tofu","ing_piselli","ing_cipolla","ing_cannella","ing_evo"],
       porzioni:{uomo:"90g riso · 180g tofu · 80g piselli · cipolla · curcuma · EVO",donna:"65g riso · 130g tofu · 60g piselli · EVO",bimbo:"35g riso · 80g tofu · 40g piselli"},
       uomo:{kcal:535,p:28,c:66,g:14},donna:{kcal:375,p:20,c:48,g:10},bimbo:{kcal:220,p:10,c:32,g:6}},
-    { id:"pra_28", prep:15, nome:"Insalata di lattuga, tonno, datterini e capperi", ingredients:["ing_lattuga","ing_tonno","ing_datterini","ing_capperi","ing_evo","ing_limone"],
-      porzioni:{uomo:"insalata · 160g tonno · 150g datterini · 20g capperi · EVO · limone",donna:"insalata · 120g tonno · 120g datterini · 15g capperi · EVO",bimbo:"insalata · 60g tonno · datterini"},
+    { id:"pra_28", prep:15, nome:"Insalata di lattuga, tonno, datterini e capperi", ingredients:["ing_lattuga","ing_tonno","ing_datterini","ing_fagioli","ing_capperi","ing_evo","ing_limone"],
+      porzioni:{uomo:"insalata · 160g tonno · 150g datterini · 120g fagioli · 20g capperi · EVO · limone",donna:"insalata · 120g tonno · 120g datterini · 90g fagioli · 15g capperi · EVO",bimbo:"insalata · 60g tonno · datterini · 50g fagioli"},
       uomo:{kcal:480,p:42,c:18,g:22},donna:{kcal:335,p:32,c:14,g:16},bimbo:{kcal:195,p:14,c:8,g:8}},
   ],
   cena: [
@@ -697,8 +1158,8 @@ const DB = {
     { id:"cen_15", prep:35, nome:"Petto d'anatra con cavolo rosso e mele", ingredients:["ing_anatra","ing_cavolo","ing_mela","ing_aceto","ing_evo"],
       porzioni:{uomo:"200g anatra · 200g cavolo · 1 mela · aceto · EVO",donna:"150g anatra · 180g cavolo · ½ mela · EVO",bimbo:"80g anatra · 100g cavolo"},
       uomo:{kcal:610,p:44,c:30,g:32},donna:{kcal:435,p:33,c:22,g:23},bimbo:{kcal:270,p:14,c:14,g:14}},
-    { id:"cen_16", prep:30, nome:"Salmone in crosta di sesamo con asparagi", ingredients:["ing_salmone","ing_asparagi","ing_sesamo","ing_limone","ing_evo"],
-      porzioni:{uomo:"220g salmone · 250g asparagi · sesamo · limone · EVO",donna:"160g salmone · 220g asparagi · 1 cucchiaino EVO",bimbo:"80g salmone · 120g asparagi"},
+    { id:"cen_16", prep:30, nome:"Salmone in crosta di sesamo con asparagi", ingredients:["ing_salmone","ing_asparagi","ing_riso","ing_sesamo","ing_limone","ing_evo"],
+      porzioni:{uomo:"220g salmone · 250g asparagi · 70g riso · sesamo · limone · EVO",donna:"160g salmone · 220g asparagi · 50g riso · 1 cucchiaino EVO",bimbo:"80g salmone · 120g asparagi · 30g riso"},
       uomo:{kcal:590,p:48,c:14,g:36},donna:{kcal:420,p:36,c:10,g:26},bimbo:{kcal:270,p:16,c:6,g:16}},
     { id:"cen_17", prep:40, nome:"Spezzatino di maiale con funghi e orzo", ingredients:["ing_maiale","ing_funghi","ing_orzo","ing_brodo","ing_cipolla","ing_evo"],
       porzioni:{uomo:"200g maiale · 150g funghi · 80g orzo · brodo · cipolla · EVO",donna:"150g maiale · 120g funghi · 60g orzo · EVO",bimbo:"80g maiale · 80g funghi · 35g orzo"},
@@ -727,17 +1188,56 @@ const DB = {
     { id:"cen_25", prep:25, nome:"Tacchino in padella con peperoni e bulgur", ingredients:["ing_tacchino_fettine","ing_peperone","ing_bulgur","ing_cipolla","ing_spezie","ing_evo"],
       porzioni:{uomo:"200g tacchino · 150g peperoni · 80g bulgur · cipolla · spezie · EVO",donna:"150g tacchino · 130g peperoni · 60g bulgur · EVO",bimbo:"80g tacchino · 80g peperoni · 30g bulgur"},
       uomo:{kcal:580,p:48,c:50,g:16},donna:{kcal:415,p:36,c:36,g:11},bimbo:{kcal:260,p:14,c:26,g:6}},
-    { id:"cen_26", prep:20, nome:"Sgombro al forno con finocchio e arance", ingredients:["ing_sgombro","ing_finocchio","ing_arancia","ing_limone","ing_evo"],
-      porzioni:{uomo:"200g sgombro · 1 finocchio · 1 arancia · limone · EVO",donna:"150g sgombro · 1 finocchio · ½ arancia · EVO",bimbo:"80g sgombro · ½ finocchio · spicchi arancia"},
+    { id:"cen_26", prep:20, nome:"Sgombro al forno con finocchio e arance", ingredients:["ing_sgombro","ing_finocchio","ing_arancia","ing_patate","ing_limone","ing_evo"],
+      porzioni:{uomo:"200g sgombro · 1 finocchio · 1 arancia · 200g patate · limone · EVO",donna:"150g sgombro · 1 finocchio · ½ arancia · 150g patate · EVO",bimbo:"80g sgombro · ½ finocchio · spicchi arancia · 90g patate"},
       uomo:{kcal:530,p:40,c:26,g:28},donna:{kcal:375,p:30,c:20,g:20},bimbo:{kcal:235,p:14,c:12,g:12}},
     { id:"cen_27", prep:30, nome:"Hamburger di tacchino con patate al forno e insalata", ingredients:["ing_tacchino","ing_patate","ing_insalata","ing_cipolla","ing_senape","ing_evo"],
       porzioni:{uomo:"200g tacchino · 200g patate · insalata · cipolla · senape · EVO",donna:"150g tacchino · 150g patate · insalata · EVO",bimbo:"80g tacchino · 100g patate · insalata"},
       uomo:{kcal:575,p:46,c:50,g:18},donna:{kcal:410,p:34,c:36,g:13},bimbo:{kcal:260,p:14,c:28,g:7}},
-    { id:"cen_28", prep:35, nome:"Tagliata di manzo con rucola, grana e aceto balsamico", ingredients:["ing_manzo_tagliata","ing_insalata","ing_parmigiano","ing_aceto","ing_evo"],
-      porzioni:{uomo:"200g manzo · rucola · 15g grana · aceto balsamico · EVO",donna:"150g manzo · rucola · 10g grana · EVO",bimbo:"80g manzo · rucola · grana"},
+    { id:"cen_28", prep:35, nome:"Tagliata di manzo con rucola, grana e aceto balsamico", ingredients:["ing_manzo_tagliata","ing_insalata","ing_parmigiano","ing_pane","ing_aceto","ing_evo"],
+      porzioni:{uomo:"200g manzo · rucola · 15g grana · 60g pane · aceto balsamico · EVO",donna:"150g manzo · rucola · 10g grana · 45g pane · EVO",bimbo:"80g manzo · rucola · grana · 30g pane"},
       uomo:{kcal:570,p:50,c:6,g:34},donna:{kcal:405,p:38,c:4,g:24},bimbo:{kcal:255,p:16,c:2,g:14}},
   ],
 };
+
+// ─── Macro calcolati su ogni ricetta ─────────────────────────────────
+// Per ogni ricetta del DB aggiunge uomoCalc / donnaCalc / bimboCalc:
+// macro (p, c, z, g, f, kcal) sommati dagli ingredienti via ING_QTY.
+// I campi originali (uomo / donna / bimbo) restano invariati: i due
+// valori possono differire perché quelli scritti a mano includono
+// stime di cottura e condimenti non sempre tracciati in ING_QTY.
+Object.values(DB).flat().forEach(r => {
+  r.uomoCalc  = macroRicettaCalc(r.id, "uomo");
+  r.donnaCalc = macroRicettaCalc(r.id, "donna");
+  r.bimboCalc = macroRicettaCalc(r.id, "bimbo");
+});
+
+// ─── Diagnostica: confronto macro scritti a mano vs calcolati ────────
+// Strumento di verifica per chi mantiene l'app. Da console del browser:
+//   confrontoMacro()        → elenca le ricette con scostamento kcal > 20%
+//   confrontoMacro(0)       → elenca TUTTE le ricette
+//   confrontoMacro(20,"col")→ solo ricette il cui id inizia per "col"
+// Serve a individuare quantità errate in ING_QTY prima di affidarsi
+// ai valori calcolati al posto di quelli scritti a mano.
+function confrontoMacro(sogliaPct = 20, prefisso = "") {
+  const righe = [];
+  Object.values(DB).flat().forEach(r => {
+    if (prefisso && !r.id.startsWith(prefisso)) return;
+    const h = r.uomo, c = r.uomoCalc;
+    if (!c) { righe.push({ id:r.id, nome:r.nome, stato:"NO ING_QTY" }); return; }
+    const diff = h.kcal ? Math.round((c.kcal - h.kcal) / h.kcal * 100) : 0;
+    if (Math.abs(diff) >= sogliaPct) {
+      righe.push({
+        id:r.id, nome:r.nome,
+        kcalManuale:h.kcal, kcalCalcolato:c.kcal,
+        scostamento:(diff>0?"+":"")+diff+"%",
+      });
+    }
+  });
+  console.table(righe);
+  console.log(`${righe.length} ricette con scostamento ≥ ${sogliaPct}% (o senza ING_QTY).`);
+  return righe;
+}
 
 const DAYS = ["Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica"];
 const MEAL_KEYS = ["colazione","spuntino_m","pranzo","spuntino_p","cena"];
@@ -1387,6 +1887,86 @@ function parseDataIT(s) {
   try { const [g,m,a]=s.split("/"); return new Date(+a,+m-1,+g); } catch { return null; }
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// FABBISOGNO CALORICO — metodo LARN/SINU (tabella italiana)
+// ═══════════════════════════════════════════════════════════════════
+// Metabolismo Basale per fascia d'età e sesso:  MB = coeff·P + costante.
+// Fabbisogno = MB × LAF (Livello Attività Fisica).
+// La tabella copre solo adulti (≥18 anni): per i minori chi chiama usa
+// il fallback Mifflin-St Jeor.
+// ═══════════════════════════════════════════════════════════════════
+
+// Coefficienti MB: [coeff, costante] per fascia d'età, per sesso.
+const MB_COEFF_LARN = {
+  F: [
+    { maxEta: 29, c: 14.7, k: 496 },
+    { maxEta: 59, c: 8.7,  k: 829 },
+    { maxEta: 74, c: 9.2,  k: 688 },
+    { maxEta: Infinity, c: 9.8, k: 624 },
+  ],
+  M: [
+    { maxEta: 29, c: 15.3, k: 679 },
+    { maxEta: 59, c: 11.6, k: 879 },
+    { maxEta: 74, c: 11.9, k: 700 },
+    { maxEta: Infinity, c: 8.4, k: 819 },
+  ],
+};
+
+function metabolismoBasaleLARN(sesso, eta, pesoKg) {
+  const tab = MB_COEFF_LARN[sesso === "M" ? "M" : "F"];
+  const fascia = tab.find(f => eta <= f.maxEta) || tab[tab.length - 1];
+  return fascia.c * pesoKg + fascia.k;
+}
+
+// LAF per sesso, fascia d'età, intensità lavoro e attività auspicabile.
+const LAF_TAB_LARN = {
+  F: {
+    adulto: {
+      leggero:  { si: 1.56, no: 1.42 },
+      moderato: { si: 1.64, no: 1.56 },
+      pesante:  { si: 1.82, no: 1.73 },
+    },
+    eta60_74: { si: 1.56, no: 1.44 },
+    eta75:    { si: 1.56, no: 1.37 },
+  },
+  M: {
+    adulto: {
+      leggero:  { si: 1.55, no: 1.41 },
+      moderato: { si: 1.78, no: 1.70 },
+      pesante:  { si: 2.10, no: 2.01 },
+    },
+    eta60_74: { si: 1.51, no: 1.40 },
+    eta75:    { si: 1.51, no: 1.33 },
+  },
+};
+
+// Lo "stile" dell'app → (intensità lavoro, attività auspicabile).
+// La tabella LARN richiede due dimensioni; l'app ha il solo `stile`,
+// che esprime il livello di attività complessivo: lo scomponiamo.
+const STILE_TO_LARN = {
+  sedentario:   { lavoro: "leggero",  auspicabile: false },
+  leggero:      { lavoro: "leggero",  auspicabile: true  },
+  attivo:       { lavoro: "moderato", auspicabile: true  },
+  molto_attivo: { lavoro: "pesante",  auspicabile: false },
+  sportivo:     { lavoro: "pesante",  auspicabile: true  },
+};
+
+function lafLARN(sesso, eta, stile) {
+  const S = LAF_TAB_LARN[sesso === "M" ? "M" : "F"];
+  const map = STILE_TO_LARN[stile] || STILE_TO_LARN.attivo;
+  const chiave = map.auspicabile ? "si" : "no";
+  if (eta >= 75) return S.eta75[chiave];
+  if (eta >= 60) return S.eta60_74[chiave];
+  return S.adulto[map.lavoro][chiave];
+}
+
+// Fabbisogno calorico LARN completo. Ritorna anche i componenti.
+function fabbisognoLARN(sesso, eta, pesoKg, stile) {
+  const mb  = metabolismoBasaleLARN(sesso, eta, pesoKg);
+  const laf = lafLARN(sesso, eta, stile);
+  return { mb: Math.round(mb), laf, fabbisogno: Math.round(mb * laf) };
+}
+
 // Stima %grasso formula US Navy
 function stimaGrasso(p, misureRec) {
   if (!misureRec) return null;
@@ -1458,25 +2038,39 @@ function calcTargetAdattivo(p, misurePersona) {
   const recs = (misurePersona||[]).slice().sort((a,b)=>dateToSort(a.date).localeCompare(dateToSort(b.date)));
   const latestRec = recs.length ? recs[recs.length-1] : null;
 
-  // ── STEP 1: BMR base (Mifflin-St Jeor) ──────────────────────────
+  // ── STEP 1: Fabbisogno base ─────────────────────────────────────
+  // Adulti: metodo LARN/SINU (MB per fascia d'età × LAF). I minori non
+  // sono coperti dalla tabella LARN → fallback Mifflin-St Jeor.
   const bmrMifflin = sesso==="M"
     ? 10*peso + 6.25*altezza - 5*eta + 5
     : 10*peso + 6.25*altezza - 5*eta - 161;
 
-  // ── STEP 2: %grasso e Katch-McArdle se possibile ─────────────────
+  let larnInfo = null;
+  let tdeeMifflin;            // nome storico mantenuto per compatibilità display
+  if (!isChild) {
+    larnInfo = fabbisognoLARN(sesso, eta, peso, stile);
+    tdeeMifflin = larnInfo.fabbisogno;        // fabbisogno LARN = MB × LAF
+  } else {
+    // minori: Mifflin × moltiplicatore stile, come in precedenza
+    tdeeMifflin = Math.round(bmrMifflin * mult);
+  }
+
+  // ── STEP 2: Affinamento Katch-McArdle se c'è la %grasso ──────────
+  // Se disponibile la massa magra, sostituiamo l'MB con quello
+  // Katch-McArdle (più preciso su soggetti con composizione nota) e
+  // rical­coliamo il fabbisogno con lo stesso LAF della tabella LARN.
   const pctGrasso = !isChild ? stimaGrasso(p, latestRec) : null;
-  let bmr = bmrMifflin;
+  let bmr = isChild ? bmrMifflin : (larnInfo ? larnInfo.mb : bmrMifflin);
   let usaKatchMcArdle = false;
-  if (pctGrasso !== null) {
+  if (pctGrasso !== null && !isChild) {
     const pesoDaRec = latestRec && !isNaN(parseFloat(latestRec.peso)) ? parseFloat(latestRec.peso) : peso;
     const lbm = pesoDaRec * (1 - pctGrasso / 100);
     const bmrKM = 370 + 21.6 * lbm;
     bmr = bmrKM;
     usaKatchMcArdle = true;
+    // ricalcolo il fabbisogno con MB Katch-McArdle × LAF LARN
+    tdeeMifflin = Math.round(bmrKM * (larnInfo ? larnInfo.laf : mult));
   }
-
-  // TDEE formula
-  const tdeeMifflin = Math.round(bmr * mult);
 
   // ── STEP 3: TDEE adattivo da storico peso ────────────────────────
   let tdeeFinale = tdeeMifflin;
@@ -1564,6 +2158,7 @@ function calcTargetAdattivo(p, misurePersona) {
     pctGrasso,
     usaTDEEAdattivo,
     usaKatchMcArdle,
+    larnInfo,
     adattivoInfo,
     noteObiettivo,
     nMisure: recs.length,
@@ -1572,6 +2167,68 @@ function calcTargetAdattivo(p, misurePersona) {
 
 // Wrapper retrocompatibile (senza misure → comportamento identico a prima)
 function calcTarget(p) { return calcTargetAdattivo(p, []); }
+
+// ═══════════════════════════════════════════════════════════════════
+// PIANO PERSONALIZZATO  ·  collega misure → fabbisogno → porzioni
+// ═══════════════════════════════════════════════════════════════════
+// Per un giorno del piano restituisce i macro di ogni pasto:
+//   - se la persona HA misure → quantità riscalate dal motore sul suo
+//     fabbisogno (calcolato con LARN dentro calcTargetAdattivo);
+//   - se NON ha misure → macro della taglia uomo/donna/bimbo, come
+//     prima. L'app resta quindi usabile anche senza misure.
+//
+// Ritorna { perPasto:{mealKey:{kcal,p,c,g}}, quantita:{mealKey:{ingId..}},
+//           personalizzato:bool, tagliaBase, target }.
+function pianoPersonalizzato(giornoPiano, persona, misurePersona) {
+  const slot = slotForPersona(persona);
+
+  // Pasti del giorno come oggetti ricetta, in ordine.
+  const mealKeys = MEAL_KEYS;
+  const ricette = mealKeys.map(mk => giornoPiano && giornoPiano[mk]).filter(Boolean);
+
+  // Il piano si personalizza non appena la persona ha i dati di base
+  // (peso, età, sesso): bastano per calcolare il fabbisogno con LARN.
+  // Le misure (storico peso) sono un affinamento opzionale, usato da
+  // calcTargetAdattivo per il TDEE adattivo se presenti.
+  const datiValidi = persona
+    && Number(persona.peso)    > 0
+    && Number(persona.eta)     > 0
+    && (persona.sesso === "M" || persona.sesso === "F");
+
+  // Senza dati validi: fallback alle taglie fisse.
+  if (!datiValidi) {
+    const perPasto = {};
+    for (const mk of mealKeys) {
+      const meal = giornoPiano && giornoPiano[mk];
+      perPasto[mk] = meal && meal[slot] ? meal[slot] : { kcal:0, p:0, c:0, g:0 };
+    }
+    return { perPasto, quantita:null, personalizzato:false, tagliaBase:slot, target:null };
+  }
+
+  // Fabbisogno LARN (+ TDEE adattivo se ci sono misure) + scaling.
+  const target = calcTargetAdattivo(persona, misurePersona || []);
+  const res = scalaPastiGiorno(ricette, { kcal:target.kcal, p:target.p, c:target.c, g:target.g });
+
+  const perPasto = {};
+  for (const mk of mealKeys) {
+    const meal = giornoPiano && giornoPiano[mk];
+    if (meal && res.perRicetta[meal.id]) {
+      perPasto[mk] = macroDaQuantita(res.perRicetta[meal.id]);
+    } else if (meal && meal[slot]) {
+      // ricetta senza ING_QTY: ricade sulla taglia fissa
+      perPasto[mk] = meal[slot];
+    } else {
+      perPasto[mk] = { kcal:0, p:0, c:0, g:0 };
+    }
+  }
+  return {
+    perPasto,
+    quantita: res.perRicetta,
+    personalizzato: true,
+    tagliaBase: res.tagliaBase,
+    target,
+  };
+}
 
 function emojiBySesso(p) {
   if (p.eta < 12) return p.sesso==="M" ? "👦" : "👧";
@@ -1649,7 +2306,7 @@ function buildShoppingForDays(plan, selectedDays) {
     MEAL_KEYS.forEach(mk => { const meal = day[mk]; meal.ingredients.forEach(ingId => addQty(meal.id, ingId)); });
   });
   const grouped = {};
-  const catOrder = ["🥩 Proteine","🥛 Latticini","🍎 Frutta","🥦 Verdure","🫘 Legumi","🌾 Cereali","🥜 Frutta secca","🧂 Dispensa"];
+  const catOrder = ["🥩 Proteine","🥛 Latticini","🍎 Frutta","🥦 Verdure","🫘 Legumi","🌾 Cereali","🥜 Frutta secca","🧂 Dispensa","🛒 Altro"];
   Object.entries(acc).forEach(([ingId,{total,unit}]) => {
     const ing = ING_MAP[ingId]; if (!ing) return;
     const qtyStr = (total===null||unit==="qb"||unit==="cucchiaio"||unit==="cucchiaino") ? "q.b." : formatQty(total,unit);
@@ -1814,12 +2471,14 @@ const PREP_SLOTS = [
   { label:"≤60'",  max:60,  color:"#dc2626", bg:"#fef2f2" },
 ];
 
-function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealIds, excludedIds, isOverride, onReset, prefEntry, onToggleLike }) {
+function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealIds, excludedIds, isOverride, onReset, prefEntry, onToggleLike, macroOverride, quantitaOverride }) {
   const [open, setOpen]         = useState(false);
   const [swapOpen, setSwapOpen] = useState(false);
   const [maxPrep, setMaxPrep]   = useState(null);  // null = nessun filtro attivo
 
-  const m = meal[personaKey];
+  // macroOverride: se la persona ha misure, sono i macro riscalati dal
+  // motore sul suo fabbisogno. Altrimenti si usa la taglia fissa.
+  const m = macroOverride || meal[personaKey];
   const { label, isSnack } = MEAL_META[mealKey];
 
   const prep = meal.prep;
@@ -1880,11 +2539,12 @@ function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealId
           <MacroBadge label="G" value={m.g} color="#16a34a"/>
         </div>
 
-        {/* Porzione (espansa) */}
-        {open && meal.porzioni?.[personaKey] && (
+        {/* Porzione (espansa) — personalizzata se la persona ha misure */}
+        {open && (quantitaOverride || meal.porzioni?.[personaKey]) && (
           <div style={{marginTop:10,background:color+"08",border:`1px solid ${color}20`,borderRadius:8,padding:"8px 12px",fontSize:12,color:"#334155",lineHeight:1.6}}>
-            <span style={{fontWeight:700,color,fontSize:10,textTransform:"uppercase",letterSpacing:0.8}}>📏 Porzione · </span>
-            {meal.porzioni[personaKey]}
+            <span style={{fontWeight:700,color,fontSize:10,textTransform:"uppercase",letterSpacing:0.8}}>
+              📏 Porzione{quantitaOverride ? " personalizzata" : ""} · </span>
+            {quantitaOverride ? formattaPorzione(quantitaOverride) : meal.porzioni[personaKey]}
           </div>
         )}
 
@@ -1977,8 +2637,13 @@ function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealId
   );
 }
 
-function TotaleBar({ dayData, personaKey, color, target }) {
-  const tot = MEAL_KEYS.reduce((a,mk)=>{const m=dayData[mk][personaKey];return{kcal:a.kcal+m.kcal,p:a.p+m.p,c:a.c+m.c,g:a.g+m.g}},{kcal:0,p:0,c:0,g:0});
+function TotaleBar({ dayData, personaKey, color, target, macroPerPasto }) {
+  // macroPerPasto: se presente (persona con misure), contiene i macro
+  // riscalati per ogni mealKey; altrimenti si usa la taglia fissa.
+  const tot = MEAL_KEYS.reduce((a,mk)=>{
+    const m = (macroPerPasto && macroPerPasto[mk]) || dayData[mk][personaKey];
+    return {kcal:a.kcal+m.kcal,p:a.p+m.p,c:a.c+m.c,g:a.g+m.g};
+  },{kcal:0,p:0,c:0,g:0});
   const t = target||{kcal:2000,p:150,c:200,g:65};
   return (
     <div style={{background:color+"08",border:`1.5px solid ${color}25`,borderRadius:12,padding:"12px 16px",marginTop:4}}>
@@ -2895,6 +3560,10 @@ function App() {
                     effectivePlan.flatMap(d => MEAL_KEYS.map(mk => d[mk]?.id)).filter(Boolean)
                   );
                   const effectiveDay = effectivePlan[selDay];
+                  // Piano personalizzato: se la persona ha misure, le
+                  // porzioni vengono riscalate dal motore sul suo
+                  // fabbisogno (LARN). Senza misure → taglie fisse.
+                  const pianoPers = pianoPersonalizzato(effectiveDay, persona, misureApp[persona?.id]);
                   return (
                     <>
                       {MEAL_KEYS.map(mk => {
@@ -2915,10 +3584,12 @@ function App() {
                             onToggleLike={() => handleToggleLike(effectiveDay[mk]?.id)}
                             onSwap={alt => handleSwap(selDay, mk, effectiveDay[mk], alt)}
                             onReset={() => handleResetSwap(selDay, mk)}
+                            macroOverride={pianoPers.personalizzato ? pianoPers.perPasto[mk] : null}
+                            quantitaOverride={pianoPers.personalizzato && effectiveDay[mk] && pianoPers.quantita ? pianoPers.quantita[effectiveDay[mk].id] : null}
                           />
                         );
                       })}
-                      <TotaleBar dayData={effectiveDay} personaKey={personaSlot} color={persona.color} target={personaTarget}/>
+                      <TotaleBar dayData={effectiveDay} personaKey={personaSlot} color={persona.color} target={personaTarget} macroPerPasto={pianoPers.personalizzato ? pianoPers.perPasto : null}/>
                       {/* ── Tracker idratazione ── */}
                       {(()=>{
                         // dayKey = "seedBase-dayIndex" → univoco per piano+giorno
@@ -2934,9 +3605,25 @@ function App() {
                     <div style={{fontSize:10,fontWeight:700,color:"#64748b",letterSpacing:1,textTransform:"uppercase"}}>
                       Target — {emojiBySesso(persona)} {persona.nome}
                     </div>
-                    <div style={{display:"flex",alignItems:"center",gap:5,background:personaTarget.confidenza.bg,border:`1px solid ${personaTarget.confidenza.border}`,borderRadius:6,padding:"3px 8px"}}>
-                      <span style={{fontSize:11}}>{personaTarget.confidenza.dot}</span>
-                      <span style={{fontSize:10,fontWeight:700,color:personaTarget.confidenza.color}}>{personaTarget.confidenza.label}</span>
+                    <div style={{display:"flex",alignItems:"center",gap:5}}>
+                      {(()=>{
+                        const ob = OBIETTIVI.find(o=>o.key===persona.obiettivo);
+                        const obStyle = {
+                          perdita:      {ic:"📉",bg:"#eff6ff",bd:"#bfdbfe",col:"#2563eb"},
+                          mantenimento: {ic:"⚖️",bg:"#f0fdf4",bd:"#bbf7d0",col:"#16a34a"},
+                          aumento:      {ic:"📈",bg:"#fef2f2",bd:"#fecaca",col:"#dc2626"},
+                        }[persona.obiettivo] || {ic:"⚖️",bg:"#f1f5f9",bd:"#e2e8f0",col:"#64748b"};
+                        return (
+                          <div style={{display:"flex",alignItems:"center",gap:4,background:obStyle.bg,border:`1px solid ${obStyle.bd}`,borderRadius:6,padding:"3px 8px"}}>
+                            <span style={{fontSize:10}}>{obStyle.ic}</span>
+                            <span style={{fontSize:10,fontWeight:700,color:obStyle.col}}>{ob?ob.label:"—"}</span>
+                          </div>
+                        );
+                      })()}
+                      <div style={{display:"flex",alignItems:"center",gap:5,background:personaTarget.confidenza.bg,border:`1px solid ${personaTarget.confidenza.border}`,borderRadius:6,padding:"3px 8px"}}>
+                        <span style={{fontSize:11}}>{personaTarget.confidenza.dot}</span>
+                        <span style={{fontSize:10,fontWeight:700,color:personaTarget.confidenza.color}}>{personaTarget.confidenza.label}</span>
+                      </div>
                     </div>
                   </div>
                   {/* Macro grid */}
@@ -2954,6 +3641,18 @@ function App() {
                       <span>TDEE stimato</span>
                       <span style={{fontFamily:"monospace",fontWeight:700,color:"#1e293b"}}>{personaTarget.tdeeFinale} kcal</span>
                     </div>
+                    {(()=>{
+                      const d = personaTarget.kcal - personaTarget.tdeeFinale;
+                      if (Math.abs(d) < 1) return null;
+                      const txt = d < 0 ? `deficit ${-d} kcal` : `surplus +${d} kcal`;
+                      const col = d < 0 ? "#2563eb" : "#dc2626";
+                      return (
+                        <div style={{display:"flex",justifyContent:"space-between"}}>
+                          <span>Aggiustamento obiettivo</span>
+                          <span style={{fontFamily:"monospace",fontWeight:700,color:col}}>{txt}</span>
+                        </div>
+                      );
+                    })()}
                     {personaTarget.pctGrasso!==null&&(
                       <div style={{display:"flex",justifyContent:"space-between"}}>
                         <span>Massa grassa stimata</span>
