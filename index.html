@@ -1508,13 +1508,6 @@ function MisurePage({ personas, myPersonaId, onMisureChange }) {
   const [misure, setMisure]   = useState({});
   const [selPid, setSelPid]   = useState(myPersonaId || personas[0]?.id);
 
-  // Helper per swipe orizzontale tra persone (wrap-around).
-  const cambiaSelPid = (dir) => {
-    if (!personas.length) return;
-    const idx = personas.findIndex(p=>p.id===selPid);
-    const i = idx < 0 ? 0 : idx;
-    setSelPid(personas[(i + dir + personas.length) % personas.length].id);
-  };
   const [loaded, setLoaded]   = useState(false);
   const [view, setView]       = useState("stats");   // "stats" | "history" | "form"
   const [editRec, setEditRec] = useState(null);      // record in modifica (null = nuovo)
@@ -1632,8 +1625,11 @@ function MisurePage({ personas, myPersonaId, onMisureChange }) {
   );
 
   // ════════════════════ STATS + HISTORY ════════════════════
+  // Nota: in questa pagina lo swipe orizzontale cambia SOLO la scheda
+  // calcolatore (carosello interno). La persona si cambia con i bottoni
+  // in alto, per non avere due gesti di swipe in conflitto.
   return (
-    <SwipeContainer onSwipeLeft={()=>cambiaSelPid(+1)} onSwipeRight={()=>cambiaSelPid(-1)} style={{touchAction:"pan-y"}}>
+    <div>
       {/* Selettore persona */}
       <div style={{display:"flex",gap:6,marginBottom:14,overflowX:"auto",paddingBottom:2}}>
         {personas.map(p=>(
@@ -1931,7 +1927,7 @@ function MisurePage({ personas, myPersonaId, onMisureChange }) {
           </div>
         </>
       )}
-    </SwipeContainer>
+    </div>
   );
 }
 
