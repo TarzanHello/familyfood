@@ -1269,7 +1269,7 @@ const MEAL_META = {
   cena:       { label:"🍽️ Cena",               isSnack:false },
 };
 
-const SK_SEED="pf-seed", SK_HISTORY="pf-history", SK_EXCL="pf-excluded", SK_PERSONAS="pf-personas", SK_MY_PERSONA="pf-my-persona", SK_MISURE="pf-misure", SK_OVERRIDES="pf-overrides", SK_WATER="pf-water", SK_PREFS="pf-prefs", SK_NOTIF="pf-notif";
+const SK_SEED="pf-seed", SK_HISTORY="pf-history", SK_EXCL="pf-excluded", SK_PERSONAS="pf-personas", SK_MY_PERSONA="pf-my-persona", SK_MISURE="pf-misure", SK_OVERRIDES="pf-overrides", SK_WATER="pf-water", SK_PREFS="pf-prefs";
 
 // ═══════════════════════════════════════════════════════════════════
 // SISTEMA PREFERENZE — accumulo segnali sui gusti
@@ -1298,19 +1298,6 @@ const PREF_WEIGHTS = { like: 3, swapOut: -1, swapIn: 1 };
 
 // Soglia in ore: sotto questo valore lo swap è "di contesto".
 const SWAP_CONTEXT_HOURS = 18;
-
-
-// ─── Impostazioni notifiche default ───────────────────────────────────
-const DEFAULT_NOTIF = {
-  enabled: false,
-  meals: {
-    colazione:  { active: true,  hour: 7,  minute: 30 },
-    spuntino_m: { active: false, hour: 10, minute: 30 },
-    pranzo:     { active: true,  hour: 12, minute: 45 },
-    spuntino_p: { active: false, hour: 16, minute: 30 },
-    cena:       { active: true,  hour: 19, minute: 45 },
-  }
-};
 
 // Orari convenzionali di consumo di ogni pasto (ora del giorno, 0-24).
 const MEAL_HOUR = {
@@ -1412,15 +1399,8 @@ function findAlternatives(mealKey, currentMeal, maxPrep, excludedIds, weekMealId
 
 // ─── Giorno corrente automatico (0=Lun … 6=Dom) ───────────────────
 function todayDayIndex() {
-  const d = new Date().getDay();
-  return d === 0 ? 6 : d - 1;
-}
-function dateKeyForDayIdx(dayIdx) {
-  const today = new Date();
-  const todayIdx = todayDayIndex();
-  const d = new Date(today);
-  d.setDate(today.getDate() + (dayIdx - todayIdx));
-  return d.toISOString().slice(0, 10);
+  const d = new Date().getDay(); // 0=Dom,1=Lun,...,6=Sab
+  return d === 0 ? 6 : d - 1;   // converti in 0=Lun … 6=Dom
 }
 
 // ─── SVG Line Chart ────────────────────────────────────────────────
@@ -1529,68 +1509,7 @@ function dateToLabel(d) {
   } catch { return d; }
 }
 
-
-// ─── CalorieChart ────────────────────────────────────────────────────
-function CalorieChart({ personaId, mealsLog, target }) {
-  const today = new Date();
-  const days = Array.from({length:7},(_,i)=>{
-    const d = new Date(today);
-    d.setDate(today.getDate() - (6-i));
-    const key = d.toISOString().slice(0,10);
-    const dow = ["Dom","Lun","Mar","Mer","Gio","Ven","Sab"][d.getDay()];
-    const dayLog = (mealsLog[personaId]||{})[key]||{};
-    const kcal = Object.values(dayLog).reduce((s,m)=> m.consumed ? s+(m.kcal||0) : s, 0);
-    return { key, label: dow, kcal, isToday: i===6 };
-  });
-  const maxKcal = Math.max(target||2000, ...days.map(d=>d.kcal), 100);
-  const W=320, H=130, PAD={t:10,r:12,b:28,l:36};
-  const innerW=W-PAD.l-PAD.r, innerH=H-PAD.t-PAD.b;
-  const barW=Math.floor(innerW/7)-4, barGap=Math.floor(innerW/7);
-  const targetY=PAD.t+innerH-((target||0)/maxKcal)*innerH;
-  return (
-    <div>
-      <svg viewBox={`0 0 ${W} ${H}`} style={{width:"100%",maxWidth:W,display:"block",margin:"0 auto"}}>
-        {[0.25,0.5,0.75,1].map(f=>(
-          <line key={f} x1={PAD.l} x2={W-PAD.r} y1={PAD.t+innerH*(1-f)} y2={PAD.t+innerH*(1-f)} stroke="#e2e8f0" strokeWidth="1"/>
-        ))}
-        {[0,0.5,1].map(f=>(
-          <text key={f} x={PAD.l-4} y={PAD.t+innerH*(1-f)+4} textAnchor="end" fontSize="8" fill="#94a3b8">{Math.round(maxKcal*f)}</text>
-        ))}
-        {target>0&&<line x1={PAD.l} x2={W-PAD.r} y1={targetY} y2={targetY} stroke="#2563eb" strokeWidth="1.5" strokeDasharray="4,3"/>}
-        {days.map((day,i)=>{
-          const x=PAD.l+i*barGap+(barGap-barW)/2;
-          if(day.kcal===0) return (
-            <g key={day.key}>
-              <rect x={x} y={PAD.t} width={barW} height={innerH} fill={day.isToday?"#eff6ff":"#f8fafc"} rx="3"/>
-              <text x={x+barW/2} y={H-PAD.b+10} textAnchor="middle" fontSize="8" fill={day.isToday?"#2563eb":"#94a3b8"} fontWeight={day.isToday?"700":"400"}>{day.label}</text>
-            </g>
-          );
-          const barH=Math.max(2,(day.kcal/maxKcal)*innerH);
-          const barY=PAD.t+innerH-barH;
-          const pct=Math.round(day.kcal/(target||day.kcal)*100);
-          const col=pct>=100?"#16a34a":pct>=70?"#2563eb":pct>=40?"#d97706":"#94a3b8";
-          return (
-            <g key={day.key}>
-              <rect x={x} y={PAD.t} width={barW} height={innerH} fill={day.isToday?"#eff6ff":"#f8fafc"} rx="3"/>
-              <rect x={x} y={barY} width={barW} height={barH} fill={col} rx="3" opacity={day.isToday?1:0.8}/>
-              <text x={x+barW/2} y={barY-2} textAnchor="middle" fontSize="7" fill={col} fontWeight="700">{day.kcal}</text>
-              <text x={x+barW/2} y={H-PAD.b+10} textAnchor="middle" fontSize="8" fill={day.isToday?"#2563eb":"#64748b"} fontWeight={day.isToday?"700":"400"}>{day.label}</text>
-            </g>
-          );
-        })}
-      </svg>
-      <div style={{display:"flex",justifyContent:"center",gap:10,marginTop:6,flexWrap:"wrap"}}>
-        {[["#2563eb","Target (linea)"],["#16a34a","≥100%"],["#2563eb","≥70%"],["#d97706","≥40%"]].map(([c,l])=>(
-          <div key={l} style={{display:"flex",alignItems:"center",gap:4,fontSize:9,color:"#64748b"}}>
-            <div style={{width:10,height:10,background:c,borderRadius:2}}/>{l}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function MisurePage({ personas, myPersonaId, onMisureChange, mealsLog }) {
+function MisurePage({ personas, myPersonaId, onMisureChange }) {
   const [misure, setMisure]   = useState({});
   const [selPid, setSelPid]   = useState(myPersonaId || personas[0]?.id);
 
@@ -1728,7 +1647,7 @@ function MisurePage({ personas, myPersonaId, onMisureChange, mealsLog }) {
 
       {/* Sub-nav: Statistiche / Storico */}
       <div style={{display:"flex",gap:0,marginBottom:16,background:"#f1f5f9",borderRadius:10,padding:3}}>
-        {[{k:"stats",l:"📊 Statistiche"},{k:"calories",l:"🍽️ Calorie"},{k:"history",l:"📋 Storico"}].map(({k,l})=>(
+        {[{k:"stats",l:"📊 Statistiche"},{k:"history",l:"📋 Storico"}].map(({k,l})=>(
           <button key={k} onClick={()=>setView(k)}
             style={{flex:1,padding:"8px",borderRadius:8,border:"none",background:view===k?"#fff":"transparent",color:view===k?"#1e293b":"#94a3b8",fontWeight:700,fontSize:12,cursor:"pointer",boxShadow:view===k?"0 1px 4px #0000001a":"none",transition:"all 0.15s"}}>
             {l}
@@ -1960,65 +1879,6 @@ function MisurePage({ personas, myPersonaId, onMisureChange, mealsLog }) {
                 ))}
               </div>
               <div style={{textAlign:"center",fontSize:10,color:"#94a3b8",marginBottom:8}}>← scorri tra i calcolatori →</div>
-            </>
-          );
-        })()
-      ) : view==="calories" ? (
-        (()=>{
-          const target = calcTargetAdattivo(persona, allRecs);
-          const pLog = (mealsLog||{})[selPid]||{};
-          const today2 = new Date();
-          const weekDays = Array.from({length:7},(_,i)=>{
-            const d=new Date(today2); d.setDate(today2.getDate()-(6-i));
-            const key=d.toISOString().slice(0,10);
-            const dayLog=pLog[key]||{};
-            const meals=Object.entries(dayLog).filter(([,m])=>m.consumed).map(([mk,m])=>({mk,kcal:m.kcal||0}));
-            return {key,meals,totKcal:meals.reduce((s,m)=>s+m.kcal,0),isToday:i===6};
-          });
-          const giorniConDati=weekDays.filter(d=>d.totKcal>0).length;
-          const media=giorniConDati>0?Math.round(weekDays.reduce((s,d)=>s+d.totKcal,0)/giorniConDati):0;
-          const todayData=weekDays[6];
-          const MLABEL={colazione:"☀️ Colazione",spuntino_m:"🍎 Spuntino mattina",pranzo:"🥗 Pranzo",spuntino_p:"🫐 Spuntino pom.",cena:"🍽️ Cena"};
-          return (
-            <>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:14}}>
-                {[{l:"Oggi",v:todayData.totKcal||"—",c:persona.color,bg:persona.color+"10"},{l:"Media/giorno",v:media||"—",c:"#16a34a",bg:"#f0fdf4"},{l:"Target",v:target.kcal,c:"#2563eb",bg:"#eff6ff"}].map(item=>(
-                  <div key={item.l} style={{background:item.bg,borderRadius:10,padding:"10px 8px",textAlign:"center",border:`1px solid ${item.c}25`}}>
-                    <div style={{fontSize:9,color:"#64748b",textTransform:"uppercase",letterSpacing:0.5,fontWeight:700}}>{item.l}</div>
-                    <div style={{fontSize:20,fontWeight:800,color:item.c,fontFamily:"monospace",lineHeight:1.2}}>{item.v}</div>
-                    <div style={{fontSize:9,color:"#94a3b8"}}>kcal</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{background:"#fff",borderRadius:12,border:"1.5px solid #e2e8f0",padding:"14px 16px",marginBottom:12}}>
-                <div style={{fontSize:11,fontWeight:800,color:"#1e293b",marginBottom:12}}>📊 Ultimi 7 giorni</div>
-                <CalorieChart personaId={selPid} mealsLog={mealsLog||{}} target={target.kcal}/>
-              </div>
-              {todayData.meals.length>0&&(
-                <div style={{background:"#fff",borderRadius:12,border:"1.5px solid #e2e8f0",padding:"14px 16px",marginBottom:12}}>
-                  <div style={{fontSize:11,fontWeight:800,color:"#1e293b",marginBottom:10}}>✅ Pasti di oggi</div>
-                  {todayData.meals.map(m=>(
-                    <div key={m.mk} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:"1px solid #f1f5f9"}}>
-                      <span style={{fontSize:12,color:"#475569",fontWeight:600}}>{MLABEL[m.mk]||m.mk}</span>
-                      <span style={{fontFamily:"monospace",fontSize:12,fontWeight:700,color:"#1e293b"}}>{m.kcal} kcal</span>
-                    </div>
-                  ))}
-                  <div style={{display:"flex",justifyContent:"space-between",marginTop:8,paddingTop:6,borderTop:"1.5px solid #e2e8f0"}}>
-                    <span style={{fontSize:12,fontWeight:800,color:"#1e293b"}}>Totale</span>
-                    <div style={{display:"flex",alignItems:"center",gap:8}}>
-                      <span style={{fontFamily:"monospace",fontSize:14,fontWeight:800,color:todayData.totKcal>=target.kcal*0.9?"#16a34a":"#d97706"}}>{todayData.totKcal} kcal</span>
-                      <span style={{fontSize:10,color:"#94a3b8"}}>{Math.round(todayData.totKcal/target.kcal*100)}%</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-              {giorniConDati===0&&(
-                <div style={{textAlign:"center",padding:"30px 20px",color:"#94a3b8"}}>
-                  <div style={{fontSize:40,marginBottom:10}}>☑️</div>
-                  <div style={{fontSize:14,fontWeight:700,color:"#64748b"}}>Nessun pasto registrato</div>
-                  <div style={{fontSize:12,marginTop:6,lineHeight:1.6}}>Torna al piano e spunta i pasti consumati con ✅</div>
-                </div>
-              )}
             </>
           );
         })()
@@ -2409,14 +2269,19 @@ function calcTargetAdattivo(p, misurePersona) {
     }
   }
 
-  // ── STEP 4b: Offset intensità dieta (cursore manuale) ───────────
+  // ── STEP 4b: Offset intensità dieta (cursore manuale) ────────────
   // dietaIntensita: 0   = facile  → TDEE − 100 kcal
+  //                 50  = medio   → TDEE − 550 kcal
   //                 100 = estremo → TDEE − 1000 kcal
+  // Formula lineare: offset = 100 + (intensita / 100 * 900)
   let intensitaOffset = null;
   if (!isChild && p.dietaIntensita !== undefined && p.dietaIntensita !== null) {
     intensitaOffset = Math.round(100 + (p.dietaIntensita / 100) * 900);
   }
-  const kcal = Math.max(1200, intensitaOffset !== null ? tdeeFinale - intensitaOffset : tdeeFinale - deficit);
+
+  const kcal = Math.max(1200, intensitaOffset !== null
+    ? tdeeFinale - intensitaOffset
+    : tdeeFinale - deficit);
 
   // ── STEP 5: Macros ────────────────────────────────────────────────
   // Proteine: dipendono da massa magra se disponibile, altrimenti da peso
@@ -2462,6 +2327,7 @@ function calcTargetAdattivo(p, misurePersona) {
     adattivoInfo,
     noteObiettivo,
     nMisure: recs.length,
+    intensitaOffset,
   };
 }
 
@@ -2804,7 +2670,7 @@ const PREP_SLOTS = [
   { label:"≤60'",  max:60,  color:"#dc2626", bg:"#fef2f2" },
 ];
 
-function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealIds, excludedIds, isOverride, onReset, prefEntry, onToggleLike, macroOverride, quantitaOverride, consumed, onToggleConsumed }) {
+function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealIds, excludedIds, isOverride, onReset, prefEntry, onToggleLike, macroOverride, quantitaOverride }) {
   const [open, setOpen]         = useState(false);
   const [swapOpen, setSwapOpen] = useState(false);
   const [maxPrep, setMaxPrep]   = useState(null);  // null = nessun filtro attivo
@@ -2829,7 +2695,7 @@ function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealId
 
       {/* ── Header pasto ── */}
       <div onClick={()=>{ setOpen(o=>!o); if(swapOpen) setSwapOpen(false); }}
-        style={{background:consumed?"#f0fdf4":isSnack?"transparent":isOverride?`#7c3aed0e`:color+"0e",borderBottom:(open||swapOpen)?`1px solid ${isOverride?"#7c3aed20":color+"20"}`:"none",padding:"9px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer",userSelect:"none"}}>
+        style={{background:isSnack?"transparent":isOverride?`#7c3aed0e`:color+"0e",borderBottom:(open||swapOpen)?`1px solid ${isOverride?"#7c3aed20":color+"20"}`:"none",padding:"9px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer",userSelect:"none"}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
           <span style={{fontWeight:800,fontSize:isSnack?11:13,color:isSnack?"#94a3b8":isOverride?"#7c3aed":color}}>{label}</span>
           {isOverride && <span style={{fontSize:9,background:"#7c3aed",color:"#fff",borderRadius:4,padding:"1px 5px",fontWeight:800}}>MOD</span>}
@@ -2857,13 +2723,6 @@ function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealId
               title={prefEntry?.liked ? "Tolta dai preferiti" : "Aggiungi ai preferiti"}
               style={{flexShrink:0,width:31,height:28,borderRadius:7,border:`1.5px solid ${prefEntry?.liked?"#ef4444":"#e2e8f0"}`,background:prefEntry?.liked?"#fef2f2":"#f8fafc",cursor:"pointer",transition:"all 0.15s",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,padding:0}}>
               <span style={{filter:prefEntry?.liked?"none":"grayscale(1) opacity(0.55)"}}>{prefEntry?.liked?"❤️":"🤍"}</span>
-            </button>
-            {/* Bottone consumato */}
-            <button
-              onClick={e=>{ e.stopPropagation(); onToggleConsumed && onToggleConsumed(); }}
-              title={consumed ? "Segna come non consumato" : "Segna come consumato"}
-              style={{flexShrink:0,width:31,height:28,borderRadius:7,border:`1.5px solid ${consumed?"#16a34a":"#e2e8f0"}`,background:consumed?"#f0fdf4":"#f8fafc",cursor:"pointer",transition:"all 0.15s",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,padding:0}}>
-              <span style={{filter:consumed?"none":"grayscale(1) opacity(0.4)"}}>{consumed?"✅":"☑️"}</span>
             </button>
             {/* Bottone swap */}
             <button
@@ -3343,48 +3202,6 @@ function SeedSyncSection({ currentSeed, overrides, onApplySeed }) {
   );
 }
 
-
-// ─── Schedulazione notifiche via SW ──────────────────────────────────
-// Riceve le impostazioni e il piano del giorno corrente,
-// calcola il delay in ms per ogni pasto attivo e manda il tutto al SW.
-function scheduleNotifications(notifSettings, todayPlan, personas, myPersonaId) {
-  if (!notifSettings || !notifSettings.enabled) {
-    navigator.serviceWorker?.controller?.postMessage({ type:"CANCEL_NOTIFICATIONS" });
-    return;
-  }
-  if (!("Notification" in window) || Notification.permission !== "granted") return;
-
-  const myPersona = personas.find(p=>p.id===myPersonaId) || personas[0];
-  const now = new Date();
-  const meals = [];
-
-  MEAL_KEYS.forEach(mk => {
-    const cfg = notifSettings.meals[mk];
-    if (!cfg || !cfg.active) return;
-
-    // Calcola l'orario di oggi per questo pasto
-    const fireTime = new Date();
-    fireTime.setHours(cfg.hour, cfg.minute, 0, 0);
-    const delayMs = fireTime.getTime() - now.getTime();
-
-    const meal = todayPlan && todayPlan[mk];
-    const ricettaNome = meal ? meal.nome : "";
-    const mealLabel = MEAL_META[mk]?.label || mk;
-
-    meals.push({
-      mealKey: mk,
-      label: `${mealLabel}`,
-      ricetta: ricettaNome ? `${ricettaNome}` : "È il momento di mangiare!",
-      delayMs,
-    });
-  });
-
-  navigator.serviceWorker?.controller?.postMessage({
-    type: "SCHEDULE_NOTIFICATIONS",
-    meals,
-  });
-}
-
 // ─── FamigliaPage ────────────────────────────────────────────────────
 function FamigliaPage({ personas, onUpdate, onAdd, onDelete, currentSeed, overrides, onApplySeed, myPersonaId, onSetMyPersona, misureApp }) {
   const [editing, setEditing] = useState(null);
@@ -3443,11 +3260,19 @@ function FamigliaPage({ personas, onUpdate, onAdd, onDelete, currentSeed, overri
                     </div>
                   ))}
                 </div>
+                {/* ── Cursore intensità dieta ─────────────────── */}
                 {(()=>{
-                  const intensita=p.dietaIntensita??50;
-                  const getLabel=v=>v<=10?{txt:"Molto facile",sub:"−100 kcal",col:"#16a34a",emoji:"😊"}:v<=30?{txt:"Facile",sub:"~−320 kcal",col:"#65a30d",emoji:"🙂"}:v<=55?{txt:"Moderato",sub:"~−550 kcal",col:"#2563eb",emoji:"⚖️"}:v<=80?{txt:"Intenso",sub:"~−775 kcal",col:"#d97706",emoji:"😓"}:{txt:"Molto difficile",sub:"−1000 kcal",col:"#dc2626",emoji:"🔥"};
-                  const lbl=getLabel(intensita);
-                  const off=Math.round(100+(intensita/100)*900);
+                  const intensita = p.dietaIntensita ?? 50;
+                  // offset lineare: 0→-100kcal, 50→-550kcal, 100→-1000kcal
+                  const off = Math.round(100 + (intensita / 100) * 900);
+                  const getLabel = v => {
+                    if (v <= 10)  return { txt:"Molto facile",  sub:"−100 kcal",  col:"#16a34a", emoji:"😊" };
+                    if (v <= 30)  return { txt:"Facile",        sub:"~−320 kcal", col:"#65a30d", emoji:"🙂" };
+                    if (v <= 55)  return { txt:"Moderato",      sub:"~−550 kcal", col:"#2563eb", emoji:"⚖️" };
+                    if (v <= 80)  return { txt:"Intenso",       sub:"~−775 kcal", col:"#d97706", emoji:"😓" };
+                    return          { txt:"Molto difficile", sub:"−1000 kcal", col:"#dc2626", emoji:"🔥" };
+                  };
+                  const lbl = getLabel(intensita);
                   return (
                     <div style={{marginTop:10,padding:"10px 12px",background:"#f8fafc",borderRadius:9,border:"1px solid #e2e8f0"}}>
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
@@ -3456,9 +3281,12 @@ function FamigliaPage({ personas, onUpdate, onAdd, onDelete, currentSeed, overri
                       </div>
                       <div style={{position:"relative",height:22,display:"flex",alignItems:"center"}}>
                         <div style={{position:"absolute",left:0,right:0,height:4,borderRadius:2,background:"linear-gradient(to right,#16a34a,#65a30d,#2563eb,#d97706,#dc2626)"}}/>
-                        <input type="range" min={0} max={100} step={1} value={intensita}
+                        <input
+                          type="range" min={0} max={100} step={1}
+                          value={intensita}
                           onChange={e=>onUpdate({...p,dietaIntensita:parseInt(e.target.value)})}
-                          style={{position:"relative",zIndex:1,width:"100%",margin:0,background:"transparent"}}/>
+                          style={{position:"relative",zIndex:1,width:"100%",margin:0,background:"transparent"}}
+                        />
                       </div>
                       <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}>
                         <span style={{fontSize:9,color:"#16a34a",fontWeight:700}}>😊 −100 kcal</span>
@@ -3488,195 +3316,6 @@ function FamigliaPage({ personas, onUpdate, onAdd, onDelete, currentSeed, overri
           ➕ Aggiungi persona al nucleo
         </button>
       )}
-    </div>
-  );
-}
-
-
-// ─── OpzioniPage ─────────────────────────────────────────────────────
-function OpzioniPage({ notifSettings, onNotifChange, plan, personas, myPersonaId }) {
-  const [permStatus, setPermStatus] = React.useState(
-    "Notification" in window ? Notification.permission : "unsupported"
-  );
-  const [requesting, setRequesting] = React.useState(false);
-
-  const settings = notifSettings || DEFAULT_NOTIF;
-  const todayIdx = todayDayIndex();
-  const todayPlan = plan ? plan[todayIdx] : null;
-
-  // Richiedi permesso notifiche
-  const requestPermission = async () => {
-    if (!("Notification" in window)) return;
-    setRequesting(true);
-    try {
-      const result = await Notification.requestPermission();
-      setPermStatus(result);
-      if (result === "granted") {
-        const next = { ...settings, enabled: true };
-        onNotifChange(next);
-        scheduleNotifications(next, todayPlan, personas, myPersonaId);
-      }
-    } finally {
-      setRequesting(false);
-    }
-  };
-
-  const toggleEnabled = () => {
-    const next = { ...settings, enabled: !settings.enabled };
-    onNotifChange(next);
-    scheduleNotifications(next, todayPlan, personas, myPersonaId);
-  };
-
-  const toggleMeal = mk => {
-    const cur = settings.meals[mk];
-    const next = {
-      ...settings,
-      meals: { ...settings.meals, [mk]: { ...cur, active: !cur.active } }
-    };
-    onNotifChange(next);
-    if (settings.enabled && permStatus === "granted") {
-      scheduleNotifications(next, todayPlan, personas, myPersonaId);
-    }
-  };
-
-  const setMealTime = (mk, field, val) => {
-    const cur = settings.meals[mk];
-    const next = {
-      ...settings,
-      meals: { ...settings.meals, [mk]: { ...cur, [field]: parseInt(val) } }
-    };
-    onNotifChange(next);
-    if (settings.enabled && permStatus === "granted") {
-      scheduleNotifications(next, todayPlan, personas, myPersonaId);
-    }
-  };
-
-  const isGranted = permStatus === "granted";
-  const isDenied  = permStatus === "denied";
-  const isUnsup   = permStatus === "unsupported";
-
-  const MEAL_ICONS = {
-    colazione:"☀️", spuntino_m:"🍎", pranzo:"🥗", spuntino_p:"🫐", cena:"🍽️"
-  };
-
-  return (
-    <div>
-      {/* ── Blocco permesso notifiche ── */}
-      <div style={{background:"#fff",borderRadius:14,border:"1.5px solid #e2e8f0",padding:"16px",marginBottom:14,boxShadow:"0 2px 10px #0000000a"}}>
-        <div style={{fontSize:13,fontWeight:800,color:"#1e293b",marginBottom:4}}>🔔 Notifiche pasto</div>
-        <div style={{fontSize:11,color:"#64748b",marginBottom:14,lineHeight:1.6}}>
-          Ricevi un promemoria con il nome della ricetta prima di ogni pasto.
-        </div>
-
-        {isUnsup && (
-          <div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:9,padding:"10px 14px",fontSize:11,color:"#dc2626",fontWeight:600}}>
-            ⚠️ Il tuo browser non supporta le notifiche.
-          </div>
-        )}
-
-        {isDenied && (
-          <div style={{background:"#fff7ed",border:"1px solid #fed7aa",borderRadius:9,padding:"10px 14px",fontSize:11,color:"#c2410c",lineHeight:1.6}}>
-            🚫 Notifiche bloccate dal browser.<br/>
-            Per abilitarle vai nelle impostazioni del browser e riabilita i permessi per questo sito.
-          </div>
-        )}
-
-        {!isUnsup && !isDenied && (
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12}}>
-            {permStatus === "default" ? (
-              <button onClick={requestPermission} disabled={requesting}
-                style={{flex:1,padding:"11px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#2563eb,#1d4ed8)",color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",boxShadow:"0 4px 14px #2563eb44"}}>
-                {requesting ? "⏳ Richiesta…" : "🔔 Abilita notifiche"}
-              </button>
-            ) : (
-              <div style={{display:"flex",alignItems:"center",gap:10,flex:1}}>
-                <span style={{fontSize:12,color:"#475569",fontWeight:600}}>Notifiche attive</span>
-                {/* Toggle switch */}
-                <div onClick={toggleEnabled}
-                  style={{position:"relative",width:44,height:24,borderRadius:12,background:settings.enabled?"#2563eb":"#cbd5e1",cursor:"pointer",transition:"background 0.2s",flexShrink:0}}>
-                  <div style={{position:"absolute",top:3,left:settings.enabled?22:2,width:18,height:18,borderRadius:"50%",background:"#fff",boxShadow:"0 1px 3px #0003",transition:"left 0.2s"}}/>
-                </div>
-                <span style={{fontSize:11,color:settings.enabled?"#2563eb":"#94a3b8",fontWeight:700}}>
-                  {settings.enabled?"ON":"OFF"}
-                </span>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* ── Orari per pasto ── */}
-      <div style={{background:"#fff",borderRadius:14,border:"1.5px solid #e2e8f0",padding:"16px",marginBottom:14,boxShadow:"0 2px 10px #0000000a",opacity:(isGranted&&settings.enabled)?1:0.5,pointerEvents:(isGranted&&settings.enabled)?"auto":"none"}}>
-        <div style={{fontSize:13,fontWeight:800,color:"#1e293b",marginBottom:4}}>⏰ Orario promemoria</div>
-        <div style={{fontSize:11,color:"#64748b",marginBottom:14}}>
-          Imposta l'orario di notifica per ogni pasto. Attiva o disattiva i singoli pasti.
-        </div>
-
-        {MEAL_KEYS.map((mk, i) => {
-          const cfg = settings.meals[mk];
-          const meta = MEAL_META[mk];
-          const todayMeal = todayPlan && todayPlan[mk];
-          const hh = String(cfg.hour).padStart(2,"0");
-          const mm = String(cfg.minute).padStart(2,"0");
-
-          return (
-            <div key={mk} style={{display:"flex",alignItems:"center",gap:10,padding:"12px 0",borderBottom:i<MEAL_KEYS.length-1?"1px solid #f1f5f9":"none"}}>
-              {/* Toggle singolo pasto */}
-              <div onClick={()=>toggleMeal(mk)}
-                style={{position:"relative",width:36,height:20,borderRadius:10,background:cfg.active?"#2563eb":"#e2e8f0",cursor:"pointer",transition:"background 0.2s",flexShrink:0}}>
-                <div style={{position:"absolute",top:2,left:cfg.active?17:2,width:16,height:16,borderRadius:"50%",background:"#fff",boxShadow:"0 1px 3px #0003",transition:"left 0.2s"}}/>
-              </div>
-
-              {/* Info pasto */}
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:12,fontWeight:700,color:cfg.active?"#1e293b":"#94a3b8"}}>
-                  {MEAL_ICONS[mk]} {meta.label.replace(/^[^\s]+\s/,"")}
-                </div>
-                {todayMeal && cfg.active && (
-                  <div style={{fontSize:10,color:"#64748b",marginTop:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
-                    Oggi: {todayMeal.nome}
-                  </div>
-                )}
-              </div>
-
-              {/* Time picker HH:MM */}
-              <div style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}>
-                <input type="number" min="0" max="23" value={cfg.hour}
-                  onChange={e=>setMealTime(mk,"hour",e.target.value)}
-                  style={{width:38,padding:"5px 4px",border:"1.5px solid #e2e8f0",borderRadius:7,fontSize:14,fontFamily:"monospace",fontWeight:700,textAlign:"center",outline:"none",color:cfg.active?"#1e293b":"#94a3b8"}}/>
-                <span style={{fontWeight:800,color:"#94a3b8"}}>:</span>
-                <input type="number" min="0" max="59" value={cfg.minute}
-                  onChange={e=>setMealTime(mk,"minute",e.target.value)}
-                  style={{width:38,padding:"5px 4px",border:"1.5px solid #e2e8f0",borderRadius:7,fontSize:14,fontFamily:"monospace",fontWeight:700,textAlign:"center",outline:"none",color:cfg.active?"#1e293b":"#94a3b8"}}/>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* ── Test notifica ── */}
-      {isGranted && (
-        <div style={{background:"#fff",borderRadius:14,border:"1.5px solid #e2e8f0",padding:"16px",marginBottom:14,boxShadow:"0 2px 10px #0000000a"}}>
-          <div style={{fontSize:13,fontWeight:800,color:"#1e293b",marginBottom:10}}>🧪 Test</div>
-          <button
-            onClick={()=>{
-              const todayMeal = todayPlan && todayPlan["pranzo"];
-              new Notification("🥗 Pranzo", {
-                body: todayMeal ? todayMeal.nome : "È l'ora di pranzo!",
-                icon: "./icon-192.png",
-                tag: "test-notif",
-              });
-            }}
-            style={{width:"100%",padding:"10px",borderRadius:10,border:"1.5px solid #2563eb30",background:"#eff6ff",color:"#2563eb",fontWeight:700,fontSize:12,cursor:"pointer"}}>
-            📣 Invia notifica di prova (Pranzo di oggi)
-          </button>
-        </div>
-      )}
-
-      <div style={{fontSize:10,color:"#94a3b8",textAlign:"center",lineHeight:1.8,padding:"0 10px"}}>
-        Le notifiche vengono schedulate ogni volta che apri l'app.<br/>
-        Funzionano anche quando il browser è in background.
-      </div>
     </div>
   );
 }
@@ -3856,17 +3495,14 @@ function App() {
   const [misureApp, setMisureApp]     = useState({});
   const [overrides, setOverrides]     = useState({}); // { "dayIdx-mealKey": ricettaObj }
   const [prefs, setPrefs]             = useState({ recipes:{}, contextSwaps:[] });
-  const [mealsLog, setMealsLog]       = useState({});
-  const [notifSettings, setNotifSettings] = useState(DEFAULT_NOTIF);
 
   useEffect(()=>{
     async function load(){
       try {
-        const [sS,hS,eS,pS,mS,miS,ovS,prS,mlS,nfS] = await Promise.allSettled([
+        const [sS,hS,eS,pS,mS,miS,ovS,prS] = await Promise.allSettled([
           window.storage.get(SK_SEED), window.storage.get(SK_HISTORY), window.storage.get(SK_EXCL),
           window.storage.get(SK_PERSONAS), window.storage.get(SK_MY_PERSONA), window.storage.get(SK_MISURE),
           window.storage.get(SK_OVERRIDES), window.storage.get(SK_PREFS),
-          window.storage.get(SK_MEALS_LOG), window.storage.get(SK_NOTIF),
         ]);
         const parsedSeed = sS.status==="fulfilled"&&sS.value ? parseInt(sS.value.value, 10) : NaN;
         const loadedSeed = (!isNaN(parsedSeed) && parsedSeed > 0) ? parsedSeed : Date.now();
@@ -3888,12 +3524,10 @@ function App() {
         const loadedMisu = (() => { const v = safeParse(miS, {}); return (v && typeof v==="object" && !Array.isArray(v)) ? v : {}; })();
         const loadedOvrd = (() => { const v = safeParse(ovS, {}); return (v && typeof v==="object" && !Array.isArray(v)) ? v : {}; })();
         const loadedPrefs = normalizePrefs(safeParse(prS, null));
-        const loadedMealsLog = (() => { const v = safeParse(mlS, {}); return (v && typeof v==="object" && !Array.isArray(v)) ? v : {}; })();
-        const loadedNotif = (() => { const v = safeParse(nfS, null); return (v && typeof v==="object") ? { ...DEFAULT_NOTIF, ...v, meals: { ...DEFAULT_NOTIF.meals, ...(v.meals||{}) } } : DEFAULT_NOTIF; })();
         const validMyP   = loadedPers.find(p=>p.id===loadedMyP) ? loadedMyP : loadedPers[0].id;
         setSeed(loadedSeed); setHistory(loadedHist); setExcluded(loadedExcl);
         setPersonas(loadedPers); setSelPersonaId(loadedPers[0].id); setMyPersonaId(validMyP);
-        setMisureApp(loadedMisu); setOverrides(loadedOvrd); setPrefs(loadedPrefs); setMealsLog(loadedMealsLog); setNotifSettings(loadedNotif);
+        setMisureApp(loadedMisu); setOverrides(loadedOvrd); setPrefs(loadedPrefs);
         setPlan(generateWeekPlan(loadedSeed, loadedExcl));
       } catch {
         const ns=Date.now(); setSeed(ns); setPersonas(DEFAULT_PERSONAS);
@@ -3903,18 +3537,6 @@ function App() {
     }
     load();
   },[]);
-
-  // Rischedula le notifiche ogni volta che cambiano settings o piano
-  useEffect(()=>{
-    if (!plan || !notifSettings) return;
-    const todayIdx2 = todayDayIndex();
-    const todayPlan2 = plan[todayIdx2];
-    // Piccolo delay per assicurarsi che il SW sia pronto
-    const t = setTimeout(()=>{
-      scheduleNotifications(notifSettings, todayPlan2, personas, myPersonaId);
-    }, 800);
-    return () => clearTimeout(t);
-  }, [notifSettings, plan, myPersonaId]);
 
   const handleUpdatePersona = useCallback((updated)=>{
     setPersonas(prev=>{ const next=prev.map(p=>p.id===updated.id?updated:p); window.storage.set(SK_PERSONAS,JSON.stringify(next)).catch(()=>{}); return next; });
@@ -3928,25 +3550,6 @@ function App() {
   const handleDeletePersona = useCallback((id)=>{
     setPersonas(prev=>{ const next=prev.filter(p=>p.id!==id); window.storage.set(SK_PERSONAS,JSON.stringify(next)).catch(()=>{}); if(selPersonaId===id) setSelPersonaId(next[0]?.id||null); return next; });
   },[selPersonaId]);
-
-  const handleNotifChange = useCallback((next) => {
-    setNotifSettings(next);
-    window.storage.set(SK_NOTIF, JSON.stringify(next)).catch(()=>{});
-  }, []);
-
-  const handleToggleMealLog = useCallback((personaId, dateKey, mealKey, macros) => {
-    setMealsLog(prev => {
-      const pLog = prev[personaId] || {};
-      const dayLog = pLog[dateKey] || {};
-      const cur = dayLog[mealKey];
-      const next = cur
-        ? { ...dayLog, [mealKey]: { ...cur, consumed: !cur.consumed } }
-        : { ...dayLog, [mealKey]: { consumed: true, ...macros } };
-      const nextFull = { ...prev, [personaId]: { ...pLog, [dateKey]: next } };
-      window.storage.set(SK_MEALS_LOG, JSON.stringify(nextFull)).catch(()=>{});
-      return nextFull;
-    });
-  }, []);
 
   const handleSetMyPersona = useCallback((id)=>{
     setMyPersonaId(id);
@@ -4112,7 +3715,6 @@ function App() {
     {key:"gusti",       label:"Gusti",       icon:"❤️", desc:"Preferiti e non amati"},
     {key:"misure",      label:"Misure",      icon:"📏", desc:"Peso, circonferenze, calcolatori"},
     {key:"famiglia",    label:"Famiglia",    icon:"👥", desc:"Profili e dati personali"},
-    {key:"opzioni",     label:"Opzioni",     icon:"⚙️", desc:"Notifiche e promemoria pasti"},
   ];
 
   return (
@@ -4232,33 +3834,23 @@ function App() {
                         const key = `${selDay}-${mk}`;
                         const isOverride = !!overrides[key];
                         return (
-                          {(()=>{
-                            const dateKey = dateKeyForDayIdx(selDay);
-                            const personaDayLog = (mealsLog[persona.id]||{})[dateKey]||{};
-                            const mealConsumed = !!(personaDayLog[mk]?.consumed);
-                            const mMacro = pianoPers.personalizzato ? pianoPers.perPasto[mk] : (effectiveDay[mk]?.[personaSlot]||{kcal:0,p:0,c:0,g:0});
-                            return (
-                              <MealCard
-                                key={mk}
-                                mealKey={mk}
-                                dayIdx={selDay}
-                                meal={effectiveDay[mk]}
-                                personaKey={personaSlot}
-                                color={persona.color}
-                                isOverride={isOverride}
-                                weekMealIds={weekMealIds}
-                                excludedIds={excluded}
-                                prefEntry={getPrefEntry(prefs, effectiveDay[mk]?.id)}
-                                onToggleLike={() => handleToggleLike(effectiveDay[mk]?.id)}
-                                onSwap={alt => handleSwap(selDay, mk, effectiveDay[mk], alt)}
-                                onReset={() => handleResetSwap(selDay, mk)}
-                                macroOverride={pianoPers.personalizzato ? pianoPers.perPasto[mk] : null}
-                                quantitaOverride={pianoPers.personalizzato && effectiveDay[mk] && pianoPers.quantita ? pianoPers.quantita[effectiveDay[mk].id] : null}
-                                consumed={mealConsumed}
-                                onToggleConsumed={()=>handleToggleMealLog(persona.id, dateKey, mk, mMacro)}
-                              />
-                            );
-                          })()}
+                          <MealCard
+                            key={mk}
+                            mealKey={mk}
+                            dayIdx={selDay}
+                            meal={effectiveDay[mk]}
+                            personaKey={personaSlot}
+                            color={persona.color}
+                            isOverride={isOverride}
+                            weekMealIds={weekMealIds}
+                            excludedIds={excluded}
+                            prefEntry={getPrefEntry(prefs, effectiveDay[mk]?.id)}
+                            onToggleLike={() => handleToggleLike(effectiveDay[mk]?.id)}
+                            onSwap={alt => handleSwap(selDay, mk, effectiveDay[mk], alt)}
+                            onReset={() => handleResetSwap(selDay, mk)}
+                            macroOverride={pianoPers.personalizzato ? pianoPers.perPasto[mk] : null}
+                            quantitaOverride={pianoPers.personalizzato && effectiveDay[mk] && pianoPers.quantita ? pianoPers.quantita[effectiveDay[mk].id] : null}
+                          />
                         );
                       })}
                       <TotaleBar dayData={effectiveDay} personaKey={personaSlot} color={persona.color} target={personaTarget} macroPerPasto={pianoPers.personalizzato ? pianoPers.perPasto : null}/>
@@ -4354,8 +3946,7 @@ function App() {
         {!showHistory&&page==="spesa"&&<ShoppingPage plan={applyOverrides(plan, overrides)}/>}
         {!showHistory&&page==="ingredienti"&&<IngredientiPage excluded={excluded} onToggle={toggleExcluded}/>}
         {!showHistory&&page==="gusti"&&<GustiPage prefs={prefs} onToggleLike={handleToggleLike} onResetPrefs={handleResetPrefs}/>}
-        {!showHistory&&page==="opzioni"&&<OpzioniPage notifSettings={notifSettings} onNotifChange={handleNotifChange} plan={plan} personas={personas} myPersonaId={myPersonaId}/>}
-        {!showHistory&&page==="misure"&&<MisurePage personas={personas} myPersonaId={myPersonaId} onMisureChange={setMisureApp} mealsLog={mealsLog}/>}
+        {!showHistory&&page==="misure"&&<MisurePage personas={personas} myPersonaId={myPersonaId} onMisureChange={setMisureApp}/>}
         {!showHistory&&page==="famiglia"&&(
           <FamigliaPage personas={personas} onUpdate={handleUpdatePersona} onAdd={handleAddPersona} onDelete={handleDeletePersona}
             currentSeed={seed} overrides={overrides} onApplySeed={handleApplySeed} myPersonaId={myPersonaId} onSetMyPersona={handleSetMyPersona} misureApp={misureApp}/>
