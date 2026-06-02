@@ -3,7 +3,7 @@
 // delle librerie esterne (React, Babel) al primo caricamento online.
 // Così l'app funziona davvero offline dopo la prima apertura.
 
-const CACHE = "piano-alimentare-v2";
+const CACHE = "piano-alimentare-v6";
 
 // Asset locali dell'app
 const LOCAL_ASSETS = [
@@ -67,6 +67,57 @@ self.addEventListener("fetch", e => {
           if (req.mode === "navigate") return caches.match("./index.html");
           return new Response("", { status: 504, statusText: "Offline" });
         });
+    })
+  );
+});
+
+// ─── Notifiche push locali ─────────────────────────────────────────
+// Il client manda un messaggio { type:"SCHEDULE_NOTIFICATIONS", meals:[...] }
+// dove ogni meal ha { mealKey, label, ricetta, delayMs }
+// Il SW usa setTimeout per far scattare la notifica al momento giusto.
+
+const scheduledTimers = {};
+
+self.addEventListener("message", e => {
+  if (!e.data) return;
+
+  if (e.data.type === "SCHEDULE_NOTIFICATIONS") {
+    // Cancella timer precedenti
+    Object.values(scheduledTimers).forEach(id => clearTimeout(id));
+    Object.keys(scheduledTimers).forEach(k => delete scheduledTimers[k]);
+
+    const meals = e.data.meals || [];
+    meals.forEach(meal => {
+      if (meal.delayMs < 0) return; // già passato
+      const id = setTimeout(() => {
+        self.registration.showNotification(meal.label, {
+          body: meal.ricetta || "È il momento di mangiare!",
+          icon: "./icon-192.png",
+          badge: "./icon-192.png",
+          tag: meal.mealKey,
+          renotify: true,
+          data: { mealKey: meal.mealKey },
+        });
+      }, Math.min(meal.delayMs, 2147483647)); // max setTimeout ~24.8 giorni
+      scheduledTimers[meal.mealKey] = id;
+    });
+  }
+
+  if (e.data.type === "CANCEL_NOTIFICATIONS") {
+    Object.values(scheduledTimers).forEach(id => clearTimeout(id));
+    Object.keys(scheduledTimers).forEach(k => delete scheduledTimers[k]);
+  }
+});
+
+self.addEventListener("notificationclick", e => {
+  e.notification.close();
+  e.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(clients => {
+      if (clients.length > 0) {
+        clients[0].focus();
+      } else {
+        self.clients.openWindow("./");
+      }
     })
   );
 });
