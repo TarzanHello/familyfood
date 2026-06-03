@@ -4969,7 +4969,7 @@ const PREP_SLOTS = [
   { label:"≤60'",  max:60,  color:"#dc2626", bg:"#fef2f2" },
 ];
 
-function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealIds, excludedIds, isOverride, onReset, prefEntry, onToggleLike, macroOverride, quantitaOverride, consumed, onToggleConsumed, onEdit, loggedMacros, loggedIngs, onEditConsumed }) {
+function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealIds, excludedIds, isOverride, onReset, prefEntry, onToggleLike, macroOverride, quantitaOverride, consumed, onToggleConsumed, onEdit, loggedMacros, loggedIngs, onEditConsumed, isAdattato }) {
   const [open, setOpen]               = useState(false);
   const [swapOpen, setSwapOpen]       = useState(false);
   const [editOpen, setEditOpen]       = useState(false);
@@ -5000,6 +5000,7 @@ function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealId
           <span style={{fontWeight:800,fontSize:isSnack?11:13,color:isSnack?"#94a3b8":isOverride?"#7c3aed":color}}>{label}</span>
           {isOverride && <span style={{fontSize:9,background:"#7c3aed",color:"#fff",borderRadius:4,padding:"1px 5px",fontWeight:800}}>MOD</span>}
           {consumed && loggedMacros && <span style={{fontSize:9,background:"#16a34a",color:"#fff",borderRadius:4,padding:"1px 5px",fontWeight:800}}>✓ reale</span>}
+          {isAdattato && <span style={{fontSize:9,background:"#0891b2",color:"#fff",borderRadius:4,padding:"1px 5px",fontWeight:800}}>⚖ riadattato</span>}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
           {prepLabel && (
@@ -5200,11 +5201,88 @@ function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealId
   );
 }
 
-function TotaleBar({ dayData, personaKey, color, target, macroPerPasto }) {
+// ─── Ricalcolo proporzionale porzioni non consumate ──────────────────
+// Dato il dayLog (pasti consumati con macro reali) e i macro piano per ogni
+// pasto, ridistribuisce il delta calorico sui pasti non ancora consumati,
+// proporzionalmente al loro peso calorico nel piano.
+// Restituisce:
+//   { adattato: { [mk]: {kcal,p,c,g} },   // macro riadattati x pasti non consumati
+//     delta: number,                        // kcal di scarto dai pasti consumati
+//     avviso: string|null }                 // messaggio se delta non assorbibile
+function ricalcolaMacroAdattati(MEAL_KEYS, macroBase, dayLog) {
+  // macroBase[mk] = macro piano (o personalizzato) per ogni pasto
+  // dayLog[mk]    = { consumed, kcal, p, c, g, ... } oppure assente
+
+  // ── Calcola il delta: reale - piano per i pasti consumati con dati reali
+  let deltaKcal = 0, deltaP = 0, deltaC = 0, deltaG = 0;
+  const nonConsumati = [];
+
+  for (const mk of MEAL_KEYS) {
+    const log = dayLog[mk];
+    const base = macroBase[mk] || {kcal:0,p:0,c:0,g:0};
+    if (log && log.consumed && (log.kcal || log._ingredienti)) {
+      // pasto consumato con dati reali
+      deltaKcal += (log.kcal||0) - base.kcal;
+      deltaP    += (log.p||0)    - base.p;
+      deltaC    += (log.c||0)    - base.c;
+      deltaG    += (log.g||0)    - base.g;
+    } else if (!log || !log.consumed) {
+      nonConsumati.push(mk);
+    }
+    // consumed ma senza macro reali → nessun delta, non va in nonConsumati
+  }
+
+  // Nessun delta o nessun pasto da riadattare → restituisci base invariata
+  if (Math.abs(deltaKcal) < 1 || nonConsumati.length === 0) {
+    return { adattato: macroBase, delta: deltaKcal, avviso: null };
+  }
+
+  // Peso calorico totale dei pasti non consumati
+  const totKcalNonCons = nonConsumati.reduce((s, mk) => s + (macroBase[mk]?.kcal||0), 0);
+
+  let avviso = null;
+
+  // Controlla se il delta è assorbibile (ogni pasto resta in range 50%–200% del piano)
+  if (totKcalNonCons > 0) {
+    const korrFactor = (totKcalNonCons - deltaKcal) / totKcalNonCons;
+    if (korrFactor < 0.5 || korrFactor > 2.0) {
+      const surplus = deltaKcal > 0 ? "eccesso" : "deficit";
+      avviso = `⚠️ ${Math.abs(Math.round(deltaKcal))} kcal di ${surplus} dai pasti consumati: i pasti restanti non bastano ad assorbire la differenza.`;
+    }
+  } else {
+    // Tutti i pasti sono già consumati, nessun aggiustamento possibile
+    return { adattato: macroBase, delta: deltaKcal, avviso: null };
+  }
+
+  // Distribuzione proporzionale al peso calorico
+  const adattato = { ...macroBase };
+  for (const mk of nonConsumati) {
+    const base = macroBase[mk] || {kcal:0,p:0,c:0,g:0};
+    if (totKcalNonCons === 0) continue;
+    const quota = base.kcal / totKcalNonCons; // peso relativo di questo pasto
+    adattato[mk] = {
+      kcal: Math.max(0, Math.round(base.kcal - deltaKcal * quota)),
+      p:    Math.max(0, Math.round((base.p    - deltaP    * quota) * 10) / 10),
+      c:    Math.max(0, Math.round((base.c    - deltaC    * quota) * 10) / 10),
+      g:    Math.max(0, Math.round((base.g    - deltaG    * quota) * 10) / 10),
+      _adattato: true,  // flag per evidenziare visivamente nella MealCard
+    };
+  }
+
+  return { adattato, delta: deltaKcal, avviso };
+}
+
+function TotaleBar({ dayData, personaKey, color, target, macroPerPasto, dayLog }) {
   // macroPerPasto: se presente (persona con misure), contiene i macro
   // riscalati per ogni mealKey; altrimenti si usa la taglia fissa.
+  // dayLog: dati mealsLog del giorno corrente per questa persona;
+  //         se un pasto è consumed, si usano i macro reali dal log.
   const tot = MEAL_KEYS.reduce((a,mk)=>{
-    const m = (macroPerPasto && macroPerPasto[mk]) || dayData[mk][personaKey];
+    const logEntry = dayLog && dayLog[mk];
+    // Se il pasto è stato consumato e ha macro nel log, usa quelli (valori reali)
+    const m = (logEntry && logEntry.consumed && (logEntry.kcal || logEntry._ingredienti))
+      ? {kcal: logEntry.kcal||0, p: logEntry.p||0, c: logEntry.c||0, g: logEntry.g||0}
+      : (macroPerPasto && macroPerPasto[mk]) || dayData[mk][personaKey];
     return {kcal:a.kcal+m.kcal,p:a.p+m.p,c:a.c+m.c,g:a.g+m.g};
   },{kcal:0,p:0,c:0,g:0});
   const t = target||{kcal:2000,p:150,c:200,g:65};
@@ -6255,11 +6333,28 @@ function App() {
                   // porzioni vengono riscalate dal motore sul suo
                   // fabbisogno (LARN). Senza misure → taglie fisse.
                   const pianoPers = pianoPersonalizzato(effectiveDay, persona, misureApp[persona?.id]);
+                  const selDayLog = (mealsLog[persona.id]||{})[dateKeyForDayIdx(selDay)]||{};
+                  // macro base per ogni pasto (personalizzati o fissi)
+                  const macroBase = {};
+                  MEAL_KEYS.forEach(mk => {
+                    macroBase[mk] = (pianoPers.personalizzato ? pianoPers.perPasto[mk] : null) || effectiveDay[mk]?.[personaSlot] || {kcal:0,p:0,c:0,g:0};
+                  });
+                  // ricalcolo proporzionale dei pasti non ancora consumati
+                  const { adattato: macroAdattati, delta: kcalDelta, avviso: avvisoBilancio } = ricalcolaMacroAdattati(MEAL_KEYS, macroBase, selDayLog);
                   return (
                     <>
+                      {avvisoBilancio && (
+                        <div style={{background:"#fffbeb",border:"1.5px solid #fcd34d",borderRadius:10,padding:"10px 14px",marginBottom:8,fontSize:12,color:"#92400e",fontWeight:600,lineHeight:1.5}}>
+                          {avvisoBilancio}
+                        </div>
+                      )}
                       {MEAL_KEYS.map(mk => {
                         const key = `${selDay}-${mk}`;
                         const isOverride = !!overrides[key];
+                        const isConsumed = !!selDayLog[mk]?.consumed;
+                        // Per i pasti non consumati usa i macro riadattati; per i consumati restano quelli reali del log
+                        const macroEff = !isConsumed ? macroAdattati[mk] : macroBase[mk];
+                        const isAdattato = !isConsumed && macroAdattati[mk]?._adattato;
                         return (
                           <MealCard
                             key={mk}
@@ -6275,18 +6370,19 @@ function App() {
                             onToggleLike={() => handleToggleLike(effectiveDay[mk]?.id)}
                             onSwap={alt => handleSwap(selDay, mk, effectiveDay[mk], alt)}
                             onReset={() => handleResetSwap(selDay, mk)}
-                            macroOverride={pianoPers.personalizzato ? pianoPers.perPasto[mk] : null}
-                            quantitaOverride={pianoPers.personalizzato && effectiveDay[mk] && pianoPers.quantita ? pianoPers.quantita[effectiveDay[mk].id] : null}
-                            consumed={!!((mealsLog[persona.id]||{})[dateKeyForDayIdx(selDay)]||{})[mk]?.consumed}
-                            onToggleConsumed={()=>handleToggleMealLog(persona.id,dateKeyForDayIdx(selDay),mk,pianoPers.personalizzato?pianoPers.perPasto[mk]:(effectiveDay[mk]?.[personaSlot]||{kcal:0,p:0,c:0,g:0}))}
+                            macroOverride={macroEff}
+                            isAdattato={isAdattato}
+                            quantitaOverride={pianoPers.personalizzato && effectiveDay[mk] && pianoPers.quantita && !isAdattato ? pianoPers.quantita[effectiveDay[mk].id] : null}
+                            consumed={isConsumed}
+                            onToggleConsumed={()=>handleToggleMealLog(persona.id,dateKeyForDayIdx(selDay),mk,macroBase[mk])}
                             onEdit={customRecipe => handleSwap(selDay, mk, effectiveDay[mk], customRecipe)}
-                            loggedMacros={(()=>{const e=((mealsLog[persona.id]||{})[dateKeyForDayIdx(selDay)]||{})[mk];return e?.consumed&&(e.kcal||e._ingredienti)?{kcal:e.kcal||0,p:e.p||0,c:e.c||0,g:e.g||0}:null;})()}
-                            loggedIngs={((mealsLog[persona.id]||{})[dateKeyForDayIdx(selDay)]||{})[mk]?._ingredienti||null}
+                            loggedMacros={(()=>{const e=selDayLog[mk];return e?.consumed&&(e.kcal||e._ingredienti)?{kcal:e.kcal||0,p:e.p||0,c:e.c||0,g:e.g||0}:null;})()}
+                            loggedIngs={selDayLog[mk]?._ingredienti||null}
                             onEditConsumed={data=>handleEditConsumedMeal(persona.id,dateKeyForDayIdx(selDay),mk,data)}
                           />
                         );
                       })}
-                      <TotaleBar dayData={effectiveDay} personaKey={personaSlot} color={persona.color} target={personaTarget} macroPerPasto={pianoPers.personalizzato ? pianoPers.perPasto : null}/>
+                      <TotaleBar dayData={effectiveDay} personaKey={personaSlot} color={persona.color} target={personaTarget} macroPerPasto={macroAdattati} dayLog={selDayLog}/>
                       {/* ── Tracker idratazione ── */}
                       {(()=>{
                         // dayKey = "seedBase-dayIndex" → univoco per piano+giorno
