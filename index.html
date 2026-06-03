@@ -4670,6 +4670,177 @@ function RecipeEditorModal({ meal, mealKey, personaKey, onSave, onClose, quantit
   );
 }
 
+// ─── ConsumedEditorModal ────────────────────────────────────────────
+// Permette di modificare ingredienti e quantità di un pasto già consumato.
+// Non crea una ricetta custom: salva direttamente i macro nel mealsLog.
+function ConsumedEditorModal({ meal, mealKey, personaKey, initialIngs, onSave, onClose }) {
+  // initialIngs: { ingId: {valore, unit} } — può essere null/vuoto
+  const baseIngs = React.useMemo(() => {
+    if (initialIngs && Object.keys(initialIngs).length > 0) return { ...initialIngs };
+    return ingQtyToEditor(meal.id, personaKey);
+  }, []);
+
+  const [ings, setIngs]           = React.useState(baseIngs);
+  const [search, setSearch]       = React.useState("");
+  const [showSearch, setShowSearch] = React.useState(false);
+
+  const macro = React.useMemo(() => calcMacroEditor(ings), [ings]);
+
+  const updateQty = (ingId, field, raw) => {
+    const val = field === "unit" ? raw : Math.max(0, parseFloat(raw) || 0);
+    setIngs(prev => ({ ...prev, [ingId]: { ...prev[ingId], [field]: val } }));
+  };
+  const removeIng = ingId => {
+    setIngs(prev => { const n = {...prev}; delete n[ingId]; return n; });
+  };
+  const addIng = ingId => {
+    if (ings[ingId]) return;
+    const ing = ING_MAP[ingId];
+    const defaultUnit = ing?.tags?.includes("olio") ? "cucchiaio" : PESO_PEZZO[ingId] ? "pz" : "g";
+    setIngs(prev => ({ ...prev, [ingId]: { valore: 100, unit: defaultUnit } }));
+    setSearch(""); setShowSearch(false);
+  };
+
+  const searchResults = React.useMemo(() => {
+    if (!search.trim()) return [];
+    const q = search.toLowerCase();
+    return INGREDIENTS
+      .filter(i => !ings[i.id] && (i.nome.toLowerCase().includes(q) || (i.tags||[]).some(t=>t.includes(q))))
+      .slice(0, 8);
+  }, [search, ings]);
+
+  // Raggruppa per categoria
+  const grouped = {};
+  for (const ingId of Object.keys(ings)) {
+    const cat = ING_MAP[ingId]?.cat || "Altro";
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(ingId);
+  }
+
+  const handleSave = () => {
+    // Salva: macro calcolati dagli ingredienti reali + snapshot ingredienti
+    onSave({ ...macro, _ingredienti: ings });
+  };
+
+  return (
+    <div style={{position:"fixed",inset:0,zIndex:1000,display:"flex",alignItems:"flex-end",justifyContent:"center",background:"#00000055"}}
+      onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}>
+      <div style={{background:"#fff",borderRadius:"20px 20px 0 0",width:"100%",maxWidth:480,maxHeight:"92vh",display:"flex",flexDirection:"column",boxShadow:"0 -8px 40px #0000003a"}}>
+
+        {/* Header */}
+        <div style={{padding:"16px 18px 12px",borderBottom:"1px solid #f1f5f9",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
+          <div>
+            <div style={{fontSize:11,color:"#16a34a",fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,marginBottom:2}}>
+              ✅ Cosa hai mangiato davvero?
+            </div>
+            <div style={{fontSize:14,fontWeight:800,color:"#1e293b"}}>{meal.nome}</div>
+          </div>
+          <button onClick={onClose}
+            style={{width:32,height:32,borderRadius:"50%",border:"none",background:"#f1f5f9",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>✕</button>
+        </div>
+
+        {/* Macro live */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,padding:"10px 18px",background:"#f0fdf4",flexShrink:0,borderBottom:"1px solid #dcfce7"}}>
+          {[["kcal","#1e293b"],["P","#2563eb"],["C","#d97706"],["G","#16a34a"]].map(([lbl,col])=>(
+            <div key={lbl} style={{textAlign:"center"}}>
+              <div style={{fontSize:8,color:"#94a3b8",fontWeight:700,textTransform:"uppercase"}}>{lbl}</div>
+              <div style={{fontSize:16,fontWeight:800,color:col,fontFamily:"monospace",lineHeight:1.2}}>
+                {lbl==="kcal"?macro.kcal:lbl==="P"?macro.p:lbl==="C"?macro.c:macro.g}
+              </div>
+              {lbl!=="kcal"&&<div style={{fontSize:8,color:"#94a3b8"}}>g</div>}
+            </div>
+          ))}
+        </div>
+
+        {/* Lista ingredienti */}
+        <div style={{flex:1,overflowY:"auto",padding:"10px 18px"}}>
+          {Object.keys(ings).length === 0 && (
+            <div style={{textAlign:"center",padding:"20px 0",color:"#94a3b8",fontSize:12}}>
+              Nessun ingrediente — aggiungine uno qui sotto
+            </div>
+          )}
+          {Object.entries(grouped).map(([cat, ids]) => (
+            <div key={cat} style={{marginBottom:14}}>
+              <div style={{fontSize:9,fontWeight:800,color:"#94a3b8",textTransform:"uppercase",letterSpacing:0.5,marginBottom:6}}>{cat}</div>
+              {ids.map(ingId => {
+                const q = ings[ingId];
+                return (
+                  <div key={ingId} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 0",borderBottom:"1px solid #f1f5f9"}}>
+                    <div style={{flex:1,fontSize:13,fontWeight:600,color:"#1e293b",minWidth:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+                      {ING_MAP[ingId]?.nome || ingId}
+                    </div>
+                    <input type="number" min="0" step="1"
+                      value={q.valore}
+                      onChange={e=>updateQty(ingId,"valore",e.target.value)}
+                      style={{width:60,padding:"4px 6px",border:"1.5px solid #e2e8f0",borderRadius:7,fontSize:13,fontWeight:700,textAlign:"center",outline:"none",fontFamily:"monospace"}}
+                    />
+                    <select value={q.unit} onChange={e=>updateQty(ingId,"unit",e.target.value)}
+                      style={{padding:"4px 2px",border:"1.5px solid #e2e8f0",borderRadius:7,fontSize:11,background:"#f8fafc",outline:"none",color:"#334155"}}>
+                      {UNIT_OPTIONS.map(u=><option key={u} value={u}>{u}</option>)}
+                    </select>
+                    <button onClick={()=>removeIng(ingId)}
+                      style={{flexShrink:0,width:26,height:26,borderRadius:"50%",border:"none",background:"#fef2f2",color:"#ef4444",cursor:"pointer",fontSize:13,display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>
+                      ✕
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+
+          {/* Aggiunta ingrediente */}
+          <div style={{marginTop:8,marginBottom:6}}>
+            {!showSearch ? (
+              <button onClick={()=>setShowSearch(true)}
+                style={{width:"100%",padding:"9px",borderRadius:9,border:"1.5px dashed #cbd5e1",background:"#f8fafc",color:"#64748b",fontWeight:700,fontSize:12,cursor:"pointer"}}>
+                + Aggiungi ingrediente
+              </button>
+            ) : (
+              <div>
+                <div style={{position:"relative",marginBottom:6}}>
+                  <input autoFocus value={search} onChange={e=>setSearch(e.target.value)}
+                    placeholder="Cerca ingrediente…"
+                    style={{width:"100%",padding:"9px 12px",border:"1.5px solid #16a34a",borderRadius:9,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
+                  <button onClick={()=>{setShowSearch(false);setSearch("");}}
+                    style={{position:"absolute",right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",color:"#94a3b8",fontSize:16}}>✕</button>
+                </div>
+                {searchResults.length>0 && (
+                  <div style={{border:"1px solid #e2e8f0",borderRadius:9,overflow:"hidden"}}>
+                    {searchResults.map(ing=>(
+                      <div key={ing.id} onClick={()=>addIng(ing.id)}
+                        style={{padding:"9px 12px",cursor:"pointer",fontSize:12,display:"flex",justifyContent:"space-between",alignItems:"center",borderBottom:"1px solid #f1f5f9",background:"#fff"}}
+                        onMouseEnter={e=>e.currentTarget.style.background="#f8fafc"}
+                        onMouseLeave={e=>e.currentTarget.style.background="#fff"}>
+                        <span style={{fontWeight:600,color:"#334155"}}>{ing.nome}</span>
+                        <span style={{fontSize:9,color:"#94a3b8"}}>{ing.cat}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {search.trim()&&searchResults.length===0&&(
+                  <div style={{padding:"10px 12px",fontSize:12,color:"#94a3b8",textAlign:"center"}}>Nessun ingrediente trovato</div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{padding:"12px 18px 20px",borderTop:"1px solid #f1f5f9",flexShrink:0,display:"flex",gap:10}}>
+          <button onClick={onClose}
+            style={{flex:1,padding:"12px",borderRadius:10,border:"1.5px solid #e2e8f0",background:"#f8fafc",color:"#64748b",fontWeight:700,fontSize:13,cursor:"pointer"}}>
+            Annulla
+          </button>
+          <button onClick={handleSave}
+            style={{flex:2,padding:"12px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#16a34a,#15803d)",color:"#fff",fontWeight:800,fontSize:13,cursor:"pointer",boxShadow:"0 4px 14px #16a34a33"}}>
+            ✅ Aggiorna calorie consumate
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── MealCard ────────────────────────────────────────────────────────
 // ─── WaterTracker ─────────────────────────────────────────────────
 const WATER_ML   = 200;   // ml per bicchiere
@@ -4798,15 +4969,15 @@ const PREP_SLOTS = [
   { label:"≤60'",  max:60,  color:"#dc2626", bg:"#fef2f2" },
 ];
 
-function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealIds, excludedIds, isOverride, onReset, prefEntry, onToggleLike, macroOverride, quantitaOverride, consumed, onToggleConsumed, onEdit }) {
-  const [open, setOpen]         = useState(false);
-  const [swapOpen, setSwapOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
-  const [maxPrep, setMaxPrep]   = useState(null);  // null = nessun filtro attivo
+function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealIds, excludedIds, isOverride, onReset, prefEntry, onToggleLike, macroOverride, quantitaOverride, consumed, onToggleConsumed, onEdit, loggedMacros, loggedIngs, onEditConsumed }) {
+  const [open, setOpen]               = useState(false);
+  const [swapOpen, setSwapOpen]       = useState(false);
+  const [editOpen, setEditOpen]       = useState(false);
+  const [consumedEditOpen, setConsumedEditOpen] = useState(false);
+  const [maxPrep, setMaxPrep]         = useState(null);
 
-  // macroOverride: se la persona ha misure, sono i macro riscalati dal
-  // motore sul suo fabbisogno. Altrimenti si usa la taglia fissa.
-  const m = macroOverride || meal[personaKey];
+  // Se consumato e abbiamo macro reali dal log, mostriamo quelle; altrimenti le macro del piano
+  const m = (consumed && loggedMacros) ? loggedMacros : (macroOverride || meal[personaKey]);
   const { label, isSnack } = MEAL_META[mealKey];
 
   const prep = meal.prep;
@@ -4828,6 +4999,7 @@ function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealId
         <div style={{display:"flex",alignItems:"center",gap:6}}>
           <span style={{fontWeight:800,fontSize:isSnack?11:13,color:isSnack?"#94a3b8":isOverride?"#7c3aed":color}}>{label}</span>
           {isOverride && <span style={{fontSize:9,background:"#7c3aed",color:"#fff",borderRadius:4,padding:"1px 5px",fontWeight:800}}>MOD</span>}
+          {consumed && loggedMacros && <span style={{fontSize:9,background:"#16a34a",color:"#fff",borderRadius:4,padding:"1px 5px",fontWeight:800}}>✓ reale</span>}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
           {prepLabel && (
@@ -4835,7 +5007,7 @@ function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealId
               ⏱ {prepLabel}
             </span>
           )}
-          <span style={{fontFamily:"monospace",fontSize:12,fontWeight:700,color:"#1e293b"}}>{m.kcal} kcal</span>
+          <span style={{fontFamily:"monospace",fontSize:12,fontWeight:700,color:consumed&&loggedMacros?"#16a34a":"#1e293b"}}>{m.kcal} kcal</span>
           <span style={{color:"#cbd5e1",fontSize:10}}>{open?"▲":"▼"}</span>
         </div>
       </div>
@@ -4844,7 +5016,7 @@ function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealId
       <div style={{padding:"10px 14px"}}>
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:8,marginBottom:8}}>
           <div style={{fontSize:isSnack?12:13,fontWeight:600,color:"#1e293b",lineHeight:1.4,flex:1}}>{meal.nome}</div>
-          <div style={{display:"flex",gap:6,flexShrink:0}}>
+          <div style={{display:"flex",gap:4,flexShrink:0,flexWrap:"wrap",justifyContent:"flex-end"}}>
             {/* Bottone like */}
             <button
               onClick={e=>{ e.stopPropagation(); onToggleLike && onToggleLike(); }}
@@ -4858,19 +5030,32 @@ function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealId
               style={{flexShrink:0,width:31,height:28,borderRadius:7,border:`1.5px solid ${consumed?"#16a34a":"#e2e8f0"}`,background:consumed?"#f0fdf4":"#f8fafc",cursor:"pointer",transition:"all 0.15s",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,padding:0}}>
               <span style={{filter:consumed?"none":"grayscale(1) opacity(0.4)"}}>{consumed?"✅":"☑️"}</span>
             </button>
-            {/* Bottone modifica ricetta */}
-            <button
-              onClick={e=>{ e.stopPropagation(); setEditOpen(true); setOpen(false); setSwapOpen(false); }}
-              title="Modifica ingredienti e quantità"
-              style={{flexShrink:0,width:31,height:28,borderRadius:7,border:"1.5px solid #e2e8f0",background:"#f8fafc",cursor:"pointer",transition:"all 0.15s",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,padding:0,color:"#64748b",fontWeight:700}}>
-              ✏️
-            </button>
-            {/* Bottone swap */}
-            <button
-              onClick={e=>{ e.stopPropagation(); setSwapOpen(s=>!s); setOpen(false); if(!swapOpen) setMaxPrep(null); }}
-              style={{flexShrink:0,padding:"5px 10px",borderRadius:7,border:`1.5px solid ${swapOpen?"#7c3aed":"#e2e8f0"}`,background:swapOpen?"#7c3aed":"#f8fafc",color:swapOpen?"#fff":"#64748b",fontWeight:700,fontSize:11,cursor:"pointer",transition:"all 0.15s",whiteSpace:"nowrap"}}>
-              {swapOpen?"✕":"⇄ Cambia"}
-            </button>
+            {/* Bottone modifica calorie consumate — visibile solo se consumato */}
+            {consumed && (
+              <button
+                onClick={e=>{ e.stopPropagation(); setConsumedEditOpen(true); setOpen(false); setSwapOpen(false); }}
+                title="Modifica cosa hai mangiato davvero"
+                style={{flexShrink:0,padding:"5px 8px",borderRadius:7,border:"1.5px solid #16a34a",background:"#f0fdf4",color:"#16a34a",fontWeight:700,fontSize:11,cursor:"pointer",transition:"all 0.15s",whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:3}}>
+                ✏️ <span style={{fontSize:10}}>mangiato</span>
+              </button>
+            )}
+            {/* Bottone modifica ricetta (solo se NON consumato) */}
+            {!consumed && (
+              <button
+                onClick={e=>{ e.stopPropagation(); setEditOpen(true); setOpen(false); setSwapOpen(false); }}
+                title="Modifica ingredienti e quantità"
+                style={{flexShrink:0,width:31,height:28,borderRadius:7,border:"1.5px solid #e2e8f0",background:"#f8fafc",cursor:"pointer",transition:"all 0.15s",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,padding:0,color:"#64748b",fontWeight:700}}>
+                ✏️
+              </button>
+            )}
+            {/* Bottone swap (solo se NON consumato) */}
+            {!consumed && (
+              <button
+                onClick={e=>{ e.stopPropagation(); setSwapOpen(s=>!s); setOpen(false); if(!swapOpen) setMaxPrep(null); }}
+                style={{flexShrink:0,padding:"5px 10px",borderRadius:7,border:`1.5px solid ${swapOpen?"#7c3aed":"#e2e8f0"}`,background:swapOpen?"#7c3aed":"#f8fafc",color:swapOpen?"#fff":"#64748b",fontWeight:700,fontSize:11,cursor:"pointer",transition:"all 0.15s",whiteSpace:"nowrap"}}>
+                {swapOpen?"✕":"⇄ Cambia"}
+              </button>
+            )}
           </div>
         </div>
         <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
@@ -4879,8 +5064,16 @@ function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealId
           <MacroBadge label="G" value={m.g} color="#16a34a"/>
         </div>
 
-        {/* Porzione (espansa) — personalizzata se la persona ha misure */}
-        {open && (quantitaOverride || meal.porzioni?.[personaKey]) && (
+        {/* Porzione reale (se consumato con ingredienti personalizzati) */}
+        {consumed && loggedIngs && open && (
+          <div style={{marginTop:10,background:"#f0fdf4",border:"1px solid #bbf7d0",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#166534",lineHeight:1.6}}>
+            <span style={{fontWeight:700,color:"#16a34a",fontSize:10,textTransform:"uppercase",letterSpacing:0.8}}>✅ Mangiato davvero · </span>
+            {formattaPorzione(loggedIngs)}
+          </div>
+        )}
+
+        {/* Porzione pianificata (espansa) — se non consumato o senza dati reali */}
+        {open && !loggedIngs && (quantitaOverride || meal.porzioni?.[personaKey]) && (
           <div style={{marginTop:10,background:color+"08",border:`1px solid ${color}20`,borderRadius:8,padding:"8px 12px",fontSize:12,color:"#334155",lineHeight:1.6}}>
             <span style={{fontWeight:700,color,fontSize:10,textTransform:"uppercase",letterSpacing:0.8}}>
               📏 Porzione{quantitaOverride ? " personalizzata" : ""} · </span>
@@ -4909,6 +5102,21 @@ function MealCard({ mealKey, dayIdx, meal, personaKey, color, onSwap, weekMealId
             onEdit && onEdit(customRecipe);
           }}
           onClose={() => setEditOpen(false)}
+        />
+      )}
+
+      {/* ── Modal modifica pasto consumato ── */}
+      {consumedEditOpen && (
+        <ConsumedEditorModal
+          meal={meal}
+          mealKey={mealKey}
+          personaKey={personaKey}
+          initialIngs={loggedIngs || null}
+          onSave={data => {
+            setConsumedEditOpen(false);
+            onEditConsumed && onEditConsumed(data);
+          }}
+          onClose={() => setConsumedEditOpen(false)}
         />
       )}
 
@@ -5743,6 +5951,25 @@ function App() {
       window.storage.set(SK_MEALS_LOG,JSON.stringify(nextFull)).catch(()=>{}); return nextFull;
     });
   }, []);
+
+  // Aggiorna macro e ingredienti di un pasto già consumato con i valori reali
+  const handleEditConsumedMeal = useCallback((personaId, dateKey, mealKey, data) => {
+    // data = { kcal, p, c, g, _ingredienti: { ingId: {valore, unit} } }
+    setMealsLog(prev => {
+      const pLog=prev[personaId]||{}, dayLog=pLog[dateKey]||{}, cur=dayLog[mealKey];
+      const { _ingredienti, ...macros } = data;
+      const updated = {
+        ...(cur || {}),
+        consumed: true,
+        ...macros,
+        _ingredienti: _ingredienti || null,
+      };
+      const next = {...dayLog, [mealKey]: updated};
+      const nextFull = {...prev, [personaId]: {...pLog, [dateKey]: next}};
+      window.storage.set(SK_MEALS_LOG, JSON.stringify(nextFull)).catch(()=>{});
+      return nextFull;
+    });
+  }, []);
   useEffect(()=>{
     if (!plan||!notifSettings) return;
     const t=setTimeout(()=>{ scheduleNotifications(notifSettings,plan[todayDayIndex()],personas,myPersonaId); },800);
@@ -6053,6 +6280,9 @@ function App() {
                             consumed={!!((mealsLog[persona.id]||{})[dateKeyForDayIdx(selDay)]||{})[mk]?.consumed}
                             onToggleConsumed={()=>handleToggleMealLog(persona.id,dateKeyForDayIdx(selDay),mk,pianoPers.personalizzato?pianoPers.perPasto[mk]:(effectiveDay[mk]?.[personaSlot]||{kcal:0,p:0,c:0,g:0}))}
                             onEdit={customRecipe => handleSwap(selDay, mk, effectiveDay[mk], customRecipe)}
+                            loggedMacros={(()=>{const e=((mealsLog[persona.id]||{})[dateKeyForDayIdx(selDay)]||{})[mk];return e?.consumed&&(e.kcal||e._ingredienti)?{kcal:e.kcal||0,p:e.p||0,c:e.c||0,g:e.g||0}:null;})()}
+                            loggedIngs={((mealsLog[persona.id]||{})[dateKeyForDayIdx(selDay)]||{})[mk]?._ingredienti||null}
+                            onEditConsumed={data=>handleEditConsumedMeal(persona.id,dateKeyForDayIdx(selDay),mk,data)}
                           />
                         );
                       })}
