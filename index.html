@@ -4321,36 +4321,52 @@ function RecipeEditorModal({ meal, mealKey, personaKey, onSave, onClose, quantit
     setReplSearch("");
 
     // ── Suggerimento aggiornamento titolo ─────────────────────────────
-    // Cerca il nome (o un tag) del vecchio ingrediente nel titolo corrente
-    // e propone di rimpiazzarlo col nome del nuovo.
+    // Cerca il vecchio ingrediente nel titolo suggerito (o nel titolo corrente)
+    // e propone di rimpiazzarlo col nome del nuovo. Accumula sostituzioni multiple.
+    setSuggerisciNome(prevSuggestion => {
+      // Base: usa il suggerimento pendente se esiste, altrimenti il titolo corrente (nome)
+      // Non possiamo accedere a `nome` qui direttamente (closure stale), quindi
+      // passiamo attraverso setNome per leggere il valore aggiornato.
+      const oldIng = ING_MAP[oldIngId];
+      const newIng = ING_MAP[newIngId];
+      if (!oldIng || !newIng) return prevSuggestion;
+      return prevSuggestion; // placeholder, la logica vera è sotto
+    });
+
     setNome(prevNome => {
       const oldIng = ING_MAP[oldIngId];
       const newIng = ING_MAP[newIngId];
       if (!oldIng || !newIng) return prevNome;
 
-      // Termini da cercare nel titolo: nome principale + tags dell'ingrediente
-      const oldTerms = [oldIng.nome, ...(oldIng.tags || [])].map(t => t.toLowerCase());
-      const titleLower = prevNome.toLowerCase();
+      // Base per il suggerimento: usa il suggerimento pendente se diverso dal nome corrente,
+      // altrimenti parte dal nome corrente.
+      // Poiché setSuggerisciNome è asincrono, leggiamo dall'esterno tramite ref-like trick:
+      // usiamo direttamente suggerisciNome (catturato nella closure della chiamata a replaceIng)
+      const baseTitle = suggerisciNome || prevNome;
 
-      // Trova il primo termine presente nel titolo
-      let matchedTerm = null;
-      let matchedOriginal = null; // forma originale nel titolo (con maiuscole)
+      const oldTerms = [oldIng.nome, ...(oldIng.tags || [])].map(t => t.toLowerCase());
+      const titleLower = baseTitle.toLowerCase();
+
+      let matchedOriginal = null;
       for (const term of oldTerms) {
         const idx = titleLower.indexOf(term);
         if (idx !== -1) {
-          matchedTerm = term;
-          matchedOriginal = prevNome.slice(idx, idx + term.length);
+          matchedOriginal = baseTitle.slice(idx, idx + term.length);
           break;
         }
       }
 
-      if (!matchedTerm || !matchedOriginal) return prevNome; // nessun match → titolo invariato
+      if (!matchedOriginal) {
+        // Nessun termine del vecchio ingrediente nel titolo → mantieni il suggerimento esistente
+        if (suggerisciNome && suggerisciNome !== prevNome) {
+          // Non cambiare il suggerimento già in corso
+        }
+        return prevNome;
+      }
 
-      // Nome del nuovo ingrediente (prima parola minuscola, come nel titolo)
       const newName = newIng.nome.toLowerCase().split("/")[0].trim();
-      const suggested = prevNome.replace(matchedOriginal, newName);
+      const suggested = baseTitle.replace(matchedOriginal, newName);
 
-      // Se il suggerimento è diverso dal titolo attuale, lo propone
       if (suggested !== prevNome) {
         setSuggerisciNome(suggested);
       }
@@ -4382,10 +4398,11 @@ function RecipeEditorModal({ meal, mealKey, personaKey, onSave, onClose, quantit
   const replResults = React.useMemo(() => {
     if (!replSearch.trim()) return [];
     const q = replSearch.toLowerCase();
+    const usedIds = new Set(Object.keys(ings));
     return INGREDIENTS
-      .filter(i => i.id !== replacing && (i.nome.toLowerCase().includes(q) || (i.tags||[]).some(t=>t.includes(q))))
+      .filter(i => !usedIds.has(i.id) && i.id !== replacing && (i.nome.toLowerCase().includes(q) || (i.tags||[]).some(t=>t.includes(q))))
       .slice(0, 8);
-  }, [replSearch, replacing]);
+  }, [replSearch, replacing, ings]);
 
   const handleSave = () => {
     if (ingList.length === 0) return;
@@ -5714,7 +5731,14 @@ function App() {
   const handleToggleMealLog = useCallback((personaId, dateKey, mealKey, macros) => {
     setMealsLog(prev => {
       const pLog=prev[personaId]||{},dayLog=pLog[dateKey]||{},cur=dayLog[mealKey];
-      const next=cur?{...dayLog,[mealKey]:{...cur,consumed:!cur.consumed}}:{...dayLog,[mealKey]:{consumed:true,...macros}};
+      let next;
+      if (cur) {
+        // Toggle consumed: mantieni le macro già salvate (non aggiornare con quelle correnti)
+        next = {...dayLog, [mealKey]: {...cur, consumed: !cur.consumed}};
+      } else {
+        // Prima volta: salva le macro attuali e segna come consumato
+        next = {...dayLog, [mealKey]: {consumed: true, ...macros}};
+      }
       const nextFull={...prev,[personaId]:{...pLog,[dateKey]:next}};
       window.storage.set(SK_MEALS_LOG,JSON.stringify(nextFull)).catch(()=>{}); return nextFull;
     });
